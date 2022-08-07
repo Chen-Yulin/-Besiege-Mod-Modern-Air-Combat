@@ -22,6 +22,7 @@ namespace ModernAirCombat
         }
         void Update()
         {
+            //Debug.Log("-1");
         }
 
         void OnTriggrtStay(Collider col)
@@ -40,7 +41,8 @@ namespace ModernAirCombat
         public enum status {stored,launched,missed,exploded};
         public status myStatus;
         public GameObject ScanCollider;
-        public MeshCollider missleScan;
+        //public MeshCollider missleScan;
+        public BoxCollider missleScan;
         public ConeCollisonHit coneHit;
 
         private Transform myTransform;      //实例化Transform对象
@@ -48,6 +50,7 @@ namespace ModernAirCombat
         private float time = 0;
         private float detectRange;
         private float detectWidth;
+        private bool LogScanCol = false;
 
 
         public void initScan()
@@ -59,9 +62,10 @@ namespace ModernAirCombat
                 ScanCollider.transform.localPosition = new Vector3(0f, 5f, 0f);
                 ScanCollider.transform.localRotation = Quaternion.identity;
                 ScanCollider.transform.localScale = Vector3.one;
-                missleScan = ScanCollider.AddComponent<MeshCollider>();
-                missleScan.sharedMesh = ModResource.GetMesh("Cone Scan").Mesh;
-                missleScan.convex = true;
+                //missleScan = ScanCollider.AddComponent<MeshCollider>();
+                //missleScan.sharedMesh = ModResource.GetMesh("Cone Scan").Mesh;
+                missleScan = ScanCollider.AddComponent<BoxCollider>();
+                //missleScan.convex = true;
                 missleScan.isTrigger = true;
 
                 coneHit = ScanCollider.AddComponent<ConeCollisonHit>();
@@ -87,11 +91,12 @@ namespace ModernAirCombat
             detectWidth = 2*(float)(System.Math.Tan(detectAngleSlider.Value / 2 * 3.1415f / 180) * detectRange);
             Vector3 ScanColScale = new Vector3(detectWidth, detectRange, detectWidth);
             ScanCollider.transform.localScale = ScanColScale;
+            Debug.Log(ScanColScale);
             coneHit.IFF = IFF.IsActive;
             coneHit.team = BlockBehaviour.Team;
             coneHit.PlayerID = BlockBehaviour.ParentMachine.PlayerID;
+            ScanCollider.SetActive(true);
 
-            
 
         }
 
@@ -110,13 +115,25 @@ namespace ModernAirCombat
          
 
         private void Update() {
-            if ((Launch.IsHeld || Launch.EmulationHeld()) && myStatus == status.stored)
+            if(LogScanCol == false)
+            {
+                Debug.Log(ScanCollider.transform.localScale);
+                Debug.Log(ScanCollider.transform.position);
+                Debug.Log(ScanCollider.transform.localRotation);
+                Debug.Log(missleScan.transform.localScale);
+                Debug.Log(missleScan.transform.position);
+                
+                LogScanCol=true;
+            }
+        
+            if (Launch.IsHeld && myStatus == status.stored)
             {
                 myStatus = status.launched;
                 Debug.Log("missle launched");
                 Debug.Log(detectRange);
                 myRigidbody.drag = 2.0f;
                 myRigidbody.angularDrag = 4.0f;
+                
             }
         }
 
@@ -128,7 +145,16 @@ namespace ModernAirCombat
 
         public override void SimulateFixedUpdateHost()
         {
-            ScanCollider.SetActive(true);
+            if (Launch.EmulationHeld() && myStatus == status.stored)
+            {
+                myStatus = status.launched;
+                Debug.Log("missle launched");
+                Debug.Log(detectRange);
+                myRigidbody.drag = 2.0f;
+                myRigidbody.angularDrag = 4.0f;
+
+            }
+
             if (myStatus == status.launched)
             {
                 if (time < 3.0f)
