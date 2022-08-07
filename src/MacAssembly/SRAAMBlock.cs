@@ -25,9 +25,9 @@ namespace ModernAirCombat
             //Debug.Log("-1");
         }
 
-        void OnTriggrtStay(Collider col)
+        void OnTriggerEnter(Collider col)
         {
-            Debug.Log(Time.time + "留在触发器的对象是：" + col.gameObject.name);
+            Debug.Log(col.gameObject.name);
         }
 
 
@@ -41,8 +41,7 @@ namespace ModernAirCombat
         public enum status {stored,launched,missed,exploded};
         public status myStatus;
         public GameObject ScanCollider;
-        //public MeshCollider missleScan;
-        public BoxCollider missleScan;
+        public MeshCollider missleScan;
         public ConeCollisonHit coneHit;
 
         private Transform myTransform;      //实例化Transform对象
@@ -62,10 +61,9 @@ namespace ModernAirCombat
                 ScanCollider.transform.localPosition = new Vector3(0f, 5f, 0f);
                 ScanCollider.transform.localRotation = Quaternion.identity;
                 ScanCollider.transform.localScale = Vector3.one;
-                //missleScan = ScanCollider.AddComponent<MeshCollider>();
-                //missleScan.sharedMesh = ModResource.GetMesh("Cone Scan").Mesh;
-                missleScan = ScanCollider.AddComponent<BoxCollider>();
-                //missleScan.convex = true;
+                missleScan = ScanCollider.AddComponent<MeshCollider>();
+                missleScan.sharedMesh = ModResource.GetMesh("Cone Scan").Mesh;
+                missleScan.convex = true;
                 missleScan.isTrigger = true;
 
                 coneHit = ScanCollider.AddComponent<ConeCollisonHit>();
