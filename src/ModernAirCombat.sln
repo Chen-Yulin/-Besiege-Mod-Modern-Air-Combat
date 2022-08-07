@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2036
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{406d8557-2cd8-447d-8a94-c1976a208de8}") = "MacAssembly", "MacAssembly\MacAssembly.csproj", "{cab5ed61-9f6a-4502-a385-ba6debdff43c}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{cab5ed61-9f6a-4502-a385-ba6debdff43c}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{cab5ed61-9f6a-4502-a385-ba6debdff43c}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{cab5ed61-9f6a-4502-a385-ba6debdff43c}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{cab5ed61-9f6a-4502-a385-ba6debdff43c}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {47424719-de91-4de1-bbd7-91a7fa1a0377}
+	EndGlobalSection
+EndGlobal
