@@ -26,7 +26,7 @@ namespace ModernAirCombat
 
         void OnTriggrtStay(Collider col)
         {
-            Debug.Log("1");
+            Debug.Log(Time.time + "留在触发器的对象是：" + col.gameObject.name);
         }
 
 
@@ -128,7 +128,7 @@ namespace ModernAirCombat
 
         public override void SimulateFixedUpdateHost()
         {
-
+            ScanCollider.SetActive(true);
             if (myStatus == status.launched)
             {
                 if (time < 3.0f)
