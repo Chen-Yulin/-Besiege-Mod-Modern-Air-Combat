@@ -81,6 +81,8 @@ namespace ModernAirCombat
         private MeshFilter scannerMeshFilter;
         private Mesh scannerMesh;
         private MeshRenderer scannerRenderer;
+        private Texture AimIcon;
+        private int iconSize;
         private Color scannerColor;
         private Quaternion launchRotation;
         private bool getlaunchRotation = false;
@@ -165,7 +167,7 @@ namespace ModernAirCombat
                 predictPosition = targetPosition + targetVelocity * estimatedTime;
                 estimatedTime = (predictPosition - transform.position).magnitude / myVelocity;
                 predictPosition = targetPosition + targetVelocity * estimatedTime;
-                Debug.Log(predictPosition);
+                //Debug.Log(predictPosition);
 
                 launchRotation = transform.rotation;
                 ScanCollider.SetActive(false);
@@ -186,6 +188,8 @@ namespace ModernAirCombat
             detectDelay = AddSlider("延时保险", "detection delay", 0.2f, 0.0f, 1f);
             launchDelay = AddSlider("延时点火", "launch delay", 0.1f, 0.0f, 0.3f);
             initScan();//挂载上导弹前方的圆锥触发器
+            
+            AimIcon = ModResource.GetTexture("Aim Icon").Texture;
         }
 
         public void Start()
@@ -232,7 +236,7 @@ namespace ModernAirCombat
             {
                 myStatus = status.launched;
                 Debug.Log("missle launched");
-                Debug.Log(detectRange);
+                //Debug.Log(detectRange);
             }
         }
 
@@ -243,7 +247,7 @@ namespace ModernAirCombat
             {
                 myStatus = status.launched;
                 Debug.Log("missle launched");
-                Debug.Log(detectRange);
+                //Debug.Log(detectRange);
                 myRigidbody.drag = 0.1f;
                 myRigidbody.angularDrag = 4.0f;
 
@@ -255,7 +259,7 @@ namespace ModernAirCombat
                 {
                     launchRotation = transform.rotation;
                     getlaunchRotation = true;
-                    Debug.Log(launchRotation);
+                    //Debug.Log(launchRotation);
                 }
 
                 if (time < 3.0f + launchDelay.Value)
@@ -297,10 +301,19 @@ namespace ModernAirCombat
 
         void OnGUI()
         {
-
-
+            if (BlockBehaviour.isSimulating)
+            {
+                if (targetDetected)
+                {
+                    Debug.Log(predictPosition);
+                    GUI.color = Color.red;
+                    Vector3 onScreenPosition = Camera.main.WorldToScreenPoint(predictPosition);
+                    if (onScreenPosition.z >= 0)
+                        GUI.DrawTexture(new Rect(onScreenPosition.x - iconSize / 2, Camera.main.pixelHeight - onScreenPosition.y - iconSize / 2, iconSize, iconSize), AimIcon);
+                }
+            }
         }
-
+        
 
     }
 }
