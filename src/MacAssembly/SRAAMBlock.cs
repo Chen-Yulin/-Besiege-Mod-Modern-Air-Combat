@@ -71,7 +71,12 @@ namespace ModernAirCombat
         public GameObject ScannerDisplay;
         public bool targetDetected = false;
         public Vector3 predictPosition;
+        public Vector3 predictPositionModified;
+        public Vector3 predictPositionModifiedRestricted;
+        //public GameObject Prediction;
+        //public Rigidbody PredictionRigid;
 
+        private float estimatedTime;
         private Transform myTransform;      //实例化Transform对象
         private Rigidbody myRigidbody;
         private float time = 0;
@@ -86,6 +91,7 @@ namespace ModernAirCombat
         private Color scannerColor;
         private Quaternion launchRotation;
         private bool getlaunchRotation = false;
+        private float IdealRotateAngle;
 
         public void initScan()
         {
@@ -106,9 +112,11 @@ namespace ModernAirCombat
 
                 ScanCollider.SetActive(false);
                 coneHit.Reset();
+            }
 
 
-
+            if (BlockBehaviour.transform.FindChild("Scanner Display") == null)
+            {
                 // render the mesh of scanner
                 ScannerDisplay = new GameObject("Scanner Display");
                 ScannerDisplay.transform.SetParent(BlockBehaviour.transform);
@@ -124,25 +132,35 @@ namespace ModernAirCombat
                 scannerRenderer.material.SetColor("_TintColor", scannerColor);
                 ScannerDisplay.SetActive(false);
             }
+
+            //if (BlockBehaviour.transform.FindChild("Prediction") == null)
+            //{
+            //    Prediction = new GameObject("Prediction");
+            //    PredictionRigid = Prediction.AddComponent<Rigidbody>();
+            //    Prediction.transform.position = new Vector3(0, 0, 0);
+            //}
         }
+
 
 
         private void GetAim()
         {
             ScanCollider.SetActive(true);
-            if (coneHit.targetCols.Count == 0)
-            {
-                targetDetected = false;
-                return;
-            }
-            else
-            {
-                targetDetected = true;
-            }
+            
             detectFreqTime += Time.fixedDeltaTime;
             
-            if (detectFreqTime > 0.05)
+
+            if (detectFreqTime >= 0.02)
             {
+                if (coneHit.targetCols.Count == 0)
+                {
+                    targetDetected = false;
+                    return;
+                }
+                else
+                {
+                    targetDetected = true;
+                }
                 detectFreqTime = 0;
 
                 //Debug.Log("Targets:");
@@ -156,7 +174,7 @@ namespace ModernAirCombat
                 //Debug.Log(targetPosition);
                 Vector3 targetVelocity = targetCol.attachedRigidbody.velocity;
                 //Debug.Log(targetVelocity);
-                float estimatedTime;
+                
 
                 //calculate three times to ensure precision
                 float myVelocity = Rigidbody.velocity.magnitude;
@@ -167,12 +185,35 @@ namespace ModernAirCombat
                 predictPosition = targetPosition + targetVelocity * estimatedTime;
                 estimatedTime = (predictPosition - transform.position).magnitude / myVelocity;
                 predictPosition = targetPosition + targetVelocity * estimatedTime;
-                //Debug.Log(predictPosition);
-
                 launchRotation = transform.rotation;
                 ScanCollider.SetActive(false);
                 coneHit.Reset();
             }
+            Vector3 positionDiff = predictPosition - (transform.position + Rigidbody.velocity * estimatedTime);
+            Debug.Log(positionDiff);
+            Vector3 modifiedDiff;
+            if (positionDiff.magnitude < 200)
+            {
+                modifiedDiff.x = (float)(2f * positionDiff.x);
+                modifiedDiff.y = (float)(2f * positionDiff.y);
+                modifiedDiff.z = (float)(2f * positionDiff.z);
+            }
+            else
+            {
+                modifiedDiff.x = (float)(0.5f * positionDiff.x);
+                modifiedDiff.y = (float)(0.5f * positionDiff.y);
+                modifiedDiff.z = (float)(0.5f * positionDiff.z);
+            }
+            
+            predictPositionModified = predictPosition + modifiedDiff ;
+
+            IdealRotateAngle = Vector3.Angle(Rigidbody.velocity, predictPositionModified - Rigidbody.position);
+            
+
+                //PredictionRigid.transform.position = predictPosition;
+                //Debug.Log(predictPosition);
+
+
             
 
 
@@ -188,6 +229,7 @@ namespace ModernAirCombat
             detectDelay = AddSlider("延时保险", "detection delay", 0.2f, 0.0f, 1f);
             launchDelay = AddSlider("延时点火", "launch delay", 0.1f, 0.0f, 0.3f);
             initScan();//挂载上导弹前方的圆锥触发器
+
             
             AimIcon = ModResource.GetTexture("Aim Icon").Texture;
         }
@@ -257,6 +299,8 @@ namespace ModernAirCombat
             {
                 if (!getlaunchRotation)
                 {
+                    myRigidbody.drag = 2f;
+                    myRigidbody.angularDrag = 4.0f;
                     launchRotation = transform.rotation;
                     getlaunchRotation = true;
                     //Debug.Log(launchRotation);
@@ -280,6 +324,11 @@ namespace ModernAirCombat
                         {
                             myTransform.rotation = Quaternion.Lerp(transform.rotation, launchRotation, 0.1f);
                         }
+                        else
+                        {
+                            Vector3 curUp = myTransform.up;
+                            myTransform.up = Vector3.Lerp(curUp, predictPositionModified - myTransform.position,0.01f);
+                        }
                     }
                     time += Time.fixedDeltaTime;
                 }
@@ -294,7 +343,7 @@ namespace ModernAirCombat
             {
                 if (myRigidbody.position.y > 20)
                 {
-                    myTransform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(-180, 0, 0), 0.001f);
+                    myTransform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(-180, 0, 0), 0.01f);
                 }
             }
         }
@@ -303,9 +352,15 @@ namespace ModernAirCombat
         {
             if (BlockBehaviour.isSimulating)
             {
+                //GUI.Box(new Rect(100, 100, 200, 50), myRigidbody.velocity.ToString());
                 if (targetDetected)
                 {
-                    Debug.Log(predictPosition);
+                    //GUI.Box(new Rect(100, 100, 100, 50), predictPosition.ToString());
+                    
+                    GUI.Box(new Rect(100, 150, 200, 50), myRigidbody.transform.up.ToString());
+                    GUI.Box(new Rect(100, 200, 200, 50), (predictPositionModified - myTransform.position).normalized.ToString());
+
+                    iconSize = 32;
                     GUI.color = Color.red;
                     Vector3 onScreenPosition = Camera.main.WorldToScreenPoint(predictPosition);
                     if (onScreenPosition.z >= 0)
