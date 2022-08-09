@@ -1,9 +1,9 @@
 ManifestFileVersion: 0
-CRC: 1149213916
+CRC: 543310839
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: 4782f2c762d1856d0fbd43f3f7d35dc3
+    Hash: c6dafd3f0cf1fa202a97b134c9819a4d
   TypeTreeHash:
     serializedVersion: 2
     Hash: 8e73928d58048341e9b2fe1dbcc1debf
@@ -24,5 +24,6 @@ ClassTypes:
 - Class: 199
   Script: {instanceID: 0}
 Assets:
-- Assets/MissleTrail.prefab
+- Assets/FrameObject.prefab
+- Assets/SmokeObject.prefab
 Dependencies: []

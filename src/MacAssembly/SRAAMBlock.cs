@@ -61,6 +61,7 @@ namespace ModernAirCombat
         public MToggle IFF;
         public MSlider detectAngleSlider;
         public MToggle showScanner;
+        public MKey showTrail;
         public MSlider detectDelay;
         public MSlider launchDelay;
         public enum status { stored, launched, missed, exploded };
@@ -74,7 +75,11 @@ namespace ModernAirCombat
         public Vector3 predictPositionModified;
         //public GameObject Prediction;
         //public Rigidbody PredictionRigid;
-        public GameObject Trail;
+        public GameObject FrameObject;
+        public GameObject SmokeObject;
+        public ModAssetBundle TrailSmokeAsset;
+        public ParticleSystem frameParticle;
+        public ParticleSystem smokePartical;
 
         private float estimatedTime;
         private Transform myTransform;      //实例化Transform对象
@@ -87,12 +92,12 @@ namespace ModernAirCombat
         private Mesh scannerMesh;
         private MeshRenderer scannerRenderer;
         private Texture AimIcon;
-        private AssetBundle TrailSmokeAsset;
+
         private int iconSize;
         private Color scannerColor;
         private Quaternion launchRotation;
         private bool getlaunchRotation = false;
-        private float IdealRotateAngle;
+
 
         public void AxisLookAt(Transform tr_self, Vector3 lookPos, Vector3 directionAxis)
         {
@@ -105,7 +110,7 @@ namespace ModernAirCombat
             //计算当前方向和目标方向的夹角
             var angle = Vector3.Angle(fromDir, targetDir);
             //将当前朝向向目标方向旋转一定角度，这个角度值可以做插值
-            tr_self.rotation = Quaternion.Lerp(rotation, Quaternion.AngleAxis(angle, axis) * rotation,0.05f);
+            tr_self.rotation = Quaternion.Lerp(rotation, Quaternion.AngleAxis(angle, axis) * rotation,0.1f);
             //tr_self.localEulerAngles = new Vector3(0, tr_self.localEulerAngles.y, 90);//后来调试增加的，因为我想让x，z轴向不会有任何变化
         }//from CSDN
 
@@ -160,17 +165,24 @@ namespace ModernAirCombat
 
         private void initTrail()
         {
-            TrailSmokeAsset = ModResource.GetAssetBundle("TrailSmoke").AssetBundle;
-            if (BlockBehaviour.transform.FindChild("Trail") == null)
-            {
-                Trail = new GameObject("Trail");
-                Trail = TrailSmokeAsset.LoadAsset<GameObject>("MissleTrail");
-                Trail.transform.SetParent(BlockBehaviour.transform);
-                Trail.transform.localPosition = new Vector3(0f, -2f, 0.3f);
-                Trail.transform.localRotation = Quaternion.Euler(0, 0, 0);
-                Trail.transform.localScale = Vector3.one;
-                Trail.SetActive(true);
-            }
+            TrailSmokeAsset = ModResource.GetAssetBundle("Trail");
+            GameObject SmokeObject_tmp = TrailSmokeAsset.LoadAsset<GameObject>("FrameObject");
+            GameObject FrameObject_tmp = TrailSmokeAsset.LoadAsset<GameObject>("SmokeObject");
+
+
+            SmokeObject = GameObject.Instantiate(SmokeObject_tmp);
+            FrameObject = GameObject.Instantiate(FrameObject_tmp);
+            SmokeObject.name = "SmokeObject";
+            FrameObject.name = "FrameObject";
+            SmokeObject.transform.SetParent(BlockBehaviour.transform);
+            FrameObject.transform.SetParent(BlockBehaviour.transform);
+            
+            SmokeObject.SetActive(true);
+            FrameObject.SetActive(true);
+            Debug.Log(SmokeObject.name);
+            Debug.Log(SmokeObject.activeSelf);
+            Debug.Log(FrameObject.name);
+            Debug.Log(FrameObject.activeSelf);
         }
 
 
@@ -238,7 +250,6 @@ namespace ModernAirCombat
             
             predictPositionModified = predictPosition + modifiedDiff ;
 
-            IdealRotateAngle = Vector3.Angle(Rigidbody.velocity, predictPositionModified - Rigidbody.position);
             
 
                 //PredictionRigid.transform.position = predictPosition;
@@ -254,6 +265,7 @@ namespace ModernAirCombat
         public override void SafeAwake()
         {
             Launch = AddKey("发射", "launch", KeyCode.X);
+            showTrail = AddKey("显示尾迹", "showTrail", KeyCode.T);
             IFF = AddToggle("开启友伤", "IFF", true);
             showScanner = AddToggle("显示探测范围", "showScanner", false);
             detectAngleSlider = AddSlider("探测角度", "detection angle", 90.0f, 60.0f, 120.0f);
@@ -262,7 +274,7 @@ namespace ModernAirCombat
             initScan();//挂载上导弹前方的圆锥触发器
             initTrail();
 
-            
+
             AimIcon = ModResource.GetTexture("Aim Icon").Texture;
         }
 
@@ -312,6 +324,18 @@ namespace ModernAirCombat
                 Debug.Log("missle launched");
                 //Debug.Log(detectRange);
             }
+
+            if (showTrail.IsHeld)
+            {
+                //smokePartical.Play();
+                frameParticle.Play();
+                Debug.Log("1");
+            }
+            else
+            {
+                //smokePartical.Stop();
+                //frameParticle.Stop();
+            }
         }
 
         public override void SimulateFixedUpdateHost()
@@ -340,7 +364,6 @@ namespace ModernAirCombat
 
                 if (time < 3.0f + launchDelay.Value)
                 {
-                    initTrail();
                     if (time > launchDelay.Value)
                     {
                         myRigidbody.AddRelativeForce(new Vector3(0, 3000, 0), ForceMode.Force);
