@@ -72,9 +72,9 @@ namespace ModernAirCombat
         public bool targetDetected = false;
         public Vector3 predictPosition;
         public Vector3 predictPositionModified;
-        public Vector3 predictPositionModifiedRestricted;
         //public GameObject Prediction;
         //public Rigidbody PredictionRigid;
+        public GameObject Trail;
 
         private float estimatedTime;
         private Transform myTransform;      //实例化Transform对象
@@ -87,11 +87,28 @@ namespace ModernAirCombat
         private Mesh scannerMesh;
         private MeshRenderer scannerRenderer;
         private Texture AimIcon;
+        private AssetBundle TrailSmokeAsset;
         private int iconSize;
         private Color scannerColor;
         private Quaternion launchRotation;
         private bool getlaunchRotation = false;
         private float IdealRotateAngle;
+
+        public void AxisLookAt(Transform tr_self, Vector3 lookPos, Vector3 directionAxis)
+        {
+            var rotation = tr_self.rotation;
+            var targetDir = lookPos - tr_self.position;
+            //指定哪根轴朝向目标,自行修改Vector3的方向
+            var fromDir = tr_self.rotation * directionAxis;
+            //计算垂直于当前方向和目标方向的轴
+            var axis = Vector3.Cross(fromDir, targetDir).normalized;
+            //计算当前方向和目标方向的夹角
+            var angle = Vector3.Angle(fromDir, targetDir);
+            //将当前朝向向目标方向旋转一定角度，这个角度值可以做插值
+            tr_self.rotation = Quaternion.Lerp(rotation, Quaternion.AngleAxis(angle, axis) * rotation,0.05f);
+            //tr_self.localEulerAngles = new Vector3(0, tr_self.localEulerAngles.y, 90);//后来调试增加的，因为我想让x，z轴向不会有任何变化
+        }//from CSDN
+
 
         public void initScan()
         {
@@ -141,6 +158,20 @@ namespace ModernAirCombat
             //}
         }
 
+        private void initTrail()
+        {
+            TrailSmokeAsset = ModResource.GetAssetBundle("TrailSmoke").AssetBundle;
+            if (BlockBehaviour.transform.FindChild("Trail") == null)
+            {
+                Trail = new GameObject("Trail");
+                Trail = TrailSmokeAsset.LoadAsset<GameObject>("MissleTrail");
+                Trail.transform.SetParent(BlockBehaviour.transform);
+                Trail.transform.localPosition = new Vector3(0f, -2f, 0.3f);
+                Trail.transform.localRotation = Quaternion.Euler(0, 0, 0);
+                Trail.transform.localScale = Vector3.one;
+                Trail.SetActive(true);
+            }
+        }
 
 
         private void GetAim()
@@ -229,6 +260,7 @@ namespace ModernAirCombat
             detectDelay = AddSlider("延时保险", "detection delay", 0.2f, 0.0f, 1f);
             launchDelay = AddSlider("延时点火", "launch delay", 0.1f, 0.0f, 0.3f);
             initScan();//挂载上导弹前方的圆锥触发器
+            initTrail();
 
             
             AimIcon = ModResource.GetTexture("Aim Icon").Texture;
@@ -299,7 +331,7 @@ namespace ModernAirCombat
             {
                 if (!getlaunchRotation)
                 {
-                    myRigidbody.drag = 2f;
+                    myRigidbody.drag = 3f;
                     myRigidbody.angularDrag = 4.0f;
                     launchRotation = transform.rotation;
                     getlaunchRotation = true;
@@ -308,9 +340,10 @@ namespace ModernAirCombat
 
                 if (time < 3.0f + launchDelay.Value)
                 {
+                    initTrail();
                     if (time > launchDelay.Value)
                     {
-                        myRigidbody.AddRelativeForce(new Vector3(0, 1500, 0), ForceMode.Force);
+                        myRigidbody.AddRelativeForce(new Vector3(0, 3000, 0), ForceMode.Force);
                     }
 
                     if (time < detectDelay.Value + launchDelay.Value)
@@ -326,8 +359,8 @@ namespace ModernAirCombat
                         }
                         else
                         {
-                            Vector3 curUp = myTransform.up;
-                            myTransform.up = Vector3.Lerp(curUp, predictPositionModified - myTransform.position,0.01f);
+                            //myTransform.up = Vector3.Lerp(myTransform.up, predictPositionModified - myTransform.position,0.01f);
+                            AxisLookAt(myTransform, predictPositionModified, Vector3.up);
                         }
                     }
                     time += Time.fixedDeltaTime;
@@ -340,6 +373,7 @@ namespace ModernAirCombat
                 }
             }
             if (myStatus == status.missed)
+                targetDetected = false;
             {
                 if (myRigidbody.position.y > 20)
                 {
@@ -357,8 +391,8 @@ namespace ModernAirCombat
                 {
                     //GUI.Box(new Rect(100, 100, 100, 50), predictPosition.ToString());
                     
-                    GUI.Box(new Rect(100, 150, 200, 50), myRigidbody.transform.up.ToString());
-                    GUI.Box(new Rect(100, 200, 200, 50), (predictPositionModified - myTransform.position).normalized.ToString());
+                    //GUI.Box(new Rect(100, 150, 200, 50), myRigidbody.transform.up.ToString());
+                    //GUI.Box(new Rect(100, 200, 200, 50), (predictPositionModified - myTransform.position).normalized.ToString());
 
                     iconSize = 32;
                     GUI.color = Color.red;
