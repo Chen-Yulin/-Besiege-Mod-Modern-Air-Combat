@@ -79,7 +79,7 @@ namespace ModernAirCombat
         public GameObject SmokeObject;
         public ModAssetBundle TrailSmokeAsset;
         public ParticleSystem frameParticle;
-        public ParticleSystem smokePartical;
+        public ParticleSystem smokeParticle;
 
         private float estimatedTime;
         private Transform myTransform;      //实例化Transform对象
@@ -170,12 +170,14 @@ namespace ModernAirCombat
             GameObject FrameObject_tmp = TrailSmokeAsset.LoadAsset<GameObject>("SmokeObject");
 
 
-            SmokeObject = GameObject.Instantiate(SmokeObject_tmp);
-            FrameObject = GameObject.Instantiate(FrameObject_tmp);
+            SmokeObject = Instantiate(SmokeObject_tmp);
+            FrameObject = Instantiate(FrameObject_tmp);
             SmokeObject.name = "SmokeObject";
             FrameObject.name = "FrameObject";
             SmokeObject.transform.SetParent(BlockBehaviour.transform);
             FrameObject.transform.SetParent(BlockBehaviour.transform);
+            smokeParticle = SmokeObject.GetComponent<ParticleSystem>();
+            frameParticle = FrameObject.GetComponent<ParticleSystem>();
             
             SmokeObject.SetActive(true);
             FrameObject.SetActive(true);
@@ -272,7 +274,7 @@ namespace ModernAirCombat
             detectDelay = AddSlider("延时保险", "detection delay", 0.2f, 0.0f, 1f);
             launchDelay = AddSlider("延时点火", "launch delay", 0.1f, 0.0f, 0.3f);
             initScan();//挂载上导弹前方的圆锥触发器
-            initTrail();
+            
 
 
             AimIcon = ModResource.GetTexture("Aim Icon").Texture;
@@ -301,7 +303,7 @@ namespace ModernAirCombat
             {
                 ScannerDisplay.SetActive(false);
             }
-
+            initTrail();
 
 
         }
@@ -327,9 +329,9 @@ namespace ModernAirCombat
 
             if (showTrail.IsHeld)
             {
-                //smokePartical.Play();
-                frameParticle.Play();
                 Debug.Log("1");
+                smokeParticle.Play();
+                frameParticle.Play();
             }
             else
             {
