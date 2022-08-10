@@ -127,9 +127,10 @@ A mod for simulate modern air combat in besiege. <!-- FIX: Insert a short descri
 		<Mesh name="Cone Scan" path="ConeScan.obj"/>
 		<Texture name="Aim Icon" path="AimIcon.png"/>
 		<Texture name="Aim Icon" path="AimIcon.png"/>
-		<AssetBundle name="Trail" path="trail.ab"/>
+		<AssetBundle name="Trail Effect" path="trail.ab"/>
 		<Texture name="Black Smoke Texture" path="ParticleCloudBlack.png"/>
 		<Texture name="White Smoke Texture" path="ParticleCloudWhite.png"/>
+		<AssetBundle name="Explo Effect" path="explo.ab"/>
 	</Resources>
 
 
