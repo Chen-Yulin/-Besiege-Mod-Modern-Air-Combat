@@ -111,7 +111,7 @@ namespace ModernAirCombat
             //计算当前方向和目标方向的夹角
             var angle = Vector3.Angle(fromDir, targetDir);
             //将当前朝向向目标方向旋转一定角度，这个角度值可以做插值
-            tr_self.rotation = Quaternion.Lerp(rotation, Quaternion.AngleAxis(angle, axis) * rotation,0.1f);
+            tr_self.rotation = Quaternion.Lerp(rotation, Quaternion.AngleAxis(angle, axis) * rotation,0.05f);
             //tr_self.localEulerAngles = new Vector3(0, tr_self.localEulerAngles.y, 90);//后来调试增加的，因为我想让x，z轴向不会有任何变化
         }//from CSDN
 
@@ -177,8 +177,8 @@ namespace ModernAirCombat
             FrameObject.name = "FrameObject";
             SmokeObject.transform.SetParent(BlockBehaviour.transform);
             FrameObject.transform.SetParent(BlockBehaviour.transform);
-            SmokeObject.transform.localPosition = new Vector3(0, -4f, 0.3f);
-            FrameObject.transform.localPosition = new Vector3(0, -4f, 0.3f);
+            SmokeObject.transform.localPosition = new Vector3(0, -2.7f, 0.3f);
+            FrameObject.transform.localPosition = new Vector3(0, -1f, 0.3f);
             //smokeParticle = SmokeObject.GetComponent<ParticleSystem>();
             //frameParticle = FrameObject.GetComponent<ParticleSystem>();
 
@@ -194,20 +194,20 @@ namespace ModernAirCombat
         {
             smokeParticle = transform.FindChild("SmokeObject").GetComponent<ParticleSystem>();
             Debug.Log(smokeParticle.name);
-            ParticleSystem.ShapeModule smokeSM = smokeParticle.shape;
-            smokeSM.shapeType = ParticleSystemShapeType.Cone;
-            smokeSM.radius = 0.5f;
-            smokeSM.angle = 5f;
-            smokeSM.enabled = true;
+            //ParticleSystem.ShapeModule smokeSM = smokeParticle.shape;
+            //smokeSM.shapeType = ParticleSystemShapeType.Cone;
+            //smokeSM.radius = 0.5f;
+            //smokeSM.angle = 30f;
+            //smokeSM.enabled = true;
 
             frameParticle = transform.FindChild("FrameObject").GetComponent<ParticleSystem>();
             Debug.Log(frameParticle.name);
-            ParticleSystem.ShapeModule frameSM = frameParticle.shape;
-            frameSM.shapeType = ParticleSystemShapeType.Cone;
-            frameSM.radius = 0.1f;
-            frameSM.angle = 3f;
-            frameSM.randomDirection = true;
-            frameSM.enabled = true;
+            //ParticleSystem.ShapeModule frameSM = frameParticle.shape;
+            //frameSM.shapeType = ParticleSystemShapeType.Cone;
+            //frameSM.radius = 0.1f;
+            //frameSM.angle = 3f;
+            //frameSM.randomDirection = true;
+            //frameSM.enabled = true;
             //ParticleSystemRenderer smokePSR = transform.FindChild("SmokeObject").FindChild("SmokeTrail").GetComponent<ParticleSystemRenderer>();
             //smokePSR.material.SetTexture("SmokeTexture",ModResource.GetTexture("Smoke Texture").Texture);
         }
@@ -264,9 +264,9 @@ namespace ModernAirCombat
             Vector3 modifiedDiff;
             if (positionDiff.magnitude < 200)
             {
-                modifiedDiff.x = (float)(2f * positionDiff.x);
-                modifiedDiff.y = (float)(2f * positionDiff.y);
-                modifiedDiff.z = (float)(2f * positionDiff.z);
+                modifiedDiff.x = (float)(1.5f * positionDiff.x);
+                modifiedDiff.y = (float)(1.5f * positionDiff.y);
+                modifiedDiff.z = (float)(1.5f * positionDiff.z);
             }
             else
             {
@@ -421,7 +421,7 @@ namespace ModernAirCombat
                     if (activeTrail == true)
                     {
                         smokeParticle.Stop();
-                        smokeParticle.Stop();
+                        frameParticle.Stop();
                         activeTrail = false;
                     }
                     myStatus = status.missed;
@@ -430,11 +430,12 @@ namespace ModernAirCombat
                 }
             }
             if (myStatus == status.missed)
+            { 
                 targetDetected = false;
-            {
+            
                 if (myRigidbody.position.y > 20)
                 {
-                    myTransform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(-180, 0, 0), 0.01f);
+                    myTransform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(-180, 0, 0), 0.005f);
                 }
             }
         }
