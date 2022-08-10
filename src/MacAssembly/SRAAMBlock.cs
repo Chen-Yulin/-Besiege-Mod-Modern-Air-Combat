@@ -97,6 +97,7 @@ namespace ModernAirCombat
         private Color scannerColor;
         private Quaternion launchRotation;
         private bool getlaunchRotation = false;
+        private bool activeTrail = false;
 
 
         public void AxisLookAt(Transform tr_self, Vector3 lookPos, Vector3 directionAxis)
@@ -166,8 +167,8 @@ namespace ModernAirCombat
         private void initTrail()
         {
             TrailSmokeAsset = ModResource.GetAssetBundle("Trail");
-            GameObject SmokeObject_tmp = TrailSmokeAsset.LoadAsset<GameObject>("FrameObject");
-            GameObject FrameObject_tmp = TrailSmokeAsset.LoadAsset<GameObject>("SmokeObject");
+            GameObject SmokeObject_tmp = TrailSmokeAsset.LoadAsset<GameObject>("SmokeTrail");
+            GameObject FrameObject_tmp = TrailSmokeAsset.LoadAsset<GameObject>("FrameTrail");
 
 
             SmokeObject = Instantiate(SmokeObject_tmp);
@@ -176,15 +177,39 @@ namespace ModernAirCombat
             FrameObject.name = "FrameObject";
             SmokeObject.transform.SetParent(BlockBehaviour.transform);
             FrameObject.transform.SetParent(BlockBehaviour.transform);
-            smokeParticle = SmokeObject.GetComponent<ParticleSystem>();
-            frameParticle = FrameObject.GetComponent<ParticleSystem>();
-            
+            SmokeObject.transform.localPosition = new Vector3(0, -4f, 0.3f);
+            FrameObject.transform.localPosition = new Vector3(0, -4f, 0.3f);
+            //smokeParticle = SmokeObject.GetComponent<ParticleSystem>();
+            //frameParticle = FrameObject.GetComponent<ParticleSystem>();
+
             SmokeObject.SetActive(true);
             FrameObject.SetActive(true);
-            Debug.Log(SmokeObject.name);
-            Debug.Log(SmokeObject.activeSelf);
-            Debug.Log(FrameObject.name);
-            Debug.Log(FrameObject.activeSelf);
+            //Debug.Log(SmokeObject.name);
+            //Debug.Log(SmokeObject.activeSelf);
+            //Debug.Log(FrameObject.name);
+            //Debug.Log(FrameObject.activeSelf);
+        }
+
+        private void initParticleSystem()
+        {
+            smokeParticle = transform.FindChild("SmokeObject").GetComponent<ParticleSystem>();
+            Debug.Log(smokeParticle.name);
+            ParticleSystem.ShapeModule smokeSM = smokeParticle.shape;
+            smokeSM.shapeType = ParticleSystemShapeType.Cone;
+            smokeSM.radius = 0.5f;
+            smokeSM.angle = 5f;
+            smokeSM.enabled = true;
+
+            frameParticle = transform.FindChild("FrameObject").GetComponent<ParticleSystem>();
+            Debug.Log(frameParticle.name);
+            ParticleSystem.ShapeModule frameSM = frameParticle.shape;
+            frameSM.shapeType = ParticleSystemShapeType.Cone;
+            frameSM.radius = 0.1f;
+            frameSM.angle = 3f;
+            frameSM.randomDirection = true;
+            frameSM.enabled = true;
+            //ParticleSystemRenderer smokePSR = transform.FindChild("SmokeObject").FindChild("SmokeTrail").GetComponent<ParticleSystemRenderer>();
+            //smokePSR.material.SetTexture("SmokeTexture",ModResource.GetTexture("Smoke Texture").Texture);
         }
 
 
@@ -274,7 +299,7 @@ namespace ModernAirCombat
             detectDelay = AddSlider("延时保险", "detection delay", 0.2f, 0.0f, 1f);
             launchDelay = AddSlider("延时点火", "launch delay", 0.1f, 0.0f, 0.3f);
             initScan();//挂载上导弹前方的圆锥触发器
-            
+            initTrail();
 
 
             AimIcon = ModResource.GetTexture("Aim Icon").Texture;
@@ -303,7 +328,7 @@ namespace ModernAirCombat
             {
                 ScannerDisplay.SetActive(false);
             }
-            initTrail();
+            initParticleSystem();
 
 
         }
@@ -320,25 +345,20 @@ namespace ModernAirCombat
 
         private void Update()
         {
-            if (Launch.IsHeld && myStatus == status.stored)
+            if (IsSimulating)
             {
-                myStatus = status.launched;
-                Debug.Log("missle launched");
-                //Debug.Log(detectRange);
-            }
+                if (Launch.IsHeld && myStatus == status.stored)
+                {
+                    myStatus = status.launched;
+                    Debug.Log("missle launched");
+                    //Debug.Log(detectRange);
+                }
 
-            if (showTrail.IsHeld)
-            {
-                Debug.Log("1");
-                smokeParticle.Play();
-                frameParticle.Play();
+
             }
-            else
-            {
-                //smokePartical.Stop();
-                //frameParticle.Stop();
-            }
+            
         }
+
 
         public override void SimulateFixedUpdateHost()
         {
@@ -368,6 +388,12 @@ namespace ModernAirCombat
                 {
                     if (time > launchDelay.Value)
                     {
+                        if(activeTrail == false)
+                        {
+                            smokeParticle.Play();
+                            frameParticle.Play();
+                            activeTrail = true;
+                        }
                         myRigidbody.AddRelativeForce(new Vector3(0, 3000, 0), ForceMode.Force);
                     }
 
@@ -392,6 +418,12 @@ namespace ModernAirCombat
                 }
                 else
                 {
+                    if (activeTrail == true)
+                    {
+                        smokeParticle.Stop();
+                        smokeParticle.Stop();
+                        activeTrail = false;
+                    }
                     myStatus = status.missed;
                     myRigidbody.drag = 0.1f;
                     myRigidbody.angularDrag = 1.0f;
