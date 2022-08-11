@@ -1,9 +1,9 @@
 ManifestFileVersion: 0
-CRC: 26926574
+CRC: 1298191880
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: a1ec242f4736ccdfb4e45463936087c0
+    Hash: c914a4cdbb344cf045e6887aea78d12b
   TypeTreeHash:
     serializedVersion: 2
     Hash: 8e73928d58048341e9b2fe1dbcc1debf
@@ -25,9 +25,7 @@ ClassTypes:
   Script: {instanceID: 0}
 Assets:
 - Assets/Explo/Fireball.prefab
-- Assets/Explo/TrailsBlack.prefab
 - Assets/Explo/Dust.prefab
-- Assets/Explo/Shockwave.prefab
 - Assets/Explo/SmokeBlack.prefab
 - Assets/Explo/Shower.prefab
 Dependencies: []

@@ -89,6 +89,7 @@ A mod for simulate modern air combat in besiege. <!-- FIX: Insert a short descri
 	<Blocks>
 		<!-- <Block path="SomeBlock.xml" /> -->
 		<Block path="SRAAM.xml" />
+		<Block path="Displayer.xml" />
 	</Blocks>
 	
 	<!-- Any entities (level objects) your mod adds to the game.
@@ -131,6 +132,14 @@ A mod for simulate modern air combat in besiege. <!-- FIX: Insert a short descri
 		<Texture name="Black Smoke Texture" path="ParticleCloudBlack.png"/>
 		<Texture name="White Smoke Texture" path="ParticleCloudWhite.png"/>
 		<AssetBundle name="Explo Effect" path="explo.ab"/>
+		<Mesh name="Displayer Mesh" path="Displayer\Displayer.obj"/>
+		<Texture name="Displayer Texture" path="Displayer\Displayer.png"/>
+		<Mesh name="Plane Mesh" path="Displayer\Plane.obj"/>
+		<Texture name="BaseGrid Texture" path="Displayer\BaseGrid.png"/>
+		<Texture name="ScanLine Texture" path="Displayer\ScanLine.png"/>
+		<Texture name="AngleIndicator Texture" path="Displayer\AngleIndicator.png"/>
+		<Texture name="Chooser Texture" path="Displayer\Chooser.png"/>
+
 	</Resources>
 
 

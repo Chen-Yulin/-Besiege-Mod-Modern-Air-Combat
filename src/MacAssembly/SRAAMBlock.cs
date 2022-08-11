@@ -55,21 +55,63 @@ namespace ModernAirCombat
 
     }
 
+    class PFCollisionHit : MonoBehaviour
+    {
+        public MPTeam team = MPTeam.None;
+        public bool IFF = true;
+        public ushort playerID = 0;
+        public bool explo = false;
+        
+        void Start()
+        {
+        }
+
+        void Update()
+        {
+        }
+
+        void OnTriggerEnter(Collider col)
+        {
+            MPTeam hitedTeam;
+            if (explo == true)
+                return;
+            if (col.isTrigger || col.transform.parent.GetInstanceID() == col.GetInstanceID())
+                return;
+            try
+            {
+                BlockBehaviour hitedBlock = col.attachedRigidbody.gameObject.GetComponent<BlockBehaviour>();
+                hitedTeam = hitedBlock.Team;
+            }
+            catch
+            {
+                return;
+            }
+            explo = true;
+            Debug.Log("Explo!!!");
+        }
+
+    }
+
+
+
     class SRAAMBlock : BlockScript
     {
         public MKey Launch;
         public MToggle IFF;
         public MSlider detectAngleSlider;
         public MToggle showScanner;
-        public MKey showTrail;
         public MSlider detectDelay;
         public MSlider launchDelay;
+        public MSlider PFRang;
         public enum status { stored, launched, missed, exploded };
         public status myStatus;
         public GameObject ScanCollider;
         public MeshCollider missleScan;
         public ConeCollisonHit coneHit;
         public GameObject ScannerDisplay;
+        public GameObject PFCollider;
+        public PFCollisionHit PFHit;
+        public SphereCollider misslePF;
         public bool targetDetected = false;
         public Vector3 predictPosition;
         public Vector3 predictPositionModified;
@@ -80,17 +122,16 @@ namespace ModernAirCombat
         public ParticleSystem TrailFlameParticle;
         public ParticleSystem TrailSmokeParticle;
         public GameObject ExploFireball;
-        public GameObject ExploTrailsBlack;
         public GameObject ExploDust;
-        public GameObject ExploShockwave;
         public GameObject ExploSmokeBlack;
         public GameObject ExploShower;
         public ParticleSystem ExploFireballParticle;
-        public ParticleSystem ExploTrailsBlackParticle;
         public ParticleSystem ExploDustParticle;
-        public ParticleSystem ExploShockwaveParticle;
         public ParticleSystem ExploSmokeBlackParticle;
         public ParticleSystem ExploShowerParticle;
+
+        public float ExploPower = 100000f;
+        public float ExploRadius = 20f;
 
 
 
@@ -170,6 +211,22 @@ namespace ModernAirCombat
             }
         }
 
+        public void initPF()
+        {
+            if (BlockBehaviour.transform.FindChild("PFCol") == null)
+            {
+                PFCollider = new GameObject("PFCol");
+                PFCollider.transform.SetParent(BlockBehaviour.transform);
+                PFCollider.transform.localPosition = new Vector3(0f, 1f, 0.3f);
+                PFCollider.transform.localRotation = Quaternion.Euler(0, 0, 0);
+                PFCollider.transform.localScale = Vector3.one;
+                misslePF = PFCollider.AddComponent<SphereCollider>();
+                misslePF.isTrigger = true;
+                PFCollider.SetActive(false);
+                PFHit = PFCollider.AddComponent<PFCollisionHit>();
+            }
+        }
+
         private void initTrail()
         {
             TrailSmoke = Instantiate(AssetManager.Instance.Trail.SmokeTrail);
@@ -190,16 +247,12 @@ namespace ModernAirCombat
         private void initExplo()
         {
             ExploFireball = Instantiate(AssetManager.Instance.Explo.ExploFireball);
-            ExploTrailsBlack = Instantiate(AssetManager.Instance.Explo.ExploTrailsBlack);
             ExploDust = Instantiate(AssetManager.Instance.Explo.ExploDust);
-            ExploShockwave = Instantiate(AssetManager.Instance.Explo.ExploShockwave);
             ExploSmokeBlack = Instantiate(AssetManager.Instance.Explo.ExploSmokeBlack);
             ExploShower = Instantiate(AssetManager.Instance.Explo.ExploShower);
 
             ExploFireball.transform.SetParent(BlockBehaviour.transform);
-            ExploTrailsBlack.transform.SetParent(BlockBehaviour.transform);
             ExploDust.transform.SetParent(BlockBehaviour.transform);
-            ExploShockwave.transform.SetParent(BlockBehaviour.transform);
             ExploSmokeBlack.transform.SetParent(BlockBehaviour.transform);
             ExploShower.transform.SetParent(BlockBehaviour.transform);
 
@@ -207,17 +260,9 @@ namespace ModernAirCombat
             ExploFireball.transform.localRotation = Quaternion.Euler(90, 0, 0);
             ExploFireball.transform.localScale = Vector3.one;
 
-            ExploTrailsBlack.transform.localPosition = new Vector3(0, -4f, 0.3f);
-            ExploTrailsBlack.transform.localRotation = Quaternion.Euler(90, 0, 0);
-            ExploTrailsBlack.transform.localScale = Vector3.one;
-
             ExploDust.transform.localPosition = new Vector3(0, -4f, 0.3f);
             ExploDust.transform.localRotation = Quaternion.Euler(90, 0, 0);
             ExploDust.transform.localScale = Vector3.one;
-
-            ExploShockwave.transform.localPosition = new Vector3(0, -4f, 0.3f);
-            ExploShockwave.transform.localRotation = Quaternion.Euler(90, 0, 0);
-            ExploShockwave.transform.localScale = Vector3.one;
 
             ExploSmokeBlack.transform.localPosition = new Vector3(0, -4f, 0.3f);
             ExploSmokeBlack.transform.localRotation = Quaternion.Euler(90, 0, 0);
@@ -228,9 +273,7 @@ namespace ModernAirCombat
             ExploShower.transform.localScale = Vector3.one;
 
             ExploFireball.SetActive(false);
-            ExploTrailsBlack.SetActive(false);
             ExploDust.SetActive(false);
-            ExploShockwave.SetActive(false);
             ExploSmokeBlack.SetActive(false);
             ExploShower.SetActive(false);
         }
@@ -240,27 +283,33 @@ namespace ModernAirCombat
             TrailSmokeParticle = TrailSmoke.GetComponent<ParticleSystem>();
             TrailFlameParticle = TrailFlame.GetComponent<ParticleSystem>();
             ExploFireballParticle = ExploFireball.GetComponent<ParticleSystem>();
-            ExploTrailsBlackParticle = ExploTrailsBlack.GetComponent<ParticleSystem>();
             ExploDustParticle = ExploDust.GetComponent<ParticleSystem>();
-            ExploShockwaveParticle = ExploShockwave.GetComponent<ParticleSystem>();
             ExploSmokeBlackParticle = ExploSmokeBlack.GetComponent<ParticleSystem>();
             ExploShowerParticle = ExploShower.GetComponent<ParticleSystem>();
         }
 
         private void playExplo()
         {
+
+            myRigidbody.constraints = RigidbodyConstraints.FreezePosition | RigidbodyConstraints.FreezeRotation;
+            TrailSmokeParticle.Stop();
+            TrailFlameParticle.Stop();
             ExploFireball.SetActive(true);
-            ExploTrailsBlack.SetActive(true);
             ExploDust.SetActive(true);
-            ExploShockwave.SetActive(true);
             ExploSmokeBlack.SetActive(true);
             ExploShower.SetActive(true);
-            ExploFireballParticle.Play();
-            ExploTrailsBlackParticle.Play();
-            ExploDustParticle.Play();
-            ExploShockwaveParticle.Play();
-            ExploSmokeBlackParticle.Play();
-            ExploShowerParticle.Play();
+            BlockBehaviour.MeshRenderer.enabled = false;
+            myStatus = status.exploded;
+
+            Collider[] ExploCol = Physics.OverlapSphere(transform.position, ExploRadius);
+            foreach (Collider hits in ExploCol)
+            {
+                if (hits.GetComponent<Rigidbody>())
+                {
+                    hits.GetComponent<Rigidbody>().AddExplosionForce(ExploPower, transform.position, ExploRadius);
+                }
+            }
+            
         }
 
 
@@ -343,16 +392,17 @@ namespace ModernAirCombat
         public override void SafeAwake()
         {
             Launch = AddKey("发射", "launch", KeyCode.X);
-            showTrail = AddKey("显示尾迹", "showTrail", KeyCode.T);
             IFF = AddToggle("开启友伤", "IFF", true);
             showScanner = AddToggle("显示探测范围", "showScanner", false);
             detectAngleSlider = AddSlider("探测角度", "detection angle", 90.0f, 60.0f, 120.0f);
             detectDelay = AddSlider("延时保险", "detection delay", 0.2f, 0.0f, 1f);
             launchDelay = AddSlider("延时点火", "launch delay", 0.1f, 0.0f, 0.3f);
+            PFRang = AddSlider("近炸范围", "PF range", 5f, 1f, 10f);
 
             initScan();//挂载上导弹前方的圆锥触发器
             initTrail();
             initExplo();
+            initPF();
 
             AimIcon = ModResource.GetTexture("Aim Icon").Texture;
         }
@@ -385,6 +435,8 @@ namespace ModernAirCombat
             }
             
             initParticleSystem();
+
+            misslePF.radius = PFRang.Value;
 
 
         }
@@ -452,6 +504,7 @@ namespace ModernAirCombat
                             TrailFlameParticle.Play();
                             activeTrail = true;
                         }
+
                         myRigidbody.AddRelativeForce(new Vector3(0, 3000, 0), ForceMode.Force);
                     }
 
@@ -461,6 +514,14 @@ namespace ModernAirCombat
                     }
                     else
                     {
+                        if (!PFCollider.activeSelf)
+                        {
+                            PFCollider.SetActive(true);
+                        }
+                        if (PFHit.explo == true)
+                        {
+                            playExplo();
+                        }
                         GetAim();
                         if (!targetDetected)
                         {
@@ -481,7 +542,6 @@ namespace ModernAirCombat
                         TrailSmokeParticle.Stop();
                         TrailFlameParticle.Stop();
                         activeTrail = false;
-                        playExplo();
                     }
                     myStatus = status.missed;
                     myRigidbody.drag = 0.1f;
@@ -495,6 +555,19 @@ namespace ModernAirCombat
                 if (myRigidbody.position.y > 20)
                 {
                     myTransform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(-180, 0, 0), 0.005f);
+                }
+            }
+            if(myStatus == status.missed || myStatus == status.exploded)
+            {
+                Destroy(TrailSmoke, 3);
+                Destroy(TrailFlame, 3);
+                Destroy(ExploFireball, 3);
+                Destroy(ExploDust, 3);
+                Destroy(ExploShower, 3);
+                Destroy(ExploSmokeBlack, 3);
+                if (myStatus == status.exploded)
+                {
+                    Destroy(BlockBehaviour.gameObject, 3);
                 }
             }
         }

@@ -28,30 +28,22 @@ namespace ModernAirCombat
     public class Asset_Explo
     {
         public GameObject ExploFireball;
-        public GameObject ExploTrailsBlack;
         public GameObject ExploDust;
-        public GameObject ExploShockwave;
         public GameObject ExploSmokeBlack;
         public GameObject ExploShower;
 
         public Asset_Explo(ModAssetBundle modAssetBundle)
         {
             ExploFireball = modAssetBundle.LoadAsset<GameObject>("Fireball");
-            ExploTrailsBlack = modAssetBundle.LoadAsset<GameObject>("TrailsBlack");
             ExploDust = modAssetBundle.LoadAsset<GameObject>("Dust");
-            ExploShockwave = modAssetBundle.LoadAsset<GameObject>("Shockwave");
             ExploSmokeBlack = modAssetBundle.LoadAsset<GameObject>("SmokeBlack");
             ExploShower = modAssetBundle.LoadAsset<GameObject>("Shower");
             ExploFireball.AddComponent<DestroyIfEditMode>();
-            ExploTrailsBlack.AddComponent<DestroyIfEditMode>();
             ExploDust.AddComponent<DestroyIfEditMode>();
-            ExploShockwave.AddComponent<DestroyIfEditMode>();
             ExploSmokeBlack.AddComponent<DestroyIfEditMode>();
             ExploShower.AddComponent<DestroyIfEditMode>();
             ExploFireball.SetActive(false);
-            ExploTrailsBlack.SetActive(false);
             ExploDust.SetActive(false);
-            ExploShockwave.SetActive(false);
             ExploSmokeBlack.SetActive(false);
             ExploShower.SetActive(false);
             

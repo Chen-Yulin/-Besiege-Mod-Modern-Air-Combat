@@ -1,9 +1,9 @@
 ManifestFileVersion: 0
-CRC: 1292021827
+CRC: 3119186852
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: eb12408ee36125682c87c299f8d1d235
+    Hash: f3dde9474a4d547a9d64407175ae31ee
   TypeTreeHash:
     serializedVersion: 2
     Hash: 8e73928d58048341e9b2fe1dbcc1debf
@@ -24,6 +24,6 @@ ClassTypes:
 - Class: 199
   Script: {instanceID: 0}
 Assets:
-- Assets/FrameTrail.prefab
-- Assets/SmokeTrail.prefab
+- Assets/Trail/FrameTrail.prefab
+- Assets/Trail/SmokeTrail.prefab
 Dependencies: []
