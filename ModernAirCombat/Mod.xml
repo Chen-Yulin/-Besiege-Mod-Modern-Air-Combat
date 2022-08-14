@@ -90,6 +90,7 @@ A mod for simulate modern air combat in besiege. <!-- FIX: Insert a short descri
 		<!-- <Block path="SomeBlock.xml" /> -->
 		<Block path="SRAAM.xml" />
 		<Block path="Displayer.xml" />
+		<Block path="Radar.xml" />
 	</Blocks>
 	
 	<!-- Any entities (level objects) your mod adds to the game.
@@ -127,7 +128,6 @@ A mod for simulate modern air combat in besiege. <!-- FIX: Insert a short descri
 		<Texture name="SRAAM Texture" path="SRAAM\r73.png"/>
 		<Mesh name="Cone Scan" path="ConeScan.obj"/>
 		<Texture name="Aim Icon" path="AimIcon.png"/>
-		<Texture name="Aim Icon" path="AimIcon.png"/>
 		<AssetBundle name="Trail Effect" path="trail.ab"/>
 		<Texture name="Black Smoke Texture" path="ParticleCloudBlack.png"/>
 		<Texture name="White Smoke Texture" path="ParticleCloudWhite.png"/>
@@ -139,6 +139,9 @@ A mod for simulate modern air combat in besiege. <!-- FIX: Insert a short descri
 		<Texture name="ScanLine Texture" path="Displayer\ScanLine.png"/>
 		<Texture name="AngleIndicator Texture" path="Displayer\AngleIndicator.png"/>
 		<Texture name="Chooser Texture" path="Displayer\Chooser.png"/>
+		<Mesh name="Radar Mesh" path="Radar\Radar.obj"/>
+		<Texture name="Radar Texture" path="Radar\Radar.png"/>
+		<Mesh name="RadarScan Mesh" path="Radar\RadarScan.obj"/>
 
 	</Resources>
 

@@ -13,7 +13,7 @@ using UnityEngine;
 
 namespace ModernAirCombat
 {
-    class ConeCollisonHit : MonoBehaviour
+    public class ScanCollisonHit : MonoBehaviour
     {
         public MPTeam team = MPTeam.None;
         public bool IFF = true;
@@ -107,7 +107,7 @@ namespace ModernAirCombat
         public status myStatus;
         public GameObject ScanCollider;
         public MeshCollider missleScan;
-        public ConeCollisonHit coneHit;
+        public ScanCollisonHit coneHit;
         public GameObject ScannerDisplay;
         public GameObject PFCollider;
         public PFCollisionHit PFHit;
@@ -152,6 +152,8 @@ namespace ModernAirCombat
         private Quaternion launchRotation;
         private bool getlaunchRotation = false;
         private bool activeTrail = false;
+        private bool effectDestroyed = false;
+        private bool gameObjectDestroyed = false;
 
 
         public void AxisLookAt(Transform tr_self, Vector3 lookPos, Vector3 directionAxis)
@@ -185,7 +187,7 @@ namespace ModernAirCombat
                 missleScan.sharedMesh = scannerMesh;
                 missleScan.convex = true;
                 missleScan.isTrigger = true;
-                coneHit = ScanCollider.AddComponent<ConeCollisonHit>();
+                coneHit = ScanCollider.AddComponent<ScanCollisonHit>();
 
                 ScanCollider.SetActive(false);
                 coneHit.Reset();
@@ -559,15 +561,21 @@ namespace ModernAirCombat
             }
             if(myStatus == status.missed || myStatus == status.exploded)
             {
-                Destroy(TrailSmoke, 3);
-                Destroy(TrailFlame, 3);
-                Destroy(ExploFireball, 3);
-                Destroy(ExploDust, 3);
-                Destroy(ExploShower, 3);
-                Destroy(ExploSmokeBlack, 3);
-                if (myStatus == status.exploded)
+                if (!effectDestroyed)
                 {
-                    Destroy(BlockBehaviour.gameObject, 3);
+                    Destroy(TrailSmoke, 3);
+                    Destroy(TrailFlame, 3);
+                    Destroy(ExploFireball, 3);
+                    Destroy(ExploDust, 3);
+                    Destroy(ExploShower, 3);
+                    Destroy(ExploSmokeBlack, 3);
+                    effectDestroyed = true;
+                }
+                
+                if (myStatus == status.exploded && !gameObjectDestroyed)
+                {
+                    Destroy(BlockBehaviour.gameObject, 3.2f);
+                    gameObjectDestroyed = true;
                 }
             }
         }

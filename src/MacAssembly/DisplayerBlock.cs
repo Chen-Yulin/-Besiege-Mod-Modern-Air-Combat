@@ -13,6 +13,9 @@ using UnityEngine;
 
 namespace ModernAirCombat
 {
+
+
+
     public class ScanLineController : MonoBehaviour
     {
         public float frequency = 1;
@@ -57,6 +60,8 @@ namespace ModernAirCombat
         public MKey ChooserDown;
         public MKey ChooserLeft;
         public MKey ChooserRight;
+        public MKey scanUp;
+        public MKey scanDown;
 
         public GameObject BaseGrid;
         public ScanLineController SLController;
@@ -64,6 +69,9 @@ namespace ModernAirCombat
         public GameObject LeftAngleIndicator;
         public GameObject RightAngleIndicator;
         public GameObject Chooser;
+        public GameObject Mode;
+        public float radarPitch = 0;
+        
 
 
 
@@ -77,6 +85,7 @@ namespace ModernAirCombat
         private MeshRenderer RightAngleIndicatorRenderer;
         private MeshFilter ChooserMeshFilter;
         private MeshRenderer ChooserRenderer;
+        private TextMesh ModeTextMesh;
         private float leftScanAngle = -60f;
         private float rightScanAngle = 60f;
         private float middleScanAngle = 0f;
@@ -88,6 +97,10 @@ namespace ModernAirCombat
         private bool downChooser = false;
         private bool leftChooser = false;
         private bool rightChooser = false;
+        private bool downScan = false;
+        private bool upScan = false;
+        private string mode = "TWS";
+        
 
 
         public void InitGrid()
@@ -171,24 +184,57 @@ namespace ModernAirCombat
                 ChooserRenderer.material.SetColor("_TintColor", Color.yellow);
                 Chooser.SetActive(false);
             }
-
+            
         }
+
+        public void InitMode(string mode)
+        {
+            if (!transform.FindChild("Mode"))
+            {
+                Mode = new GameObject("Mode");
+                Mode.transform.SetParent(transform);
+                Mode.transform.localPosition = new Vector3(-0.08f, 0.09f, 0.095f);
+                Mode.transform.localRotation = Quaternion.Euler(0, 180, 180);
+                Mode.transform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
+                ModeTextMesh = Mode.AddComponent<TextMesh>();
+                ModeTextMesh.text = mode;
+                ModeTextMesh.characterSize = 0.25f;
+                ModeTextMesh.fontSize = 64;
+                ModeTextMesh.anchor = TextAnchor.MiddleCenter;
+                ModeTextMesh.color = Color.green;
+                Mode.SetActive(false);
+            }
+            
+        }
+
+        
 
         public override void SafeAwake()
         {
+            
             EnlargeScanAngle = AddKey("扩大搜索角", "EnlargeScanAngle", KeyCode.T);
             ReduceScanAngle = AddKey("缩小搜索角", "ReduceScanAngle", KeyCode.U);
             ChooserUp = AddKey("上移选取器", "ChooserUp", KeyCode.Y);
             ChooserDown = AddKey("下移选取器", "ChooserDown", KeyCode.H);
             ChooserLeft = AddKey("左移选取器", "ChooserLeft", KeyCode.G);
             ChooserRight = AddKey("右移选取器", "ChooserRight", KeyCode.J);
+            scanUp = AddKey("雷达向上", "scan up", KeyCode.I);
+            scanDown = AddKey("雷达向下", "scan down", KeyCode.K);
             InitGrid();
             InitPanel();
+            InitMode(mode);
+            
         }
 
         public void Start()
         {
-            
+            if (IsSimulating)
+            {
+                if (!transform.parent.FindChild("Displayer"))
+                {
+                    name = "Displayer";
+                }
+            }
             
         }
 
@@ -199,66 +245,94 @@ namespace ModernAirCombat
             LeftAngleIndicator.SetActive(true);
             RightAngleIndicator.SetActive(true);
             Chooser.SetActive(true);
+            Mode.SetActive(true);
         }
 
         private void Update()
         {
-            //set the position of scanLine
-            ScanLine.transform.localPosition = new Vector3(SLController.currAngle*0.00175f, 0, 0.095f);
-            //set the position of chooser
-            Chooser.transform.localPosition = new Vector3(ChooserPosition.x * 0.00175f, -ChooserPosition.y * 0.00175f, 0.095f);
-            //set the position of left&right angleIndicator
-            LeftAngleIndicator.transform.localPosition = new Vector3(leftScanAngle * 0.00175f, 0, 0.095f);
-            RightAngleIndicator.transform.localPosition = new Vector3(rightScanAngle * 0.00175f, 0, 0.095f);
-            //modify ScanLineController
-            SLController.angleLeft = leftScanAngle;
-            SLController.angleRight = rightScanAngle;
+            try
+            {
+                //set the position of scanLine
+                ScanLine.transform.localPosition = new Vector3(SLController.currAngle * 0.00175f, 0, 0.095f);
+                //set the position of chooser
+                Chooser.transform.localPosition = new Vector3(ChooserPosition.x * 0.00175f, -ChooserPosition.y * 0.00175f, 0.095f);
+                //set the position of left&right angleIndicator
+                LeftAngleIndicator.transform.localPosition = new Vector3(leftScanAngle * 0.00175f, 0, 0.095f);
+                RightAngleIndicator.transform.localPosition = new Vector3(rightScanAngle * 0.00175f, 0, 0.095f);
+                //modify ScanLineController
+                SLController.angleLeft = leftScanAngle;
+                SLController.angleRight = rightScanAngle;
 
-            //judge whether the key for adjusting Scan angle is pressed
-            if (EnlargeScanAngle.IsPressed)
-            {
-                biggerAngle = true;
-            }else if (EnlargeScanAngle.IsReleased)
-            {
-                biggerAngle = false;
-            }
-            if (ReduceScanAngle.IsPressed)
-            {
-                smallerAngle = true;
-            }else if (ReduceScanAngle.IsReleased)
-            {
-                smallerAngle = false;
-            }
+                //judge whether the key for adjusting Scan angle is pressed
+                if (EnlargeScanAngle.IsPressed)
+                {
+                    biggerAngle = true;
+                }
+                else if (EnlargeScanAngle.IsReleased)
+                {
+                    biggerAngle = false;
+                }
+                if (ReduceScanAngle.IsPressed)
+                {
+                    smallerAngle = true;
+                }
+                else if (ReduceScanAngle.IsReleased)
+                {
+                    smallerAngle = false;
+                }
 
-            //judge wether the key for adjusting chooser is pressed
-            if (ChooserUp.IsPressed)
-            {
-                upChooser = true;
-            }else if (ChooserUp.IsReleased)
-            {
-                upChooser = false;
+                //judge wether the key for adjusting chooser is pressed
+                if (ChooserUp.IsPressed)
+                {
+                    upChooser = true;
+                }
+                else if (ChooserUp.IsReleased)
+                {
+                    upChooser = false;
+                }
+                if (ChooserDown.IsPressed)
+                {
+                    downChooser = true;
+                }
+                else if (ChooserDown.IsReleased)
+                {
+                    downChooser = false;
+                }
+                if (ChooserLeft.IsPressed)
+                {
+                    leftChooser = true;
+                }
+                else if (ChooserLeft.IsReleased)
+                {
+                    leftChooser = false;
+                }
+                if (ChooserRight.IsPressed)
+                {
+                    rightChooser = true;
+                }
+                else if (ChooserRight.IsReleased)
+                {
+                    rightChooser = false;
+                }
+
+                //judage wether the key for aadjusting pitch of radar is pressed
+                if (scanUp.IsPressed)
+                {
+                    upScan = true;
+                }else if (scanUp.IsReleased)
+                {
+                    upScan = false;
+                }
+                if (scanDown.IsPressed)
+                {
+                    downScan = true;
+                }else if (scanDown.IsReleased)
+                {
+                    downScan = false;
+                }
             }
-            if (ChooserDown.IsPressed)
-            {
-                downChooser = true;
-            }else if (ChooserDown.IsReleased)
-            {
-                downChooser = false;
-            }
-            if (ChooserLeft.IsPressed)
-            {
-                leftChooser = true;
-            }else if (ChooserLeft.IsReleased)
-            {
-                leftChooser = false;
-            }
-            if (ChooserRight.IsPressed)
-            {
-                rightChooser = true;
-            }else if (ChooserRight.IsReleased)
-            {
-                rightChooser = false;
-            }
+            catch { }
+            
             
 
         }
@@ -291,6 +365,15 @@ namespace ModernAirCombat
             {
                 deltaScanAngle -= 0.4f;
             }
+            //adjust the pitch of radar according to key
+            if (upScan && radarPitch < 35)
+            {
+                radarPitch += 0.4f;
+            }else if(downScan && radarPitch > -35)
+            {
+                radarPitch -= 0.4f;
+            }
+
             leftScanAngle = Math.Max(-60f, middleScanAngle - deltaScanAngle);
             rightScanAngle = Math.Min(60f, middleScanAngle + deltaScanAngle);
 
