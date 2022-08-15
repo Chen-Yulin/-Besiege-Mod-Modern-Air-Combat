@@ -489,7 +489,7 @@ namespace ModernAirCombat
             {
                 if (!getlaunchRotation)
                 {
-                    myRigidbody.drag = 3f;
+                    
                     myRigidbody.angularDrag = 4.0f;
                     launchRotation = transform.rotation;
                     getlaunchRotation = true;
@@ -502,6 +502,7 @@ namespace ModernAirCombat
                     {
                         if(activeTrail == false)
                         {
+                            myRigidbody.drag = 3f;
                             TrailSmokeParticle.Play();
                             TrailFlameParticle.Play();
                             activeTrail = true;

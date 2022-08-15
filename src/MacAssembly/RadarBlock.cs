@@ -13,6 +13,7 @@ using UnityEngine;
 
 namespace ModernAirCombat
 {
+    
     public class Target
     {
         public bool hasObject;
@@ -20,6 +21,7 @@ namespace ModernAirCombat
         public Vector3 position;
         public Vector3 velocity;
         public float closingRate;
+        public float distance;
         //public float displayAngle;
 
         public Target()
@@ -32,7 +34,7 @@ namespace ModernAirCombat
             hasObject = true;
             position = col.gameObject.transform.position;
             velocity = col.attachedRigidbody.velocity;
-
+            distance = Vector3.Distance(radar.transform.position, position);
             //calculating the closingRate
             Vector3 myVelocity = radar.GetComponent<Rigidbody>().velocity;
             Vector3 relativeVelocity = velocity - myVelocity;
@@ -65,11 +67,11 @@ namespace ModernAirCombat
 
     public class targetManager : MonoBehaviour
     {
-        public Target[] targets = new Target[51];
+        public Target[] targets = new Target[101];
 
         public targetManager()
         {
-            for (int i = 0; i < 51; i++)
+            for (int i = 0; i < 101; i++)
             {
                 
                 targets[i] = new Target();
@@ -80,7 +82,7 @@ namespace ModernAirCombat
         public void AddTarget(int currRegion, Collider col, BlockBehaviour radar)
         {
             targets[currRegion] = new Target(col, radar);
-            Debug.Log(currRegion.ToString() + " add a target");
+            //Debug.Log(currRegion.ToString() + " add a target");
         }
 
         public void RemoveTarget(int currRegion)
@@ -89,7 +91,7 @@ namespace ModernAirCombat
             if (targets[currRegion].hasObject)
             {
                 targets[currRegion].hasObject = false;
-                Debug.Log(currRegion.ToString() + " remove a target");
+                //Debug.Log(currRegion.ToString() + " remove a target");
             }
         }
     }
@@ -110,13 +112,22 @@ namespace ModernAirCombat
         public GameObject buildAdvice;
         public GameObject RadarBase;
         public ScanCollisonHit radarHit;
+        public GameObject RadarHead;
+        public MeshFilter RadarHeadMF;
+        public MeshRenderer RadarHeadMR;
+
 
 
 
         private Mesh scannerMesh;
+        private Mesh radarHeadMesh;
+        private Texture radarHeadTexture;
         
         private Color displayColor;
         private TextMesh adviceTextMesh;
+
+        private int playerID;
+        private Transform myTransform;
 
         public void InitAdvice()
         {
@@ -139,55 +150,73 @@ namespace ModernAirCombat
         }
         private void InitScan()
         {
-            if (transform.parent.transform.FindChild("Radar Base") == null)
+            if (transform.FindChild("Radar Base") == null)
             {
                 scannerMesh = ModResource.GetMesh("RadarScan Mesh").Mesh;
-
                 RadarBase = new GameObject("Radar Base");
-                RadarBase.transform.SetParent(transform.parent.transform);
-                RadarBase.transform.position = transform.position;
-                RadarBase.transform.rotation = transform.rotation;
+                RadarBase.transform.SetParent(transform);
+                RadarBase.transform.localPosition = new Vector3(0, 0, 0.5f);
+                //RadarBase.transform.rotation = Quaternion.Euler(180f, 0f, 0f);
                 RadarBase.transform.localScale = new Vector3(1, 1, 1);
+            }
 
+
+            if (RadarBase.transform.FindChild("RadarScanCol") == null)
+            {
                 ScanCollider = new GameObject("RadarScanCol");
                 ScanCollider.transform.SetParent(RadarBase.transform);
                 ScanCollider.transform.localPosition = new Vector3(0f, 0f, 0f);
                 ScanCollider.transform.localRotation = Quaternion.Euler(270f, 0f, 0f);
-                ScanCollider.transform.localScale = new Vector3(5000, 5000, 5000);
-
+                ScanCollider.transform.localScale = new Vector3(3000, 3000, 3000);
                 radarScan = ScanCollider.AddComponent<MeshCollider>();
                 radarScan.sharedMesh = scannerMesh;
                 radarScan.convex = true;
                 radarScan.isTrigger = true;
                 radarHit = ScanCollider.AddComponent<ScanCollisonHit>();
-
-                if (ScanCollider.transform.FindChild("RadarScanDisplay") == null)
-                {
-                    RadarScanDisplayer = new GameObject("RadarScanDisplay");
-                    RadarScanDisplayer.transform.SetParent(ScanCollider.transform);
-                    RadarScanDisplayer.transform.localPosition = new Vector3(0f, 0f, 0f);
-                    RadarScanDisplayer.transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
-                    RadarScanDisplayer.transform.localScale = Vector3.one;
-                    radarMF = RadarScanDisplayer.AddComponent<MeshFilter>();
-                    radarMF.sharedMesh = scannerMesh;
-                    radarMR = RadarScanDisplayer.AddComponent<MeshRenderer>();
-                    radarMR.material = new Material(Shader.Find("Particles/Alpha Blended"));
-                    displayColor = Color.green;
-                    displayColor.a = 0.05f;
-                    radarMR.material.SetColor("_TintColor", displayColor);
-
-                    RadarScanDisplayer.SetActive(true);
-                }
-
-                ScanCollider.SetActive(false);
                 radarHit.Reset();
             }
+
+            if (ScanCollider.transform.FindChild("RadarScanDisplay") == null)
+            {
+                RadarScanDisplayer = new GameObject("RadarScanDisplay");
+                RadarScanDisplayer.transform.SetParent(ScanCollider.transform);
+                RadarScanDisplayer.transform.localPosition = new Vector3(0f, 0f, 0f);
+                RadarScanDisplayer.transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
+                RadarScanDisplayer.transform.localScale = Vector3.one;
+                radarMF = RadarScanDisplayer.AddComponent<MeshFilter>();
+                radarMF.sharedMesh = scannerMesh;
+                radarMR = RadarScanDisplayer.AddComponent<MeshRenderer>();
+                radarMR.material = new Material(Shader.Find("Particles/Alpha Blended"));
+                displayColor = Color.green;
+                displayColor.a = 0.05f;
+                radarMR.material.SetColor("_TintColor", displayColor);
+                RadarScanDisplayer.SetActive(true);
+            }
+
+
+            if (ScanCollider.transform.FindChild("RadarHead") == null)
+            {
+                radarHeadMesh = ModResource.GetMesh("RadarHead Mesh").Mesh;
+                radarHeadTexture = ModResource.GetTexture("RadarHead Texture").Texture;
+
+                RadarHead = new GameObject("RadarHead");
+                RadarHead.transform.SetParent(ScanCollider.transform);
+                RadarHead.transform.localPosition = new Vector3(0f, 0f, 0f);
+                RadarHead.transform.localRotation = Quaternion.Euler(270f, 0f, 0f);
+                RadarHead.transform.localScale = new Vector3(0.00011f, 0.00011f, 0.00011f);
+                radarMF = RadarHead.AddComponent<MeshFilter>();
+                radarMF.sharedMesh = radarHeadMesh;
+                radarMR = RadarHead.AddComponent<MeshRenderer>();
+                radarMR.material.mainTexture = radarHeadTexture;
+                RadarHead.SetActive(true);
+            }
+            ScanCollider.SetActive(false);
         }
 
         private void GetTWSAim()
         {
             //Debug.Log(Math.Round((scanAngle + 60) / 2.4f));
-            int currRegion = (int)Math.Floor((scanAngle+60)/2.4f+0.5f);
+            int currRegion = (int)Math.Floor((scanAngle+60)/1.2f+0.5f);
             //Debug.Log(currRegion);
             //Debug.Log(radarHit.targetCols.Count);
             if (radarHit.targetCols.Count == 0)
@@ -206,11 +235,11 @@ namespace ModernAirCombat
 
         public override void SafeAwake()
         {
-
+            myTransform = transform;
+            playerID = BlockBehaviour.ParentMachine.PlayerID;
             InitScan();
             InitAdvice();
             targetManagerRadar = new targetManager();
-
         }
 
         public override void BuildingUpdate()
@@ -226,19 +255,28 @@ namespace ModernAirCombat
             buildAdvice.SetActive(false);
             ScanCollider.SetActive(true);
         }
+
+
+        public override void OnSimulateStop()
+        {
+
+        }
+
         public override void SimulateFixedUpdateHost()
         {
             GetTWSAim();
-            RadarBase.transform.position = transform.position+4*transform.forward;
-            RadarBase.transform.rotation = Quaternion.LookRotation((transform.rotation * Vector3.back).normalized);
+            RadarBase.transform.position = myTransform.position+0.5f*myTransform.localScale.z*transform.forward;
+            RadarBase.transform.rotation = Quaternion.LookRotation((myTransform.rotation * Vector3.back).normalized);
             try
             {
-                DisplayerBlock tmp;
-                tmp = transform.parent.FindChild("Displayer").GetComponent<DisplayerBlock>();
-                scanAngle = tmp.SLController.currAngle;
-                scanPitch = tmp.radarPitch;
+                //DisplayerBlock tmp;
+                //tmp = transform.parent.FindChild("Displayer").GetComponent<DisplayerBlock>();
+                scanAngle = DataManager.Instance.DisplayerData[playerID].radarAngle;
+                scanPitch = DataManager.Instance.DisplayerData[playerID].radarPitch;
+
                 ScanCollider.transform.localRotation = Quaternion.Euler(270f+scanPitch, scanAngle, 0);
                 radarHit.Reset();
+                DataManager.Instance.TargetData[playerID] = targetManagerRadar;
 
             }
             catch
@@ -248,6 +286,7 @@ namespace ModernAirCombat
  
 
         }
+
 
 
 

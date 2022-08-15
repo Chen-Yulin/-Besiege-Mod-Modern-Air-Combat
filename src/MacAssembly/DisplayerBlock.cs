@@ -33,7 +33,7 @@ namespace ModernAirCombat
         {
             if (direction == false)
             {
-                currAngle += 2.4f * frequency;
+                currAngle += 1.2f * frequency;
                 if (currAngle>=angleRight)
                 {
                     direction = true;
@@ -41,7 +41,7 @@ namespace ModernAirCombat
             }
             else
             {
-                currAngle -= 2.4f * frequency;
+                currAngle -= 1.2f * frequency;
                 if (currAngle <= angleLeft)
                 {
                     direction = false;
@@ -62,6 +62,7 @@ namespace ModernAirCombat
         public MKey ChooserRight;
         public MKey scanUp;
         public MKey scanDown;
+        public MKey Lock;
 
         public GameObject BaseGrid;
         public ScanLineController SLController;
@@ -69,8 +70,13 @@ namespace ModernAirCombat
         public GameObject LeftAngleIndicator;
         public GameObject RightAngleIndicator;
         public GameObject Chooser;
+        public GameObject LockIcon;
+        public GameObject LockInfo;
         public GameObject Mode;
         public float radarPitch = 0;
+        public GameObject EnemyDisplayTWS; // gameobject for managing enemy icons
+        public GameObject[] EnemyIconsTWS;
+        
         
 
 
@@ -86,6 +92,7 @@ namespace ModernAirCombat
         private MeshFilter ChooserMeshFilter;
         private MeshRenderer ChooserRenderer;
         private TextMesh ModeTextMesh;
+        private TextMesh InfoText;
         private float leftScanAngle = -60f;
         private float rightScanAngle = 60f;
         private float middleScanAngle = 0f;
@@ -100,8 +107,60 @@ namespace ModernAirCombat
         private bool downScan = false;
         private bool upScan = false;
         private string mode = "TWS";
-        
+        public displayerData DisplayerData = new displayerData(0, 0);
+        private int playerID;
+        private int currRegion;
+        private Target[] RadarTarget;
+        private bool locking; //whether the radar keeps tracking an object
+        private int lockRegion = 0;
 
+
+
+        public void InitEnemyIcons()
+        {
+            if (!transform.parent.FindChild("EnemyDisplayTWS"))
+            {
+                EnemyDisplayTWS = new GameObject("EnemyDisplayTWS");
+                EnemyDisplayTWS.transform.SetParent(transform);
+                EnemyDisplayTWS.transform.localPosition = new Vector3(0f, 0f, 0.095f);
+                EnemyDisplayTWS.transform.localRotation = Quaternion.Euler(0, 180, 180);
+                EnemyDisplayTWS.transform.localScale = new Vector3(1f, 1f, 1f);
+                EnemyIconsTWS = new GameObject[101];
+                for (int i = 0; i < 101; i++)
+                {
+                    EnemyIconsTWS[i] = new GameObject("enemy" + i.ToString());
+                    EnemyIconsTWS[i].transform.SetParent(EnemyDisplayTWS.transform);
+                    EnemyIconsTWS[i].transform.localPosition = new Vector3(0f, 0f, 0f);
+                    EnemyIconsTWS[i].transform.localRotation = Quaternion.Euler(0, 180, 180);
+                    EnemyIconsTWS[i].transform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
+                    TextMesh textMesh;
+                    textMesh = EnemyIconsTWS[i].AddComponent<TextMesh>();
+                    textMesh.text = "-";
+                    textMesh.color = Color.green;
+                    textMesh.characterSize = 0.5f;
+                    textMesh.fontSize = 64;
+                    textMesh.fontStyle = FontStyle.Bold;
+                    textMesh.anchor = TextAnchor.MiddleCenter;
+                    EnemyIconsTWS[i].SetActive(false);
+                    
+                }
+            }
+        }
+
+        public void DisplayEnemy()
+        {
+            
+            if (RadarTarget[currRegion].hasObject)
+            {
+                EnemyIconsTWS[currRegion].transform.localPosition = new Vector3(0.002f * (currRegion - 50), -0.094f + RadarTarget[currRegion].distance * 0.00004f, 0f);
+                EnemyIconsTWS[currRegion].SetActive(true);
+            }
+            else
+            {
+                EnemyIconsTWS[currRegion].SetActive(false);
+            }
+            ClearBlank();
+        }
 
         public void InitGrid()
         {
@@ -184,7 +243,28 @@ namespace ModernAirCombat
                 ChooserRenderer.material.SetColor("_TintColor", Color.yellow);
                 Chooser.SetActive(false);
             }
-            
+            if (!transform.FindChild("LockIcon"))
+            {
+                LockIcon = new GameObject("LockIcon");
+                LockIcon.transform.SetParent(transform);
+                LockIcon.transform.localPosition = new Vector3(0f, 0f, 0.095f);
+                LockIcon.transform.localRotation = Quaternion.Euler(0, 0, 0);
+                LockIcon.transform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
+                TextMesh textMesh;
+                textMesh = LockIcon.AddComponent<TextMesh>();
+                textMesh.text = "O";
+                textMesh.color = Color.yellow;
+                textMesh.characterSize = 0.6f;
+                textMesh.fontSize = 32;
+                textMesh.fontStyle = FontStyle.Normal;
+                textMesh.anchor = TextAnchor.MiddleCenter;
+
+
+                LockIcon.SetActive(false);
+            }
+
+
+
         }
 
         public void InitMode(string mode)
@@ -207,23 +287,104 @@ namespace ModernAirCombat
             
         }
 
+        private bool FindLockedTarget()
+        {
+            
+            
+            for (int i = 0; i < 21; i++)
+            {
+                if (lockRegion-10+i>=0 && lockRegion - 10+i<=100)
+                {
+                    if (RadarTarget[lockRegion - 10 + i].hasObject)
+                    {
+                        LockIcon.SetActive(true);
+                        lockRegion = lockRegion - 10+i;
+                        ChooserPosition.x = (lockRegion - 50) * 1.2f;
+                        Chooser.transform.localPosition = new Vector3(ChooserPosition.x * 0.00175f, 0.094f - RadarTarget[lockRegion].distance * 0.00004f, 0.095f);
+                        LockIcon.transform.localPosition = new Vector3(ChooserPosition.x * 0.00175f, 0.094f - RadarTarget[lockRegion].distance * 0.00004f, 0.095f);
+
+                        try
+                        {
+                            DestroyImmediate(LockIcon.transform.FindChild("LockInfo").gameObject);
+                        }
+                        catch { }
+
+                        LockInfo = new GameObject("LockInfo");
+                        LockInfo.transform.SetParent(LockIcon.transform);
+                        LockInfo.transform.localPosition = new Vector3(2f, 0f, 0f);
+                        LockInfo.transform.localRotation = Quaternion.Euler(180, 0, 0);
+                        LockInfo.transform.localScale = new Vector3(1f, 1f, 1f);
+                        InfoText = LockInfo.AddComponent<TextMesh>();
+                        InfoText.text = Math.Floor(RadarTarget[lockRegion].closingRate).ToString();
+                        InfoText.fontSize = 32;
+                        InfoText.fontStyle = FontStyle.Normal;
+                        InfoText.anchor = TextAnchor.LowerLeft;
+                        InfoText.characterSize = 0.6f;
+                        InfoText.color = Color.yellow;
+                        LockInfo.SetActive(true);
+
+
+
+
+
+                        return true;
+                    }
+                }
+            }
+            if (lockRegion != currRegion)
+            {
+                return true;
+            }
+            
+            return false;
+        }
+
+        private void ClearBlank()
+        {
+            float leftRegion = (leftScanAngle + 60) / 1.2f;
+            float rightRegion = (rightScanAngle + 60) / 1.2f;
+            for (int i = 0; i <= 100; i++)
+            {
+                if (i < leftRegion)
+                {
+                    EnemyIconsTWS[i].SetActive(false);
+                }
+                else
+                {
+                    break;
+                }
+            }
+            for (int i = 100; i >= 0; i--)
+            {
+                if (i > rightRegion)
+                {
+                    EnemyIconsTWS[i].SetActive(false);
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
         
 
         public override void SafeAwake()
         {
-            
+            playerID = BlockBehaviour.ParentMachine.PlayerID;
+            Lock = AddKey("锁定目标", "Lock Target", KeyCode.X);
             EnlargeScanAngle = AddKey("扩大搜索角", "EnlargeScanAngle", KeyCode.T);
             ReduceScanAngle = AddKey("缩小搜索角", "ReduceScanAngle", KeyCode.U);
-            ChooserUp = AddKey("上移选取器", "ChooserUp", KeyCode.Y);
-            ChooserDown = AddKey("下移选取器", "ChooserDown", KeyCode.H);
-            ChooserLeft = AddKey("左移选取器", "ChooserLeft", KeyCode.G);
-            ChooserRight = AddKey("右移选取器", "ChooserRight", KeyCode.J);
+            ChooserUp = AddKey("上移光标", "ChooserUp", KeyCode.Y);
+            ChooserDown = AddKey("下移光标", "ChooserDown", KeyCode.H);
+            ChooserLeft = AddKey("左移光标", "ChooserLeft", KeyCode.G);
+            ChooserRight = AddKey("右移光标", "ChooserRight", KeyCode.J);
             scanUp = AddKey("雷达向上", "scan up", KeyCode.I);
             scanDown = AddKey("雷达向下", "scan down", KeyCode.K);
+            
             InitGrid();
             InitPanel();
             InitMode(mode);
-            
+            InitEnemyIcons();
         }
 
         public void Start()
@@ -255,7 +416,11 @@ namespace ModernAirCombat
                 //set the position of scanLine
                 ScanLine.transform.localPosition = new Vector3(SLController.currAngle * 0.00175f, 0, 0.095f);
                 //set the position of chooser
-                Chooser.transform.localPosition = new Vector3(ChooserPosition.x * 0.00175f, -ChooserPosition.y * 0.00175f, 0.095f);
+                if (!locking)
+                {
+                    Chooser.transform.localPosition = new Vector3(ChooserPosition.x * 0.00175f, -ChooserPosition.y * 0.00175f, 0.095f);
+                }
+                
                 //set the position of left&right angleIndicator
                 LeftAngleIndicator.transform.localPosition = new Vector3(leftScanAngle * 0.00175f, 0, 0.095f);
                 RightAngleIndicator.transform.localPosition = new Vector3(rightScanAngle * 0.00175f, 0, 0.095f);
@@ -315,7 +480,7 @@ namespace ModernAirCombat
                     rightChooser = false;
                 }
 
-                //judage wether the key for aadjusting pitch of radar is pressed
+                //judage wether the key for adjusting pitch of radar is pressed
                 if (scanUp.IsPressed)
                 {
                     upScan = true;
@@ -330,6 +495,17 @@ namespace ModernAirCombat
                 {
                     downScan = false;
                 }
+
+                //judage wether the key for toggle lock mode is pressed
+                if (Lock.IsPressed)
+                {
+                    locking = !locking;
+                    if (!locking)
+                    {
+                        LockIcon.SetActive(false);
+                    }
+                }
+
             }
             catch { }
             
@@ -338,22 +514,39 @@ namespace ModernAirCombat
         }
         public override void SimulateFixedUpdateHost()
         {
-            //adjust the Chooser and the effected scan angle
-            if (upChooser && ChooserPosition.y < 60)
+             currRegion = (int)Math.Floor((SLController.currAngle + 60) / 1.2f + 0.5f);
+             lockRegion = (int)Math.Floor((ChooserPosition.x + 60) / 1.2f + 0.5f);
+
+
+            //start track if lock mode on
+            if (locking)
             {
-                ChooserPosition.y += 0.4f;
+                if (!FindLockedTarget())
+                {
+                    LockIcon.SetActive(false);
+                    locking = false;
+                }
             }
-            if (downChooser && ChooserPosition.y > -60)
+            else
             {
-                ChooserPosition.y -= 0.4f;
-            }
-            if (leftChooser && ChooserPosition.x > -60)
-            {
-                ChooserPosition.x -= 0.4f;
-            }
-            if (rightChooser && ChooserPosition.x < 60)
-            {
-                ChooserPosition.x += 0.4f;
+                //adjust the Chooser and the effected scan angle
+                if (upChooser && ChooserPosition.y < 60)
+                {
+                    ChooserPosition.y += 0.4f;
+                }
+                if (downChooser && ChooserPosition.y > -60)
+                {
+                    ChooserPosition.y -= 0.4f;
+                }
+                if (leftChooser && ChooserPosition.x > -60)
+                {
+                    ChooserPosition.x -= 0.4f;
+                }
+                if (rightChooser && ChooserPosition.x < 60)
+                {
+                    ChooserPosition.x += 0.4f;
+                }
+                
             }
             middleScanAngle = ChooserPosition.x;
             //adjust the scan angle according to key
@@ -374,9 +567,18 @@ namespace ModernAirCombat
                 radarPitch -= 0.4f;
             }
 
+            
+
             leftScanAngle = Math.Max(-60f, middleScanAngle - deltaScanAngle);
             rightScanAngle = Math.Min(60f, middleScanAngle + deltaScanAngle);
+            DisplayerData.radarPitch = radarPitch;
+            DisplayerData.radarAngle = SLController.currAngle;
+            DataManager.Instance.DisplayerData[playerID] = DisplayerData;
+            
+            RadarTarget = DataManager.Instance.TargetData[playerID].targets;
+            DisplayEnemy();
 
+            
 
         }
 
@@ -384,7 +586,8 @@ namespace ModernAirCombat
         {
             if (BlockBehaviour.isSimulating)
             {
-                //GUI.Box(new Rect(100, 100, 200, 50), ScanLine.transform.localPosition.ToString());
+                GUI.Box(new Rect(100, 100, 200, 50), leftScanAngle.ToString());
+                GUI.Box(new Rect(100, 150, 200, 50), leftScanAngle.ToString());
 
             }
         }

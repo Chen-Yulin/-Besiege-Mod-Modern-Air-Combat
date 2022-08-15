@@ -99,7 +99,7 @@
 	
 	<Mesh name="Radar Mesh"> <!-- Must be defined as a resource in the manifest. -->
 		<Position x="0.0" y="0.0" z="0.0" />
-		<Rotation x="0" y="0" z="0" />
+		<Rotation x="180" y="0" z="0" />
 		<Scale x="0.4" y="0.4" z="0.4" />
 	</Mesh>
 	
@@ -163,9 +163,9 @@
 	</Colliders>
 	
 	<BasePoint hasAddingPoint="false">
-		<Stickiness enabled="false" radius="0.6" />
+		<Stickiness enabled="true" radius="0.6" />
 		<!-- Can only have motion if sticky -->
-		<!--<Motion x="false" y="false" z="false" />  Optional -->
+		<Motion x="false" y="false" z="false" />
 	</BasePoint>
 	
 	<AddingPoints>

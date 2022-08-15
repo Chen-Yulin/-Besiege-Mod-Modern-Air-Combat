@@ -52,6 +52,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssetManager.cs" />
+    <Compile Include="DataManager.cs" />
     <Compile Include="DisplayerBlock.cs" />
     <Compile Include="ModernAirCombat.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -139,10 +139,11 @@ A mod for simulate modern air combat in besiege. <!-- FIX: Insert a short descri
 		<Texture name="ScanLine Texture" path="Displayer\ScanLine.png"/>
 		<Texture name="AngleIndicator Texture" path="Displayer\AngleIndicator.png"/>
 		<Texture name="Chooser Texture" path="Displayer\Chooser.png"/>
-		<Mesh name="Radar Mesh" path="Radar\Radar.obj"/>
-		<Texture name="Radar Texture" path="Radar\Radar.png"/>
-		<Mesh name="RadarScan Mesh" path="Radar\RadarScan.obj"/>
-
+		<Mesh name="Radar Mesh" path="Radar\radar.obj"/>
+		<Texture name="Radar Texture" path="Radar\radar.png"/>
+		<Mesh name="RadarScan Mesh" path="Radar\radarScan.obj"/>
+		<Mesh name="RadarHead Mesh" path="Radar\radarhead.obj"/>
+		<Texture name="RadarHead Texture" path="Radar\radarhead.png"/>
 	</Resources>
 
 
