@@ -277,6 +277,7 @@ namespace ModernAirCombat
                 ScanCollider.transform.localRotation = Quaternion.Euler(270f+scanPitch, scanAngle, 0);
                 radarHit.Reset();
                 DataManager.Instance.TargetData[playerID] = targetManagerRadar;
+                DataManager.Instance.RadarTransformForward[playerID] = transform.forward;
 
             }
             catch

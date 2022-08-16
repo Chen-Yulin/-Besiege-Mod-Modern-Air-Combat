@@ -144,6 +144,7 @@ A mod for simulate modern air combat in besiege. <!-- FIX: Insert a short descri
 		<Mesh name="RadarScan Mesh" path="Radar\radarScan.obj"/>
 		<Mesh name="RadarHead Mesh" path="Radar\radarhead.obj"/>
 		<Texture name="RadarHead Texture" path="Radar\radarhead.png"/>
+		<Texture name="LockIconScreen Texture" path="LockIconScreen.png"/>  
 	</Resources>
 
 

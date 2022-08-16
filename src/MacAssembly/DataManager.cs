@@ -4,8 +4,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Modding.Modules;
+using Modding;
+using Modding.Blocks;
+using UnityEngine;
+
 namespace ModernAirCombat
 {
+    public class BVRTargetData
+    {
+        public Vector3 position;
+        public Vector3 velocity;
+    }
     public class displayerData
     {
         public float radarPitch;
@@ -20,9 +30,10 @@ namespace ModernAirCombat
     public class DataManager : SingleInstance<DataManager>
     {
         public override string Name { get; } = "Data Manager";
-
+        public Vector3[] RadarTransformForward = new Vector3[10];
         public targetManager[] TargetData = new targetManager[10];
         public displayerData[] DisplayerData = new displayerData[10];
+        public BVRTargetData[] BVRData = new BVRTargetData[10];
         
     }
 }

@@ -98,17 +98,17 @@ namespace ModernAirCombat
     {
         public MKey Launch;
         public MToggle IFF;
-        public MSlider detectAngleSlider;
-        public MToggle showScanner;
+        //public MSlider detectAngleSlider;
+        //public MToggle showScanner;
         public MSlider detectDelay;
         public MSlider launchDelay;
         public MSlider PFRang;
         public enum status { stored, launched, missed, exploded };
         public status myStatus;
         public GameObject ScanCollider;
-        public MeshCollider missleScan;
+        public SphereCollider missleScan;
         public ScanCollisonHit coneHit;
-        public GameObject ScannerDisplay;
+        //public GameObject ScannerDisplay;
         public GameObject PFCollider;
         public PFCollisionHit PFHit;
         public SphereCollider misslePF;
@@ -140,11 +140,11 @@ namespace ModernAirCombat
         private Rigidbody myRigidbody;
         private float time = 0;
         private float detectFreqTime = 0;
-        private float detectRange;
-        private float detectWidth;
-        private MeshFilter scannerMeshFilter;
-        private Mesh scannerMesh;
-        private MeshRenderer scannerRenderer;
+        //private float detectRange;
+        //private float detectWidth;
+        //private MeshFilter scannerMeshFilter;
+        //private Mesh scannerMesh;
+        //private MeshRenderer scannerRenderer;
         private Texture AimIcon;
 
         private int iconSize;
@@ -176,16 +176,15 @@ namespace ModernAirCombat
         {
             if (BlockBehaviour.transform.FindChild("ScanCol") == null)
             {
-                scannerMesh = ModResource.GetMesh("Cone Scan").Mesh;
+                //scannerMesh = ModResource.GetMesh("Cone Scan").Mesh;
 
                 ScanCollider = new GameObject("ScanCol");
                 ScanCollider.transform.SetParent(BlockBehaviour.transform);
-                ScanCollider.transform.localPosition = new Vector3(0f, 15f, 0.3f);
+                ScanCollider.transform.localPosition = new Vector3(0f, 600f, 0.3f);
                 ScanCollider.transform.localRotation = Quaternion.Euler(90, 0, 0);
                 ScanCollider.transform.localScale = Vector3.one;
-                missleScan = ScanCollider.AddComponent<MeshCollider>();
-                missleScan.sharedMesh = scannerMesh;
-                missleScan.convex = true;
+                missleScan = ScanCollider.AddComponent<SphereCollider>();
+                missleScan.radius = 1;
                 missleScan.isTrigger = true;
                 coneHit = ScanCollider.AddComponent<ScanCollisonHit>();
 
@@ -194,23 +193,22 @@ namespace ModernAirCombat
             }
 
 
-            if (BlockBehaviour.transform.FindChild("Scanner Display") == null)
-            {
-                // render the mesh of scanner
-                ScannerDisplay = new GameObject("Scanner Display");
-                ScannerDisplay.transform.SetParent(BlockBehaviour.transform);
-                ScannerDisplay.transform.localPosition = new Vector3(0f, 15f, 0.3f);
-                ScannerDisplay.transform.localRotation = Quaternion.Euler(90, 0, 0);
-                ScannerDisplay.transform.localScale = Vector3.one;
-                scannerMeshFilter = ScannerDisplay.AddComponent<MeshFilter>();
-                scannerMeshFilter.mesh = scannerMesh;
-                scannerRenderer = ScannerDisplay.AddComponent<MeshRenderer>();
-                scannerRenderer.material = new Material(Shader.Find("Particles/Alpha Blended"));
-                scannerColor = Color.green;
-                scannerColor.a = 0.05f;
-                scannerRenderer.material.SetColor("_TintColor", scannerColor);
-                ScannerDisplay.SetActive(false);
-            }
+            //if (BlockBehaviour.transform.FindChild("Scanner Display") == null)
+            //{
+            //    // render the mesh of scanner
+            //    ScannerDisplay = new GameObject("Scanner Display");
+            //    ScannerDisplay.transform.SetParent(BlockBehaviour.transform);
+            //    ScannerDisplay.transform.localPosition = new Vector3(0f, 600f, 0.3f);
+            //    ScannerDisplay.transform.localRotation = Quaternion.Euler(90, 0, 0);
+            //    ScannerDisplay.transform.localScale = Vector3.one;
+            //    scannerMeshFilter = ScannerDisplay.AddComponent<MeshFilter>();
+            //    scannerRenderer = ScannerDisplay.AddComponent<MeshRenderer>();
+            //    scannerRenderer.material = new Material(Shader.Find("Particles/Alpha Blended"));
+            //    scannerColor = Color.green;
+            //    scannerColor.a = 0.05f;
+            //    scannerRenderer.material.SetColor("_TintColor", scannerColor);
+            //    ScannerDisplay.SetActive(false);
+            //}
         }
 
         public void initPF()
@@ -293,7 +291,7 @@ namespace ModernAirCombat
         private void playExplo()
         {
 
-            myRigidbody.constraints = RigidbodyConstraints.FreezePosition | RigidbodyConstraints.FreezeRotation;
+            myRigidbody.constraints = RigidbodyConstraints.FreezePosition;
             TrailSmokeParticle.Stop();
             TrailFlameParticle.Stop();
             ExploFireball.SetActive(true);
@@ -322,7 +320,7 @@ namespace ModernAirCombat
             detectFreqTime += Time.fixedDeltaTime;
             
 
-            if (detectFreqTime >= 0.02)
+            if (detectFreqTime >= 0.05)
             {
                 if (coneHit.targetCols.Count == 0)
                 {
@@ -395,8 +393,8 @@ namespace ModernAirCombat
         {
             Launch = AddKey("发射", "launch", KeyCode.X);
             IFF = AddToggle("开启友伤", "IFF", true);
-            showScanner = AddToggle("显示探测范围", "showScanner", false);
-            detectAngleSlider = AddSlider("探测角度", "detection angle", 90.0f, 60.0f, 120.0f);
+            //showScanner = AddToggle("显示探测范围", "showScanner", false);
+            //detectAngleSlider = AddSlider("探测角度", "detection angle", 90.0f, 60.0f, 120.0f);
             detectDelay = AddSlider("延时保险", "detection delay", 0.2f, 0.0f, 1f);
             launchDelay = AddSlider("延时点火", "launch delay", 0.1f, 0.0f, 0.3f);
             PFRang = AddSlider("近炸范围", "PF range", 5f, 1f, 10f);
@@ -417,24 +415,23 @@ namespace ModernAirCombat
             myRigidbody.drag = 0f;
             myRigidbody.angularDrag = 0f;
 
-            detectRange = (float)(400.0f * System.Math.Cos(detectAngleSlider.Value / 2 * 3.1415f / 180));
-            detectWidth = 2 * (float)(System.Math.Tan(detectAngleSlider.Value / 2 * 3.1415f / 180) * detectRange);
-            Vector3 ScanColScale = new Vector3(detectWidth, detectWidth, detectRange);
+
+            Vector3 ScanColScale = new Vector3(550,550,550);
             ScanCollider.transform.localScale = ScanColScale;
-            ScannerDisplay.transform.localScale = ScanColScale;
+            //ScannerDisplay.transform.localScale = ScanColScale;
             //Debug.Log(ScanColScale);
             coneHit.IFF = IFF.IsActive;
             coneHit.team = BlockBehaviour.Team;
             coneHit.PlayerID = BlockBehaviour.ParentMachine.PlayerID;
 
-            if (showScanner.IsActive)
-            {
-                ScannerDisplay.SetActive(true);
-            }
-            else
-            {
-                ScannerDisplay.SetActive(false);
-            }
+            //if (showScanner.IsActive)
+            //{
+            //    ScannerDisplay.SetActive(true);
+            //}
+            //else
+            //{
+            //    ScannerDisplay.SetActive(false);
+            //}
             
             initParticleSystem();
 
@@ -496,7 +493,7 @@ namespace ModernAirCombat
                     //Debug.Log(launchRotation);
                 }
 
-                if (time < 3.0f + launchDelay.Value)
+                if (time < 3.5f + launchDelay.Value)
                 {
                     if (time > launchDelay.Value)
                     {
