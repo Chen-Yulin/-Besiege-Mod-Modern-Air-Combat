@@ -15,6 +15,11 @@ namespace ModernAirCombat
     {
         public Vector3 position;
         public Vector3 velocity;
+        public BVRTargetData()
+        {
+            position = new Vector3(0, 0, 0);
+            velocity = new Vector3(0, 0, 0);
+        }
     }
     public class displayerData
     {

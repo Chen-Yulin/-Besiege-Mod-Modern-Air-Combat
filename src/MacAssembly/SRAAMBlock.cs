@@ -40,6 +40,8 @@ namespace ModernAirCombat
                 return;
             if (col.isTrigger || col.transform.parent.GetInstanceID() == col.GetInstanceID())
                 return;
+            if (col.attachedRigidbody.gameObject.name == "missle")
+                return;
             try
             {
                 BlockBehaviour hitedBlock = col.attachedRigidbody.gameObject.GetComponent<BlockBehaviour>();
@@ -55,7 +57,7 @@ namespace ModernAirCombat
 
     }
 
-    class PFCollisionHit : MonoBehaviour
+    public class PFCollisionHit : MonoBehaviour
     {
         public MPTeam team = MPTeam.None;
         public bool IFF = true;
@@ -77,6 +79,8 @@ namespace ModernAirCombat
                 return;
             if (col.isTrigger || col.transform.parent.GetInstanceID() == col.GetInstanceID())
                 return;
+            if (col.attachedRigidbody.gameObject.name == "missle")
+                return;
             try
             {
                 BlockBehaviour hitedBlock = col.attachedRigidbody.gameObject.GetComponent<BlockBehaviour>();
@@ -94,7 +98,7 @@ namespace ModernAirCombat
 
 
 
-    class SRAAMBlock : BlockScript
+    public class SRAAMBlock : BlockScript
     {
         public MKey Launch;
         public MToggle IFF;
@@ -103,7 +107,7 @@ namespace ModernAirCombat
         public MSlider detectDelay;
         public MSlider launchDelay;
         public MSlider PFRang;
-        public enum status { stored, launched, missed, exploded };
+        public enum status { stored, launched, active, missed, exploded };
         public status myStatus;
         public GameObject ScanCollider;
         public SphereCollider missleScan;
@@ -135,25 +139,26 @@ namespace ModernAirCombat
 
 
 
-        private float estimatedTime;
-        private Transform myTransform;      //实例化Transform对象
-        private Rigidbody myRigidbody;
-        private float time = 0;
-        private float detectFreqTime = 0;
-        //private float detectRange;
-        //private float detectWidth;
-        //private MeshFilter scannerMeshFilter;
-        //private Mesh scannerMesh;
-        //private MeshRenderer scannerRenderer;
-        private Texture AimIcon;
+        protected float estimatedTime;
+        protected Transform myTransform;      //实例化Transform对象
+        protected Rigidbody myRigidbody;
+        protected float time = 0;
+        protected float detectFreqTime = 0;
+        //protected float detectRange;
+        //protected float detectWidth;
+        //protected MeshFilter scannerMeshFilter;
+        //protected Mesh scannerMesh;
+        //protected MeshRenderer scannerRenderer;
+        protected Texture AimIcon;
 
-        private int iconSize;
-        private Color scannerColor;
-        private Quaternion launchRotation;
-        private bool getlaunchRotation = false;
-        private bool activeTrail = false;
-        private bool effectDestroyed = false;
-        private bool gameObjectDestroyed = false;
+        protected int iconSize;
+        protected Quaternion launchRotation;
+        protected bool getlaunchRotation = false;
+        protected bool activeTrail = false;
+        protected bool effectDestroyed = false;
+        protected bool gameObjectDestroyed = false;
+
+        protected ushort myPlayerID;
 
 
         public void AxisLookAt(Transform tr_self, Vector3 lookPos, Vector3 directionAxis)
@@ -227,7 +232,7 @@ namespace ModernAirCombat
             }
         }
 
-        private void initTrail()
+        protected void initTrail()
         {
             TrailSmoke = Instantiate(AssetManager.Instance.Trail.SmokeTrail);
             TrailFlame = Instantiate(AssetManager.Instance.Trail.FlameTrail);
@@ -244,7 +249,7 @@ namespace ModernAirCombat
             TrailFlame.SetActive(true);
         }
 
-        private void initExplo()
+        protected void initExplo()
         {
             ExploFireball = Instantiate(AssetManager.Instance.Explo.ExploFireball);
             ExploDust = Instantiate(AssetManager.Instance.Explo.ExploDust);
@@ -278,7 +283,7 @@ namespace ModernAirCombat
             ExploShower.SetActive(false);
         }
 
-        private void initParticleSystem()
+        protected void initParticleSystem()
         {
             TrailSmokeParticle = TrailSmoke.GetComponent<ParticleSystem>();
             TrailFlameParticle = TrailFlame.GetComponent<ParticleSystem>();
@@ -288,7 +293,7 @@ namespace ModernAirCombat
             ExploShowerParticle = ExploShower.GetComponent<ParticleSystem>();
         }
 
-        private void playExplo()
+        protected void playExplo()
         {
 
             myRigidbody.constraints = RigidbodyConstraints.FreezePosition;
@@ -313,14 +318,14 @@ namespace ModernAirCombat
         }
 
 
-        private void GetAim()
+        protected void GetAim()
         {
             ScanCollider.SetActive(true);
             
             detectFreqTime += Time.fixedDeltaTime;
             
 
-            if (detectFreqTime >= 0.05)
+            if (detectFreqTime >= 0.02)
             {
                 if (coneHit.targetCols.Count == 0)
                 {
@@ -364,15 +369,15 @@ namespace ModernAirCombat
             Vector3 modifiedDiff;
             if (positionDiff.magnitude < 200)
             {
-                modifiedDiff.x = (float)(0.6f * positionDiff.x);
-                modifiedDiff.y = (float)(0.6f * positionDiff.y);
-                modifiedDiff.z = (float)(0.6f * positionDiff.z);
+                modifiedDiff.x = (0.6f * positionDiff.x);
+                modifiedDiff.y = (0.6f * positionDiff.y);
+                modifiedDiff.z = (0.6f * positionDiff.z);
             }
             else
             {
-                modifiedDiff.x = (float)(0.2f * positionDiff.x);
-                modifiedDiff.y = (float)(0.2f * positionDiff.y);
-                modifiedDiff.z = (float)(0.2f * positionDiff.z);
+                modifiedDiff.x = (0.2f * positionDiff.x);
+                modifiedDiff.y = (0.2f * positionDiff.y);
+                modifiedDiff.z = (0.2f * positionDiff.z);
             }
             
             predictPositionModified = predictPosition + modifiedDiff ;
@@ -391,6 +396,7 @@ namespace ModernAirCombat
 
         public override void SafeAwake()
         {
+            gameObject.name = "missle";
             Launch = AddKey("发射", "launch", KeyCode.X);
             IFF = AddToggle("开启友伤", "IFF", true);
             //showScanner = AddToggle("显示探测范围", "showScanner", false);
@@ -405,6 +411,7 @@ namespace ModernAirCombat
             initPF();
 
             AimIcon = ModResource.GetTexture("Aim Icon").Texture;
+            myPlayerID = BlockBehaviour.ParentMachine.PlayerID;
         }
 
         public void Start()
@@ -422,7 +429,7 @@ namespace ModernAirCombat
             //Debug.Log(ScanColScale);
             coneHit.IFF = IFF.IsActive;
             coneHit.team = BlockBehaviour.Team;
-            coneHit.PlayerID = BlockBehaviour.ParentMachine.PlayerID;
+            coneHit.PlayerID = myPlayerID;
 
             //if (showScanner.IsActive)
             //{
@@ -450,7 +457,7 @@ namespace ModernAirCombat
             base.OnSimulateStop();
         }
 
-        private void Update()
+        protected void Update()
         {
             if (IsSimulating)
             {

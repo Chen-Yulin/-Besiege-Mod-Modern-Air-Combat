@@ -24,12 +24,12 @@ namespace ModernAirCombat
         public float currAngle = 0;
         public bool direction = false;
 
-        private void Start()
+        protected void Start()
         {
             currAngle = angleLeft;
         }
         
-        private void FixedUpdate()
+        protected void FixedUpdate()
         {
             if (direction == false)
             {
@@ -84,42 +84,43 @@ namespace ModernAirCombat
 
 
 
-        private MeshFilter BaseGridMeshFilter;
-        private MeshRenderer BaseGridRenderer;
-        private MeshFilter ScanLineMeshFilter;
-        private MeshRenderer ScanLineRenderer;
-        private MeshFilter LeftAngleIndicatorMeshFilter;
-        private MeshRenderer LeftAngleIndicatorRenderer;
-        private MeshFilter RightAngleIndicatorMeshFilter;
-        private MeshRenderer RightAngleIndicatorRenderer;
-        private MeshFilter ChooserMeshFilter;
-        private MeshRenderer ChooserRenderer;
-        private TextMesh ModeTextMesh;
-        private TextMesh InfoText;
-        private Texture LockIconOnScreen;
-        private float leftScanAngle = -60f;
-        private float rightScanAngle = 60f;
-        private float middleScanAngle = 0f;
-        private float realMiddleScanAngle = 0f;
-        private float deltaScanAngle = 60f;
-        private Vector2 ChooserPosition = new Vector2(0, 0);
-        private bool smallerAngle = false;
-        private bool biggerAngle = false;
-        private bool upChooser = false;
-        private bool downChooser = false;
-        private bool leftChooser = false;
-        private bool rightChooser = false;
-        private bool downScan = false;
-        private bool upScan = false;
-        private string mode = "TWS";
+        protected MeshFilter BaseGridMeshFilter;
+        protected MeshRenderer BaseGridRenderer;
+        protected MeshFilter ScanLineMeshFilter;
+        protected MeshRenderer ScanLineRenderer;
+        protected MeshFilter LeftAngleIndicatorMeshFilter;
+        protected MeshRenderer LeftAngleIndicatorRenderer;
+        protected MeshFilter RightAngleIndicatorMeshFilter;
+        protected MeshRenderer RightAngleIndicatorRenderer;
+        protected MeshFilter ChooserMeshFilter;
+        protected MeshRenderer ChooserRenderer;
+        protected TextMesh ModeTextMesh;
+        protected TextMesh InfoText;
+        protected Texture LockIconOnScreen;
+        protected float leftScanAngle = -60f;
+        protected float rightScanAngle = 60f;
+        protected float middleScanAngle = 0f;
+        protected float realMiddleScanAngle = 0f;
+        protected float deltaScanAngle = 60f;
+        protected Vector2 ChooserPosition = new Vector2(0, 0);
+        protected bool smallerAngle = false;
+        protected bool biggerAngle = false;
+        protected bool upChooser = false;
+        protected bool downChooser = false;
+        protected bool leftChooser = false;
+        protected bool rightChooser = false;
+        protected bool downScan = false;
+        protected bool upScan = false;
+        protected string mode = "TWS";
         public displayerData DisplayerData = new displayerData(0, 0);
-        private int playerID;
-        private int currRegion;
-        private Target[] RadarTarget;
-        private bool locking; //whether the radar keeps tracking an object
-        private int lockRegion = 0;
-        private int iconSize = 28;
-        private float deltaPitch = 0;
+        public BVRTargetData sendBVRData = new BVRTargetData();
+        protected int playerID;
+        protected int currRegion;
+        protected Target[] RadarTarget;
+        protected bool locking; //whether the radar keeps tracking an object
+        protected int lockRegion = 0;
+        protected int iconSize = 28;
+        protected float deltaPitch = 0;
 
 
 
@@ -352,7 +353,7 @@ namespace ModernAirCombat
             
         }
 
-        private bool FindLockedTarget()
+        protected bool FindLockedTarget()
         {
             bool res = false;
             
@@ -360,13 +361,13 @@ namespace ModernAirCombat
             {
                 if (lockRegion-i>=0 && lockRegion+i<=100)
                 {
-                    if (RadarTarget[lockRegion + i].hasObject)
+                    if (RadarTarget[lockRegion + i].hasObject && !RadarTarget[lockRegion + i].isMissle)
                     {
                         
                         lockRegion = lockRegion+i;
                         res = true;
                     }
-                    else if (RadarTarget[lockRegion - i].hasObject)
+                    else if (RadarTarget[lockRegion - i].hasObject && !RadarTarget[lockRegion - i].isMissle)
                     {
 
                         lockRegion = lockRegion - i;
@@ -412,7 +413,7 @@ namespace ModernAirCombat
             return false;
         }
 
-        private void ClearBlank()
+        protected void ClearBlank()
         {
             float leftRegion = (leftScanAngle + 60) / 1.2f;
             float rightRegion = (rightScanAngle + 60) / 1.2f;
@@ -486,7 +487,7 @@ namespace ModernAirCombat
             PitchIndicatorSelf.SetActive(true);
         }
 
-        private void Update()
+        protected void Update()
         {
             try
             {
@@ -684,8 +685,9 @@ namespace ModernAirCombat
             
             if (locking)
             {
-                DataManager.Instance.BVRData[playerID].position = RadarTarget[lockRegion].position;
-                DataManager.Instance.BVRData[playerID].velocity = RadarTarget[lockRegion].velocity;
+                sendBVRData.position = RadarTarget[lockRegion].position;
+                sendBVRData.velocity = RadarTarget[lockRegion].velocity;
+                DataManager.Instance.BVRData[playerID] = sendBVRData;
             }
 
         }
@@ -705,8 +707,8 @@ namespace ModernAirCombat
                 Vector3 onScreenPosition = Camera.main.WorldToScreenPoint(RadarTarget[lockRegion].position);
                 if (onScreenPosition.z >= 0)
                     GUI.DrawTexture(new Rect(onScreenPosition.x - iconSize / 2, Camera.main.pixelHeight - onScreenPosition.y - iconSize / 2, iconSize, iconSize), LockIconOnScreen);
-                //GUI.Box(new Rect(100, 150, 200, 50), RadarTarget[lockRegion].velocity.ToString());
-                //GUI.Box(new Rect(100, 200, 200, 50), RadarTarget[lockRegion].position.ToString());
+                GUI.Box(new Rect(100, 150, 200, 50), sendBVRData.velocity.ToString());
+                GUI.Box(new Rect(100, 200, 200, 50), sendBVRData.position.ToString());
             }
             
         }

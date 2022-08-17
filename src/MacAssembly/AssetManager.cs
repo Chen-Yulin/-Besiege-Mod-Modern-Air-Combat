@@ -54,10 +54,10 @@ namespace ModernAirCombat
     {
         public override string Name { get; } = "Asset Manager";
 
-        public Asset_Trail Trail { get; private set; }
-        public Asset_Explo Explo { get; private set; }
+        public Asset_Trail Trail { get; protected set; }
+        public Asset_Explo Explo { get; protected set; }
 
-        private void Awake()
+        protected void Awake()
         {
             Trail = new Asset_Trail(ModResource.GetAssetBundle("Trail Effect"));
             Explo = new Asset_Explo(ModResource.GetAssetBundle("Explo Effect"));

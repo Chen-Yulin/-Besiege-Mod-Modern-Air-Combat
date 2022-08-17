@@ -16,6 +16,7 @@ namespace ModernAirCombat
     
     public class Target
     {
+        public bool isMissle;
         public bool hasObject;
         public bool enemy;
         public Vector3 position;
@@ -32,6 +33,14 @@ namespace ModernAirCombat
         public Target(Collider col, BlockBehaviour radar)
         {
             hasObject = true;
+            if (col.attachedRigidbody.gameObject.name == "missle")
+            {
+                isMissle = true;
+            }
+            else
+            {
+                isMissle = false;
+            }
             position = col.gameObject.transform.position;
             velocity = col.attachedRigidbody.velocity;
             distance = Vector3.Distance(radar.transform.position, position);
@@ -52,7 +61,7 @@ namespace ModernAirCombat
                 enemy = true;
             }
         }
-        private float vector2angle(Vector2 vec)
+        protected float vector2angle(Vector2 vec)
         {
             if (vec.y>0)
             {
@@ -119,15 +128,15 @@ namespace ModernAirCombat
 
 
 
-        private Mesh scannerMesh;
-        private Mesh radarHeadMesh;
-        private Texture radarHeadTexture;
+        protected Mesh scannerMesh;
+        protected Mesh radarHeadMesh;
+        protected Texture radarHeadTexture;
         
-        private Color displayColor;
-        private TextMesh adviceTextMesh;
+        protected Color displayColor;
+        protected TextMesh adviceTextMesh;
 
-        private int playerID;
-        private Transform myTransform;
+        protected int playerID;
+        protected Transform myTransform;
 
         public void InitAdvice()
         {
@@ -148,7 +157,7 @@ namespace ModernAirCombat
             }
 
         }
-        private void InitScan()
+        protected void InitScan()
         {
             if (transform.FindChild("Radar Base") == null)
             {
@@ -213,7 +222,7 @@ namespace ModernAirCombat
             ScanCollider.SetActive(false);
         }
 
-        private void GetTWSAim()
+        protected void GetTWSAim()
         {
             //Debug.Log(Math.Round((scanAngle + 60) / 2.4f));
             int currRegion = (int)Math.Floor((scanAngle+60)/1.2f+0.5f);

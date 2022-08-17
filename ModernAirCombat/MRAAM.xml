@@ -20,13 +20,14 @@
 		 The ID must be unique among blocks in your mod.
 		 It may conflict with blocks of other mods, the mod loader handles this.
 		 The easiest way of assigning IDs is to use 1, 2, 3, etc.-->
-	<ID>3</ID>
+	<ID>4</ID>
 	
 	<!-- Name of the block, shown in the user interface. -->
-	<Name>Radar</Name>
+	<Name>MRAAM</Name>
 	
 	<!-- TODO: Change the mass to something appropriate -->
-	<Mass>1.5</Mass>
+	<Mass>3</Mass>
+	<Script>ModernAirCombat.MRAAMBlock</Script>
 	
 	<!-- Additional keywords that can be used to search for this block
 		 in the search tab of the block bar.
@@ -57,7 +58,7 @@
 		 fallback, not modded blocks. -->
 	<!--<Fallback>DoubleWoodenBlock</Fallback>-->
 	
-	<Script>ModernAirCombat.RadarBlock</Script>
+	<!-- <Script>Full Name of a BlockScript class, optional.</Script> -->
 	
 	<!-- Blocks can have certain predefined behaviour added without any custom code.
 		 These behaviours are called modules.
@@ -97,18 +98,18 @@
 		 Can be one of "Blunt", "Sharp", "Fire" -->
 	<!-- <DamageType>Blunt</DamageType> -->
 	
-	<Mesh name="Radar Mesh"> <!-- Must be defined as a resource in the manifest. -->
-		<Position x="0.0" y="0.0" z="0.0" />
-		<Rotation x="180" y="0" z="0" />
-		<Scale x="0.4" y="0.4" z="0.4" />
+	<Mesh name="MRAAM Mesh">
+	<!--  Must be defined as a resource in the manifest.  -->
+		<Position x="0.0" y="-2.0" z="0.3"/>
+		<Rotation x="0.0" y="0.0" z="0.0"/>
+		<Scale x="1.0" y="1.0" z="1.0"/>
 	</Mesh>
-	
-	<Texture name="Radar Texture" /> <!-- Must be defined as a resource in the manifest. -->
-	
+	<Texture name="MRAAM Texture"/>
+	<!--  Must be defined as a resource in the manifest.  -->
 	<Icon>
-		<Position x="0.0" y="0.0" z="0.0" />
-		<Rotation x="45" y="-45" z="0.0" />
-		<Scale x="0.25" y="0.25" z="0.25" />
+		<Position x="-0.2" y="-0.1" z="0.0"/>
+		<Rotation x="0" y="0" z="-45"/>
+		<Scale x="0.14" y="0.14" z="0.14"/>
 	</Icon>
 	
 	<!-- Including this causes a direction arrow, like the one on wheels and other turnable blocks,
@@ -145,35 +146,28 @@
 		<!-- TODO: Insert Collider definitions here.
 			 Examples: -->
 		<BoxCollider>
-			<Position x="0.0" y="0.0" z="0.4" />
-			<Rotation x="0.0" y="0.0" z="0.0" />
-			<Scale x="0.7" y="0.7" z="0.5" />
+			<Position x="0.0" y="0.0" z="0.3"/>
+			<Rotation x="0" y="45" z="0"/>
+			<Scale x="0.4" y="3" z="0.4"/>
 		</BoxCollider>
-		<!--
-		<SphereCollider>
-			<Position x="0.0" y="0.0" z="0.0" />
-			<Radius>1.0</Radius>
-		</SphereCollider>
 		<CapsuleCollider>
-			<Position x="0.0" y="0.0" z="0.0" />
-			<Rotation x="0.0" y="0.0" z="0.0" />
-			<Capsule direction="X" radius="1.0" height="2.0" />
+			<Position x="0.0" y="0.2" z="0.3"/>
+			<Rotation x="0.0" y="0.0" z="0.0"/>
+			<Capsule direction="Y" radius="0.16" height="4"/>
 		</CapsuleCollider>
-		-->
 	</Colliders>
-	
 	<BasePoint hasAddingPoint="false">
-		<Stickiness enabled="true" radius="0.6" />
-		<!-- Can only have motion if sticky -->
-		<Motion x="false" y="false" z="false" />
+		<Stickiness enabled="true" radius="0.6"/>
+		<!--  Can only have motion if sticky  -->
+		<Motion x="false" y="false" z="false"/>
+	<!--  Optional  -->
 	</BasePoint>
-	
 	<AddingPoints>
-		<!-- TODO: Insert AddingPoint definitions here. Example:-->
+	<!--  TODO: Insert AddingPoint definitions here. Example: -->
 		<AddingPoint>
-			<Position x="0.0" y="0.0" z="0.0" />
-			<Rotation x="0.0" y="0.0" z="0.0" />
-			<Stickiness enabled="false" radius="0"/>
+		<Position x="0.0" y="0.0" z="0.0"/>
+		<Rotation x="0.0" y="0.0" z="0.0"/>
+		<Stickiness enabled="false" radius="0"/>
 		</AddingPoint>
 	</AddingPoints>
 </Block>
