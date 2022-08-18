@@ -475,6 +475,80 @@ namespace ModernAirCombat
             
         }
 
+        //public override void SimulateFixedUpdateClient()
+        //{
+        //    if (Launch.EmulationHeld() && myStatus == status.stored)
+        //    {
+        //        myStatus = status.launched;
+        //    }
+
+        //    if (myStatus == status.launched)
+        //    {
+
+        //        if (time < 3.5f + launchDelay.Value)
+        //        {
+        //            if (time > launchDelay.Value)
+        //            {
+        //                if (activeTrail == false)
+        //                {
+        //                    TrailSmokeParticle.Play();
+        //                    TrailFlameParticle.Play();
+        //                    activeTrail = true;
+        //                }
+
+        //            }
+
+        //            if (time < detectDelay.Value + launchDelay.Value)
+        //            {
+        //            }
+        //            else
+        //            {
+        //                if (PFHit.explo == true)
+        //                {
+        //                    playExplo();
+        //                    BlockBehaviour.gameObject.SetActive(false);
+        //                }
+        //            }
+        //            time += Time.fixedDeltaTime;
+        //        }
+        //        else
+        //        {
+        //            if (activeTrail == true)
+        //            {
+        //                TrailSmokeParticle.Stop();
+        //                TrailFlameParticle.Stop();
+        //                activeTrail = false;
+        //            }
+        //            myStatus = status.missed;
+
+        //        }
+        //    }
+        //    if (myStatus == status.missed)
+        //    {
+        //        targetDetected = false;
+
+        //    }
+        //    if (myStatus == status.missed || myStatus == status.exploded)
+        //    {
+        //        if (!effectDestroyed)
+        //        {
+        //            Destroy(TrailSmoke, 3);
+        //            Destroy(TrailFlame, 3);
+        //            Destroy(ExploFireball, 3);
+        //            Destroy(ExploDust, 3);
+        //            Destroy(ExploShower, 3);
+        //            Destroy(ExploSmokeBlack, 3);
+        //            effectDestroyed = true;
+        //        }
+
+        //        if (myStatus == status.exploded && !gameObjectDestroyed)
+        //        {
+        //            Destroy(BlockBehaviour.gameObject, 3.2f);
+        //            gameObjectDestroyed = true;
+        //        }
+        //    }
+        //}
+
 
         public override void SimulateFixedUpdateHost()
         {

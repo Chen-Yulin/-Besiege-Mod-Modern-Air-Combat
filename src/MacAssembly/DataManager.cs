@@ -11,6 +11,19 @@ using UnityEngine;
 
 namespace ModernAirCombat
 {
+    public class RWRTargetData
+    {
+        public bool hasRadiation;
+        public Vector3 sourcePosition;
+        public int intensity;
+        
+        public RWRTargetData()
+        {
+            hasRadiation = false;
+            sourcePosition = Vector3.zero;
+            intensity = 0;
+        }
+    }
     public class BVRTargetData
     {
         public Vector3 position;
@@ -39,6 +52,7 @@ namespace ModernAirCombat
         public targetManager[] TargetData = new targetManager[10];
         public displayerData[] DisplayerData = new displayerData[10];
         public BVRTargetData[] BVRData = new BVRTargetData[10];
+        public RWRTargetData[,] RWRData = new RWRTargetData[10,8];
         
     }
 }
