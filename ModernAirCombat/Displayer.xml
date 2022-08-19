@@ -26,7 +26,7 @@
 	<Name>Displayer</Name>
 	
 	<!-- TODO: Change the mass to something appropriate -->
-	<Mass>0.5</Mass>
+	<Mass>0.3</Mass>
 	
 	<!-- Additional keywords that can be used to search for this block
 		 in the search tab of the block bar.
@@ -106,9 +106,9 @@
 	<Texture name="Displayer Texture" /> <!-- Must be defined as a resource in the manifest. -->
 	
 	<Icon>
-		<Position x="0.0" y="0.0" z="0.0" />
+		<Position x="0.1" y="-0.1" z="-0.1" />
 		<Rotation x="45" y="225" z="0" />
-		<Scale x="1.5" y="1.5" z="1.5" />
+		<Scale x="2" y="2" z="2" />
 	</Icon>
 	
 	<!-- Including this causes a direction arrow, like the one on wheels and other turnable blocks,

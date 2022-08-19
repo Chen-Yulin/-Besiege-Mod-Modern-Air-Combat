@@ -35,23 +35,29 @@ namespace ModernAirCombat
 
         void OnTriggerEnter(Collider col)
         {
-            MPTeam hitedTeam; 
-            if (targetCols.Count > 5)
-                return;
-            if (col.isTrigger || col.transform.parent.GetInstanceID() == col.GetInstanceID())
-                return;
-            if (col.attachedRigidbody.gameObject.name == "missle")
-                return;
             try
             {
+                MPTeam hitedTeam;
+                if (col.name == "flareCol")
+                    if (UnityEngine.Random.value > 0.5f)
+                        targetCols.Push(col);
+                if (targetCols.Count > 5)
+                    return;
+                if (col.isTrigger || col.transform.parent.GetInstanceID() == col.GetInstanceID())
+                    return;
+
+                if (col.attachedRigidbody.gameObject.name == "missle")
+                    return;
+            
                 BlockBehaviour hitedBlock = col.attachedRigidbody.gameObject.GetComponent<BlockBehaviour>();
                 hitedTeam = hitedBlock.Team;
+                targetCols.Push(col);
             }
             catch 
             {
                 return;
             }
-            targetCols.Push(col);
+            
         }
 
 

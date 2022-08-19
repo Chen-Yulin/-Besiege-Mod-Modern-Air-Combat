@@ -92,6 +92,8 @@ A mod for simulate modern air combat in besiege. <!-- FIX: Insert a short descri
 		<Block path="Displayer.xml" />
 		<Block path="Radar.xml" />
 		<Block path="MRAAM.xml" />
+		<Block path="RWR.xml" />
+		<Block path="FlareBlock.xml" />
 	</Blocks>
 	
 	<!-- Any entities (level objects) your mod adds to the game.
@@ -148,6 +150,11 @@ A mod for simulate modern air combat in besiege. <!-- FIX: Insert a short descri
 		<Mesh name="RadarHead Mesh" path="Radar\radarhead.obj"/>
 		<Texture name="RadarHead Texture" path="Radar\radarhead.png"/>
 		<Texture name="LockIconScreen Texture" path="LockIconScreen.png"/>
+		<Mesh name="RWR Mesh" path="RWR\RWR.obj"/>
+		<Texture name="RWR Texture" path="RWR\RWR.png"/>
+		<Mesh name="Flare Mesh" path="Flare\Flare.obj"/>
+		<Texture name="Flare Texture" path="Flare\Flare.png"/>
+		<AssetBundle name="Flare Effect" path="flare.ab"/>
 	</Resources>
 
 

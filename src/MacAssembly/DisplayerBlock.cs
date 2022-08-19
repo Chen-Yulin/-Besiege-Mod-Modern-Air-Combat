@@ -127,7 +127,7 @@ namespace ModernAirCombat
 
         public void InitEnemyIcons()
         {
-            if (!transform.parent.FindChild("EnemyDisplayTWS"))
+            if (!transform.FindChild("EnemyDisplayTWS"))
             {
                 EnemyDisplayTWS = new GameObject("EnemyDisplayTWS");
                 EnemyDisplayTWS.transform.SetParent(transform);
@@ -594,101 +594,107 @@ namespace ModernAirCombat
         }
         public override void SimulateFixedUpdateHost()
         {
-             currRegion = (int)Math.Floor((SLController.currAngle + 60) / 1.2f + 0.5f);
-             lockRegion = (int)Math.Floor((ChooserPosition.x + 60) / 1.2f + 0.5f);
+            try
+            {
+                currRegion = (int)Math.Floor((SLController.currAngle + 60) / 1.2f + 0.5f);
+                lockRegion = (int)Math.Floor((ChooserPosition.x + 60) / 1.2f + 0.5f);
 
 
-            //start track if lock mode on
-            if (locking)
-            {
-                if (!FindLockedTarget())//what to do when mode is switched passively to unlock
+                //start track if lock mode on
+                if (locking)
                 {
-                    radarPitch = 0f;
-                    LockIcon.SetActive(false);
-                    PitchIndicatorTarget.SetActive(false);
-                    locking = false;
-                }
-            }
-            else
-            {
-                //adjust the Chooser and the effected scan angle
-                if (upChooser && ChooserPosition.y < 60)
-                {
-                    ChooserPosition.y += 0.4f;
-                }
-                if (downChooser && ChooserPosition.y > -60)
-                {
-                    ChooserPosition.y -= 0.4f;
-                }
-                if (leftChooser && ChooserPosition.x > -60)
-                {
-                    ChooserPosition.x -= 0.4f;
-                }
-                if (rightChooser && ChooserPosition.x < 60)
-                {
-                    ChooserPosition.x += 0.4f;
-                }
-                
-            }
-            middleScanAngle = ChooserPosition.x;
-            //adjust the scan angle according to key
-            if (biggerAngle && deltaScanAngle<60)
-            {
-                deltaScanAngle += 0.4f;
-            }
-            else if (smallerAngle && deltaScanAngle>0)
-            {
-                deltaScanAngle -= 0.4f;
-            }
-
-            if (middleScanAngle - deltaScanAngle >= -60)
-            {
-                realMiddleScanAngle = middleScanAngle;
-                if (middleScanAngle + deltaScanAngle <= 60)
-                {
-                    realMiddleScanAngle = middleScanAngle;
+                    if (!FindLockedTarget())//what to do when mode is switched passively to unlock
+                    {
+                        radarPitch = 0f;
+                        LockIcon.SetActive(false);
+                        PitchIndicatorTarget.SetActive(false);
+                        locking = false;
+                    }
                 }
                 else
                 {
-                    realMiddleScanAngle = 60 - deltaScanAngle;
+                    //adjust the Chooser and the effected scan angle
+                    if (upChooser && ChooserPosition.y < 60)
+                    {
+                        ChooserPosition.y += 0.4f;
+                    }
+                    if (downChooser && ChooserPosition.y > -60)
+                    {
+                        ChooserPosition.y -= 0.4f;
+                    }
+                    if (leftChooser && ChooserPosition.x > -60)
+                    {
+                        ChooserPosition.x -= 0.4f;
+                    }
+                    if (rightChooser && ChooserPosition.x < 60)
+                    {
+                        ChooserPosition.x += 0.4f;
+                    }
+
+                }
+                middleScanAngle = ChooserPosition.x;
+                //adjust the scan angle according to key
+                if (biggerAngle && deltaScanAngle < 60)
+                {
+                    deltaScanAngle += 0.4f;
+                }
+                else if (smallerAngle && deltaScanAngle > 0)
+                {
+                    deltaScanAngle -= 0.4f;
+                }
+
+                if (middleScanAngle - deltaScanAngle >= -60)
+                {
+                    realMiddleScanAngle = middleScanAngle;
+                    if (middleScanAngle + deltaScanAngle <= 60)
+                    {
+                        realMiddleScanAngle = middleScanAngle;
+                    }
+                    else
+                    {
+                        realMiddleScanAngle = 60 - deltaScanAngle;
+                    }
+                }
+                else
+                {
+                    realMiddleScanAngle = -60 + deltaScanAngle;
+                }
+
+
+                //leftScanAngle = Math.Max(-60f, middleScanAngle - deltaScanAngle);
+                //rightScanAngle = Math.Min(60f, middleScanAngle + deltaScanAngle);
+                leftScanAngle = realMiddleScanAngle - deltaScanAngle;
+                rightScanAngle = realMiddleScanAngle + deltaScanAngle;
+
+                //adjust the pitch of radar according to key
+                if (upScan && radarPitch < 35)
+                {
+                    radarPitch += 0.4f;
+                }
+                else if (downScan && radarPitch > -35)
+                {
+                    radarPitch -= 0.4f;
+                }
+
+                DisplayerData.radarPitch = radarPitch;
+                DisplayerData.radarAngle = SLController.currAngle;
+                DataManager.Instance.DisplayerData[playerID] = DisplayerData;
+
+
+                RadarTarget = DataManager.Instance.TargetData[playerID].targets;
+                DisplayEnemy();
+                DisplayPitchIndicator();//always after displayEnemy
+
+
+                if (locking)
+                {
+                    sendBVRData.position = RadarTarget[lockRegion].position;
+                    sendBVRData.velocity = RadarTarget[lockRegion].velocity;
+                    DataManager.Instance.BVRData[playerID] = sendBVRData;
                 }
             }
-            else
-            {
-                realMiddleScanAngle = -60 + deltaScanAngle;
-            }
-
-            
-            //leftScanAngle = Math.Max(-60f, middleScanAngle - deltaScanAngle);
-            //rightScanAngle = Math.Min(60f, middleScanAngle + deltaScanAngle);
-            leftScanAngle = realMiddleScanAngle - deltaScanAngle;
-            rightScanAngle = realMiddleScanAngle + deltaScanAngle;
-
-            //adjust the pitch of radar according to key
-            if (upScan && radarPitch < 35)
-            {
-                radarPitch += 0.4f;
-            }else if(downScan && radarPitch > -35)
-            {
-                radarPitch -= 0.4f;
-            }
-
-            DisplayerData.radarPitch = radarPitch;
-            DisplayerData.radarAngle = SLController.currAngle;
-            DataManager.Instance.DisplayerData[playerID] = DisplayerData;
-
-
-            RadarTarget = DataManager.Instance.TargetData[playerID].targets;
-            DisplayEnemy();
-            DisplayPitchIndicator();//always after displayEnemy
-
-            
-            if (locking)
-            {
-                sendBVRData.position = RadarTarget[lockRegion].position;
-                sendBVRData.velocity = RadarTarget[lockRegion].velocity;
-                DataManager.Instance.BVRData[playerID] = sendBVRData;
-            }
+            catch { }
+             
 
         }
 

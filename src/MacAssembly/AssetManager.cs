@@ -8,6 +8,21 @@ using Modding;
 
 namespace ModernAirCombat
 {
+    public class Asset_Flare
+    {
+        public GameObject FlameFlare;
+        public GameObject SmokeFlare;
+        public Asset_Flare (ModAssetBundle modAssetBundle)
+        {
+            FlameFlare = modAssetBundle.LoadAsset<GameObject>("FlareFrame");
+            SmokeFlare = modAssetBundle.LoadAsset<GameObject>("FlareSmoke");
+            FlameFlare.AddComponent<DestroyIfEditMode>();
+            SmokeFlare.AddComponent<DestroyIfEditMode>();
+            FlameFlare.SetActive(false);
+            SmokeFlare.SetActive(false);
+            
+        }
+    }
 
     public class Asset_Trail
     {
@@ -56,11 +71,13 @@ namespace ModernAirCombat
 
         public Asset_Trail Trail { get; protected set; }
         public Asset_Explo Explo { get; protected set; }
+        public Asset_Flare Flare { get; protected set; }
 
         protected void Awake()
         {
             Trail = new Asset_Trail(ModResource.GetAssetBundle("Trail Effect"));
             Explo = new Asset_Explo(ModResource.GetAssetBundle("Explo Effect"));
+            Flare = new Asset_Flare(ModResource.GetAssetBundle("Flare Effect"));
         }
     }
 }
