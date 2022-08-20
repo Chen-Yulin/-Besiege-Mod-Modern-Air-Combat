@@ -9,78 +9,17 @@
 	<Name>ModernAirCombat</Name>
 	<Author>Humble Cavalry</Author> <!-- FIX: Insert your name here. -->
 	<!-- Major.Minor.Build -->
-	<Version>0.0.1</Version>
+	<Version>0.1.0</Version>
 	
 	<Description>
-A mod for simulate modern air combat in besiege. <!-- FIX: Insert a short description here. -->
+	A mod for simulating modern air combat in besiege. 
 	</Description>
-	
-	<!-- Square icon of the mod. Texture defined in the Resources section.
-		 This is displayed in the mod list and, if WorkshopThumbnail is not set, used as thumbnail when uploaded to the Steam workshop. -->
-	<!-- <Icon name="icon" /> -->
-	
-	<!-- Texture resource used as thumbnail when uploading the mod to the workshop.
-		 If this is not present, the Icon texture is used instead.
-		 This can be set to have different icons in the mod list and the workshop. -->
-	<!-- <WorkshopThumbnail name="thumbnail" /> -->
-	
-	<!-- Enables reloading of various values at runtime. This is normally triggered automatically when a file is changed,
-		 you can also trigger it by pressing Ctrl+H.
-		 Reloadable values include:
-			- Colliders
-			- Adding Points
-			- FireInteractions
-			- Mesh Transforms
-		 
-		 Also gives some extra information about warnings and errors parsing the XML files, at the cost
-		 of a slight increase in loading time for mods with many XML elements.
-		 
-		 It is generally recommended to turn this on while developing the mod, but keep it off for any releases.
-		 Important: You cannot upload mods to Steam or WeGame while Debug is turned on.
-		 
-		 Note: This value is independent of the Debug values for specific Blocks and Entities.-->
-	<Debug>true</Debug>
-	
-	<!-- Whether the mod can be used in MP or only in SP.
-		 SP-only mods are easier to write but obviously more limited in their uses.
-		 SP-only mods will be loaded when the first singleplayer level is loaded.
-		 Once an SP-only mod was loaded, it is impossible to start a multiplayer game until the game is restarted since the mod can't be unloaded again. -->
+	<Icon name="icon"/>
+	<Debug>false</Debug>
+
 	<MultiplayerCompatible>true</MultiplayerCompatible>
 	
-	<!-- Include this to make the mod be loaded in the title screen.
-		 Normally mods will only be loaded when the actual game is entered
-		 (i.e. when starting/joining an MP session or entering an SP level).
-		 
-		 Only use this if there is a good reason for it!
-		 Mods that are immediately loaded when starting the game are significantly
-		 less user-friendly, whenever the mod is disabled the game needs to be restarted.-->
-	<!-- <LoadInTitleScreen /> -->
-	
-	<!-- Note on IDs -->
-	<!-- Many elements of your mod need to have an ID assigned that will identify them.
-		 This includes blocks, entities, triggers and events.
-		 IDs are always integers (except the mod ID, that is an unsigned long).
-		 
-		 Except for the ID of the mod itself, they are always local to the mod.
-		 That means you do not need to worry about any conflicts with other mods, because
-		 the mod loader identifies these elements using the mod ID and the element ID.
-		 
-		 You should not change IDs after you have published your mod in any way.
-		 If you do, saved machines and levels will not load the elements correctly anymore.
-		 
-		 Do not rely on the game using the IDs you specified internally in fields such as in BlockBehaviour.BlockID.
-		 In many cases (e.g. blocks and entities) the game will identify your elements by another ID computed based
-		 on the mod and element IDs.
-	-->
-	
-	<!-- Any assemblies that contain code for your mod.
-		 If an assembly listed here contains an implementation of the Mod class,
-		 its OnLoad method will be called.
-		 BlockScripts for your blocks (if any) will be searched for in these assemblies.
-		 The path attribute is relative to the location of this file. -->
 	<Assemblies>
-		<!-- <Assembly path="SomeAssembly.dll" /> -->
-		<!-- <ScriptAssembly path="SomeAssembly/" /> -->
 		<Assembly path="MacAssembly.dll" />
 	</Assemblies>
 	
@@ -127,6 +66,7 @@ A mod for simulate modern air combat in besiege. <!-- FIX: Insert a short descri
 	<Resources>
 		<!-- <Mesh name="some-mesh-name" path="some_mesh_file.obj" /> -->
 		<!-- <Texture name="some-texture-name" path="some_texture_file.png" /> -->
+		<Texture name="icon" path="icon.png"/>
 		<Mesh name="SRAAM Mesh" path="SRAAM\r73.obj"/>
 		<Texture name="SRAAM Texture" path="SRAAM\r73.png"/>
 		<Mesh name="MRAAM Mesh" path="MRAAM\r27.obj"/>
@@ -155,6 +95,7 @@ A mod for simulate modern air combat in besiege. <!-- FIX: Insert a short descri
 		<Mesh name="Flare Mesh" path="Flare\Flare.obj"/>
 		<Texture name="Flare Texture" path="Flare\Flare.png"/>
 		<AssetBundle name="Flare Effect" path="flare.ab"/>
+		<AudioClip name="RWRBeep Audio" path="RWR\RWRBeep.wav" />
 	</Resources>
 
 

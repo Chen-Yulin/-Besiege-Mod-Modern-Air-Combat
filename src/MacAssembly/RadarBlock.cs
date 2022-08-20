@@ -104,11 +104,12 @@ namespace ModernAirCombat
             }
         }
     }
+    
 
     
     public class RadarBlock : BlockScript
     {
-
+        public MToggle ShowScan;
 
         public targetManager targetManagerRadar;
         public float scanAngle = 0;
@@ -138,6 +139,17 @@ namespace ModernAirCombat
         protected int playerID;
         protected Transform myTransform;
 
+        public bool OnClockWise(Vector2 from, Vector2 to)
+        {
+            if (from.x * to.y - to.x * from.y < 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
         public void InitAdvice()
         {
             if (!transform.FindChild("Advice"))
@@ -153,7 +165,7 @@ namespace ModernAirCombat
                 adviceTextMesh.fontSize = 64;
                 adviceTextMesh.anchor = TextAnchor.MiddleCenter;
                 adviceTextMesh.color = Color.green;
-                buildAdvice.SetActive(true);
+                buildAdvice.SetActive(false);
             }
 
         }
@@ -199,7 +211,7 @@ namespace ModernAirCombat
                 displayColor = Color.green;
                 displayColor.a = 0.05f;
                 radarMR.material.SetColor("_TintColor", displayColor);
-                RadarScanDisplayer.SetActive(true);
+                RadarScanDisplayer.SetActive(false);
             }
 
 
@@ -237,6 +249,30 @@ namespace ModernAirCombat
                 Collider targetCol = radarHit.targetCols.Peek();
                 //Debug.Log(targetCol.name);
                 targetManagerRadar.AddTarget(currRegion, targetCol, BlockBehaviour);
+
+                //determine RWR message
+                try
+                {
+                    int TargetPlayerID = targetCol.attachedRigidbody.gameObject.GetComponentInParent<BlockBehaviour>().ParentMachine.PlayerID;
+                    //Debug.Log("playerID:");
+                    //Debug.Log(TargetPlayerID);
+                    Vector2 radarPosition = new Vector2(myTransform.position.x, myTransform.position.z);
+                    Vector2 targetPosition = new Vector2(targetCol.transform.position.x, targetCol.transform.position.z);
+                    Vector2 radarDirection = radarPosition - targetPosition;
+                    Vector2 targetDirection = new Vector2(targetCol.attachedRigidbody.velocity.x, targetCol.attachedRigidbody.velocity.z);
+                    float angleBetween = Vector2.Angle(targetDirection, radarDirection);
+                    int AngleIndex = (int)Math.Floor(angleBetween / 45f + 0.5f);
+                    if (!OnClockWise(targetDirection, radarDirection))
+                        AngleIndex = 8 - AngleIndex;
+                    if (AngleIndex == 8)
+                        AngleIndex = 0;
+                    
+                    //DataManager.Instance.RWRData[TargetPlayerID, AngleIndex].hasRadiation = true;
+                    DataManager.Instance.RWRData[TargetPlayerID, AngleIndex] = 1;
+                    //Debug.Log(AngleIndex);
+                }
+                catch { }
+                
             }
             
             
@@ -244,31 +280,37 @@ namespace ModernAirCombat
 
         public override void SafeAwake()
         {
+            ShowScan = AddToggle("Display Scanner", "display scanner", false);
+
             myTransform = transform;
             playerID = BlockBehaviour.ParentMachine.PlayerID;
             InitScan();
-            InitAdvice();
+            //InitAdvice();
             targetManagerRadar = new targetManager();
         }
 
         public override void BuildingUpdate()
         {
-            if (!buildAdvice.activeSelf)
-            {
-                buildAdvice.SetActive(true);
-            }
+            //if (!buildAdvice.activeSelf)
+            //{
+            //    buildAdvice.SetActive(true);
+            //}
         }
 
         public override void OnSimulateStart()
         {
-            buildAdvice.SetActive(false);
+            //buildAdvice.SetActive(false);
             ScanCollider.SetActive(true);
+            if (ShowScan.IsActive)
+            {
+                RadarScanDisplayer.SetActive(true);
+            }
         }
 
 
         public override void OnSimulateStop()
         {
-
+            RadarScanDisplayer.SetActive(false);
         }
 
         public override void SimulateFixedUpdateHost()

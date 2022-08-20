@@ -446,15 +446,15 @@ namespace ModernAirCombat
         {
             myRigid = BlockBehaviour.GetComponent<Rigidbody>();
             playerID = BlockBehaviour.ParentMachine.PlayerID;
-            Lock = AddKey("锁定目标", "Lock Target", KeyCode.X);
-            EnlargeScanAngle = AddKey("扩大搜索角", "EnlargeScanAngle", KeyCode.T);
-            ReduceScanAngle = AddKey("缩小搜索角", "ReduceScanAngle", KeyCode.U);
-            ChooserUp = AddKey("上移光标", "ChooserUp", KeyCode.Y);
-            ChooserDown = AddKey("下移光标", "ChooserDown", KeyCode.H);
-            ChooserLeft = AddKey("左移光标", "ChooserLeft", KeyCode.G);
-            ChooserRight = AddKey("右移光标", "ChooserRight", KeyCode.J);
-            scanUp = AddKey("雷达向上", "scan up", KeyCode.I);
-            scanDown = AddKey("雷达向下", "scan down", KeyCode.K);
+            Lock = AddKey("Lock", "Lock Target", KeyCode.X);
+            EnlargeScanAngle = AddKey("Expand scan range", "EnlargeScanAngle", KeyCode.T);
+            ReduceScanAngle = AddKey("Reduce scan range", "ReduceScanAngle", KeyCode.U);
+            ChooserUp = AddKey("Cursor up", "ChooserUp", KeyCode.Y);
+            ChooserDown = AddKey("Cursor down", "ChooserDown", KeyCode.H);
+            ChooserLeft = AddKey("Cursor left", "ChooserLeft", KeyCode.G);
+            ChooserRight = AddKey("Cursor right", "ChooserRight", KeyCode.J);
+            scanUp = AddKey("Radar pitch up", "scan up", KeyCode.I);
+            scanDown = AddKey("Radar pitch down", "scan down", KeyCode.K);
             
             InitGrid();
             InitPanel();

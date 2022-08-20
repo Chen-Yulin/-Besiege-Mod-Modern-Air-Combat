@@ -80,24 +80,29 @@ namespace ModernAirCombat
 
         void OnTriggerEnter(Collider col)
         {
-            MPTeam hitedTeam;
-            if (explo == true)
-                return;
-            if (col.isTrigger || col.transform.parent.GetInstanceID() == col.GetInstanceID())
-                return;
-            if (col.attachedRigidbody.gameObject.name == "missle")
-                return;
             try
             {
-                BlockBehaviour hitedBlock = col.attachedRigidbody.gameObject.GetComponent<BlockBehaviour>();
-                hitedTeam = hitedBlock.Team;
+                MPTeam hitedTeam;
+                if (explo == true)
+                    return;
+                if (col.isTrigger || col.transform.parent.GetInstanceID() == col.GetInstanceID())
+                    return;
+                if (col.attachedRigidbody.gameObject.name == "missle")
+                    return;
+                try
+                {
+                    BlockBehaviour hitedBlock = col.attachedRigidbody.gameObject.GetComponent<BlockBehaviour>();
+                    hitedTeam = hitedBlock.Team;
+                }
+                catch
+                {
+                    return;
+                }
+                explo = true;
+                //Debug.Log("Explo!!!");
             }
-            catch
-            {
-                return;
-            }
-            explo = true;
-            Debug.Log("Explo!!!");
+            catch { }
+            
         }
 
     }
@@ -326,75 +331,81 @@ namespace ModernAirCombat
 
         protected void GetAim()
         {
-            ScanCollider.SetActive(true);
-            
-            detectFreqTime += Time.fixedDeltaTime;
-            
-
-            if (detectFreqTime >= 0.02)
+            try
             {
-                if (coneHit.targetCols.Count == 0)
+                ScanCollider.SetActive(true);
+
+                detectFreqTime += Time.fixedDeltaTime;
+
+
+                if (detectFreqTime >= 0.02)
                 {
-                    targetDetected = false;
-                    return;
+                    if (coneHit.targetCols.Count == 0)
+                    {
+                        targetDetected = false;
+                        return;
+                    }
+                    else
+                    {
+                        targetDetected = true;
+                    }
+                    detectFreqTime = 0;
+
+                    //Debug.Log("Targets:");
+                    //foreach (Collider col in coneHit.targetCols)
+                    //{
+                    //    Debug.Log(col.transform.parent.gameObject.name);
+                    //}
+
+                    Collider targetCol = coneHit.targetCols.Peek();
+                    Vector3 targetPosition = targetCol.transform.position;
+                    //Debug.Log(targetPosition);
+                    Vector3 targetVelocity = targetCol.attachedRigidbody.velocity;
+                    //Debug.Log(targetVelocity);
+
+
+                    //calculate three times to ensure precision
+                    float myVelocity = Rigidbody.velocity.magnitude;
+                    //Debug.Log(myVelocity);
+                    estimatedTime = (targetPosition - transform.position).magnitude / myVelocity;
+                    predictPosition = targetPosition + targetVelocity * estimatedTime;
+                    estimatedTime = (predictPosition - transform.position).magnitude / myVelocity;
+                    predictPosition = targetPosition + targetVelocity * estimatedTime;
+                    estimatedTime = (predictPosition - transform.position).magnitude / myVelocity;
+                    predictPosition = targetPosition + targetVelocity * estimatedTime;
+                    launchRotation = transform.rotation;
+                    ScanCollider.SetActive(false);
+                    coneHit.Reset();
+                }
+                Vector3 positionDiff = predictPosition - (transform.position + Rigidbody.velocity * estimatedTime);
+                //Debug.Log(positionDiff);
+                Vector3 modifiedDiff;
+                if (positionDiff.magnitude < 200)
+                {
+                    modifiedDiff.x = (0.6f * positionDiff.x);
+                    modifiedDiff.y = (0.6f * positionDiff.y);
+                    modifiedDiff.z = (0.6f * positionDiff.z);
                 }
                 else
                 {
-                    targetDetected = true;
+                    modifiedDiff.x = (0.2f * positionDiff.x);
+                    modifiedDiff.y = (0.2f * positionDiff.y);
+                    modifiedDiff.z = (0.2f * positionDiff.z);
                 }
-                detectFreqTime = 0;
 
-                //Debug.Log("Targets:");
-                //foreach (Collider col in coneHit.targetCols)
-                //{
-                //    Debug.Log(col.transform.parent.gameObject.name);
-                //}
+                predictPositionModified = predictPosition + modifiedDiff;
 
-                Collider targetCol = coneHit.targetCols.Peek();
-                Vector3 targetPosition = targetCol.transform.position;
-                //Debug.Log(targetPosition);
-                Vector3 targetVelocity = targetCol.attachedRigidbody.velocity;
-                //Debug.Log(targetVelocity);
-                
 
-                //calculate three times to ensure precision
-                float myVelocity = Rigidbody.velocity.magnitude;
-                //Debug.Log(myVelocity);
-                estimatedTime = (targetPosition - transform.position).magnitude/myVelocity;
-                predictPosition = targetPosition + targetVelocity * estimatedTime;
-                estimatedTime = (predictPosition - transform.position).magnitude / myVelocity;
-                predictPosition = targetPosition + targetVelocity * estimatedTime;
-                estimatedTime = (predictPosition - transform.position).magnitude / myVelocity;
-                predictPosition = targetPosition + targetVelocity * estimatedTime;
-                launchRotation = transform.rotation;
-                ScanCollider.SetActive(false);
-                coneHit.Reset();
-            }
-            Vector3 positionDiff = predictPosition - (transform.position + Rigidbody.velocity * estimatedTime);
-            //Debug.Log(positionDiff);
-            Vector3 modifiedDiff;
-            if (positionDiff.magnitude < 200)
-            {
-                modifiedDiff.x = (0.6f * positionDiff.x);
-                modifiedDiff.y = (0.6f * positionDiff.y);
-                modifiedDiff.z = (0.6f * positionDiff.z);
-            }
-            else
-            {
-                modifiedDiff.x = (0.2f * positionDiff.x);
-                modifiedDiff.y = (0.2f * positionDiff.y);
-                modifiedDiff.z = (0.2f * positionDiff.z);
-            }
-            
-            predictPositionModified = predictPosition + modifiedDiff ;
-
-            
 
                 //PredictionRigid.transform.position = predictPosition;
                 //Debug.Log(predictPosition);
+            }
+            catch { }
 
 
-            
+
+
+
 
 
         }
@@ -403,13 +414,13 @@ namespace ModernAirCombat
         public override void SafeAwake()
         {
             gameObject.name = "missle";
-            Launch = AddKey("发射", "launch", KeyCode.X);
-            IFF = AddToggle("开启友伤", "IFF", true);
+            Launch = AddKey("Launch", "launch", KeyCode.X);
+            //IFF = AddToggle("开启友伤", "IFF", true);
             //showScanner = AddToggle("显示探测范围", "showScanner", false);
             //detectAngleSlider = AddSlider("探测角度", "detection angle", 90.0f, 60.0f, 120.0f);
-            detectDelay = AddSlider("延时保险", "detection delay", 0.2f, 0.0f, 1f);
-            launchDelay = AddSlider("延时点火", "launch delay", 0.1f, 0.0f, 0.3f);
-            PFRang = AddSlider("近炸范围", "PF range", 5f, 1f, 10f);
+            detectDelay = AddSlider("Safty delay", "detection delay", 0.2f, 0.0f, 1f);
+            launchDelay = AddSlider("Launch delay", "launch delay", 0.1f, 0.0f, 0.3f);
+            PFRang = AddSlider("Proximity fuse range", "PF range", 5f, 1f, 10f);
 
             initScan();//挂载上导弹前方的圆锥触发器
             initTrail();
@@ -433,7 +444,7 @@ namespace ModernAirCombat
             ScanCollider.transform.localScale = ScanColScale;
             //ScannerDisplay.transform.localScale = ScanColScale;
             //Debug.Log(ScanColScale);
-            coneHit.IFF = IFF.IsActive;
+            //coneHit.IFF = IFF.IsActive;
             coneHit.team = BlockBehaviour.Team;
             coneHit.PlayerID = myPlayerID;
 

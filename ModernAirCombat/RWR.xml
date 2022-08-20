@@ -1,110 +1,22 @@
 <Block>
-	<!-- Block definition file.
-		 Optional elements are mostly out-commented.
-		 Remember to insert appropriate values where specified,
-		 the mod will not load correctly until you do.
-		 Restart the game to load the block once this file is completed.
-		 
-		 Values that should always be changed are marked with "TODO".
-		 
-		 See the documentation for further information on any of these elements.
-	-->
-	
-	<!-- Optional. Enables debug mode.
-		 In debug mode, colliders and adding points are shown visually
-		 to assist in positioning them correctly.
-		 (Capsule colliders are shown as cubes, imagine their edges were rounded off.) -->
-	<Debug>True</Debug>
-	
-	<!-- ID of your block. See "Note on IDs" in Mod.xml.
-		 The ID must be unique among blocks in your mod.
-		 It may conflict with blocks of other mods, the mod loader handles this.
-		 The easiest way of assigning IDs is to use 1, 2, 3, etc.-->
+
+	<Debug>false</Debug>
+
 	<ID>5</ID>
 	
-	<!-- Name of the block, shown in the user interface. -->
 	<Name>RWR</Name>
-	
-	<!-- TODO: Change the mass to something appropriate -->
+
 	<Mass>0.1</Mass>
+
 	<Script>ModernAirCombat.RWRBlock</Script>
 	
-	<!-- Additional keywords that can be used to search for this block
-		 in the search tab of the block bar.
-		 
-		 Blocks can always be searched for by name and author,
-		 additional keywords can be specified here. -->
-	<!--<SearchKeywords>
-		<Keyword>Some Keyword</Keyword>
-	</SearchKeywords>-->
-	
-	<!-- Optional.
-		 Only has an effect if the OnFlip method in the block script is not overriden.
-		 
-	     Causes the Flipped property for the script to be set correctly. This is also used by
-		 certain modules, like Spinning or Steering.
-		 If an Arrow element is included, it is automatically flipped too. -->
-	<!-- <CanFlip>true</CanFlip> -->
-	
-	<!-- Specify that this block is a replacement of an old modded block.
-		 If this block has an equivalent that was created with the old community mod/block loader,
-		 specifying its id here will make the game load this block when loading machines that contain the old block. -->
-	<!-- <Replaces>410</Replaces> -->
-	
-	<!-- Normally, when a machine with a modded block is loaded, but that block is not loaded, the block will be ignored.
-		 If the block has a fallback specified here, the fallback block is loaded instead in this scenario.
-		 
-		 Valid values are entries of the BlockType enum or the numeric ID of a block. Only normal blocks can be specified as
-		 fallback, not modded blocks. -->
-	<!--<Fallback>DoubleWoodenBlock</Fallback>-->
-	
-	<!-- <Script>Full Name of a BlockScript class, optional.</Script> -->
-	
-	<!-- Blocks can have certain predefined behaviour added without any custom code.
-		 These behaviours are called modules.
-		 The Shooting, Spewing, Spinning, and Steering modules are included by default
-		 and mods can also add new modules.
-		 Check the documentation for more information on how to use modules. -->
-	<!--<Modules>
-	
-	</Modules>-->
-	
-	<!-- Include to make block take damage. -->
-	<!-- <Health>20</Health> -->
-	
-	<!-- Optional.
-		 The game generates "stripped" versions of the prefab,
-		 these have some components and child objects removed and are used in MP where the full
-		 object is not always necessary.
-		 If you find that this stripping removes some components or child objects that you added to the prefab manually
-		 and need on the stripped version, you can include a list of objects to keep using this. -->
-	<!-- <KeepWhenStripped>
-		<Object>SomeObjectName</Object>
-	</KeepWhenStripped> -->
-	
-	<!-- Include to enable block to burn.
-		 The Trigger element is optional. -->
-	<!-- <FireInteraction burnDuration="5">
-		<SphereTrigger>
-			<Position x="0" y="0" z="0.61" />
-			<Radius>1.5</Radius>
-		</SphereTrigger>
-	</FireInteraction> -->
-	
-	<!-- Include to make block freezable. -->
-	<!-- <IceInteraction /> -->
-	
-	<!-- Optionally specify type of damage done to entities.
-		 Can be one of "Blunt", "Sharp", "Fire" -->
-	<!-- <DamageType>Blunt</DamageType> -->
-	
-	<Mesh name="RWR Mesh"> <!-- Must be defined as a resource in the manifest. -->
+	<Mesh name="RWR Mesh"> 
 		<Position x="0.0" y="0.0" z="0.0" />
 		<Rotation x="90" y="0" z="0" />
 		<Scale x="1.0" y="1.0" z="1.0" />
 	</Mesh>
 	
-	<Texture name="RWR Texture" /> <!-- Must be defined as a resource in the manifest. -->
+	<Texture name="RWR Texture" /> 
 	
 	<Icon>
 		<Position x="0.0" y="0.0" z="-1.0" />
@@ -112,45 +24,12 @@
 		<Scale x="3" y="3" z="3" />
 	</Icon>
 	
-	<!-- Including this causes a direction arrow, like the one on wheels and other turnable blocks,
-		 to be displayed. The child elements define how and where it is displayed. -->
-	<!--<Arrow>
-		<Position x="0" y="0" z="0" />
-		<Rotation x="0" y="0" z="0" />
-		<Scale x="1" y="1" z="1" />
-	</Arrow>-->
-	
-	<!-- Optional.
-		 Both child elements are optional.
-		 Hammer can be used to specify the position and rotation of the end of the nail at the start of the hammer animation.
-		 Colliders can be used to specify a different set of colliders to use for the ghost.
-		 If it is not present, the colliders of the normal block will be used.
-		 It is also possible to specify ignoreForGhost attributes for some of the normal colliders to use the normal set of
-		 colliders with a few of them removed on the ghost.
-		 If the Colliders element here is present, all ignoreForGhost attributes are ignored. -->
-	<!-- <Ghost>
-		<Hammer>
-			<Position x="0" y="0" z="0.8" />
-			<Rotation x="0" y="0" z="0" />
-		</Hammer>
-		<Colliders>
-			<BoxCollider>
-				<Position x="0.0" y="0.0" z="0.0" />
-				<Rotation x="0.0" y="0.0" z="0.0" />
-				<Scale x="1.0" y="1.0" z="1.0" />
-			</BoxCollider>
-		</Colliders>
-	</Ghost> -->
-	
 	<Colliders>
-		<!-- TODO: Insert Collider definitions here.
-			 Examples: -->
 		<BoxCollider>
 			<Position x="0.0" y="0" z="0.025" />
 			<Rotation x="90" y="0" z="0.0" />
 			<Scale x="0.2" y="0.05" z="0.2" />
 		</BoxCollider>
-		
 	</Colliders>
 	
 	<BasePoint hasAddingPoint="false">
@@ -160,11 +39,5 @@
 	</BasePoint>
 	
 	<AddingPoints>
-		<!-- TODO: Insert AddingPoint definitions here. Example:-->
-		<AddingPoint>
-			<Position x="0.0" y="0.0" z="0.0" />
-			<Rotation x="0.0" y="0.0" z="0.0" />
-			<Stickiness enabled="false" radius="0"/>
-		</AddingPoint>
 	</AddingPoints>
 </Block>

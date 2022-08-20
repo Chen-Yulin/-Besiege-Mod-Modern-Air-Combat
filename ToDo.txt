@@ -1,0 +1,7 @@
++ add overload detection in DisplayerBlock（BlackOut）
+
++ implement RWRBlock
+
++ decouple display and calculating in all blocks
+
++ on-line compatibility

@@ -13,15 +13,13 @@ namespace ModernAirCombat
 {
     public class RWRTargetData
     {
-        public bool hasRadiation;
-        public Vector3 sourcePosition;
-        public int intensity;
+        //public bool hasRadiation;
+        
         
         public RWRTargetData()
         {
-            hasRadiation = false;
-            sourcePosition = Vector3.zero;
-            intensity = 0;
+            //hasRadiation = false;
+            
         }
     }
     public class BVRTargetData
@@ -52,7 +50,7 @@ namespace ModernAirCombat
         public targetManager[] TargetData = new targetManager[10];
         public displayerData[] DisplayerData = new displayerData[10];
         public BVRTargetData[] BVRData = new BVRTargetData[10];
-        public RWRTargetData[,] RWRData = new RWRTargetData[10,8];
+        public float[,] RWRData = new float[10,8];
         
     }
 }
