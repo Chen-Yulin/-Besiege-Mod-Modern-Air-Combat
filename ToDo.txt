@@ -1,7 +1,8 @@
-+ add overload detection in DisplayerBlock（BlackOut）
 
-+ implement RWRBlock
-
-+ decouple display and calculating in all blocks
++ using instantiation to optimize code
 
 + on-line compatibility
+
++ add overload detection in DisplayerBlock（BlackOut）
+
++ add Hub Block

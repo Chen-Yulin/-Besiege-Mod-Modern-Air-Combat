@@ -199,7 +199,6 @@ namespace ModernAirCombat
                     if (DataManager.Instance.RWRData[playerID, i] == 1)
                     {
                         BeepAS.Play();
-                        Debug.Log("play");
                     }
                     if (!Icon[i].activeSelf)
                     {
@@ -218,6 +217,33 @@ namespace ModernAirCombat
             }
             
         }
+
+        //public override void SimulateUpdateClient()
+        //{
+        //    for (int i = 0; i < 8; i++)
+        //    {
+        //        if (DataManager.Instance.RWRData[playerID, i] > 0)
+        //        {
+        //            if (DataManager.Instance.RWRData[playerID, i] == 1)
+        //            {
+        //                BeepAS.Play();
+        //            }
+        //            if (!Icon[i].activeSelf)
+        //            {
+        //                Icon[i].SetActive(true);
+        //            }
+        //        }
+        //        else
+        //        {
+        //            if (Icon[i].activeSelf)
+        //            {
+        //                Icon[i].SetActive(false);
+        //            }
+        //            DataManager.Instance.RWRData[playerID, i] = 0;
+        //        }
+        //    }
+        //}
+
         void OnGUI()
         {
             //GUI.Box(new Rect(100, 100, 200, 50), DataManager.Instance.RWRData[playerID, 0].ToString());

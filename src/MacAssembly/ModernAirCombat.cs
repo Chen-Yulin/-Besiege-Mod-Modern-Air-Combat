@@ -17,7 +17,9 @@ namespace ModernAirCombat
 		{
 			Mod = new GameObject("Morden Firearm Kit Mod");
 			UnityEngine.Object.DontDestroyOnLoad(Mod);
+			Mod.AddComponent<FlareMessageReciver>();
 			AssetManager.Instance.transform.SetParent(Mod.transform);
+			MessageController.Instance.transform.SetParent(Mod.transform);
 			Debug.Log("Hello, this is Modern Air Combat£¡");
 
 			

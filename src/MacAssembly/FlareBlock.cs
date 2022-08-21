@@ -10,100 +10,154 @@ using Modding.Modules;
 using Modding;
 using Modding.Blocks;
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace ModernAirCombat
 {
-    class FlareBlock : BlockScript
+    class FlareMessageReciver : SingleInstance<FlareMessageReciver>
+    {
+        public override string Name { get; } = "FlareMessageReciver";
+
+        public Dictionary<int, Dictionary<int, Vector3>> FlareLaunchData = new Dictionary<int, Dictionary<int, Vector3>>();
+
+        public void ReceiveMsg(Message msg)
+        {
+            int guid_msg = (int)msg.GetData(0);
+            int playerid_msg = (int)msg.GetData(1);
+            Vector3 velocity_msg = (Vector3)msg.GetData(2);
+
+            if (FlareLaunchData.ContainsKey(guid_msg))
+            {
+                if (FlareLaunchData[guid_msg].ContainsKey(playerid_msg))
+                {
+                    FlareLaunchData[guid_msg][playerid_msg] = velocity_msg;
+                }
+                else
+                {
+                    FlareLaunchData[guid_msg].Add(playerid_msg, velocity_msg);
+                }
+                
+                //Debug.Log("update" + ((int)msg.GetData(0)).ToString() + " " + ((Vector3)msg.GetData(1)).ToString());
+            }
+            else
+            {
+                Dictionary<int, Vector3> tmpDic = new Dictionary<int, Vector3>
+                {
+                    { playerid_msg, velocity_msg }
+                };
+                FlareLaunchData.Add(guid_msg, tmpDic);
+                
+            }
+ 
+        }
+
+        public Vector3 GetLaunchPara(int guid, int playerID)
+        {
+            if (FlareLaunchData.ContainsKey(guid))
+            {
+                if (FlareLaunchData[guid].ContainsKey(playerID))
+                {
+                    return FlareLaunchData[guid][playerID];
+                }
+                else
+                {
+                    return Vector3.zero;
+                }
+                
+            }
+            else
+            {
+                return Vector3.zero;
+            }
+            
+        }
+
+
+    }
+
+    public class FlareBlock : BlockScript
     {
         public MKey ReleaseKey;
         public MSlider ReleaseInterval;
 
         //public GameObject FlareAssembly;
-        public GameObject[] FlareObject;
-        public GameObject[] FlareFlame;
-        public GameObject[] FlareSmoke;
+        public GameObject FlareObject;
+        public GameObject FlareFlame;
+        public GameObject FlareSmoke;
+        public List<GameObject> FlareAssembly = new List<GameObject>();
 
-        private ParticleSystem[] FlareFlameParticle;
-        private ParticleSystem[] FlareSmokeParticle;
-        private BoxCollider[] FlareCollider;
+        public static MessageType LaunchPara = ModNetworking.CreateMessageType(DataType.Integer, DataType.Integer, DataType.Vector3);
+        public int HostGuid;
+        public Vector3 HostVelocity;
+
         private float time = 0f;
-        private int nextFlare = 0;
+        private int myGuid;
+        private int myPlayerID;
 
         public void InitFlare()
         {
-            if (true)
+            try
             {
-                //FlareAssembly = new GameObject("FlareAssembly");
-                //FlareAssembly.transform.SetParent(transform);
-                //FlareAssembly.transform.localPosition = new Vector3(0, 0, 1f);
-                //FlareAssembly.transform.localRotation = Quaternion.Euler(0, 0, 0);
-                //FlareAssembly.transform.localScale = new Vector3(1, 1, 1);
-                FlareObject = new GameObject[8];
-                FlareFlame = new GameObject[8];
-                FlareSmoke = new GameObject[8];
-                FlareCollider = new BoxCollider[8];
-                FlareFlameParticle = new ParticleSystem[8];
-                FlareSmokeParticle = new ParticleSystem[8];
-                for (int i = 0; i < 8; i++)
-                {
-                    FlareObject[i] = new GameObject("flare");
-                    FlareObject[i].transform.SetParent(BlockBehaviour.transform);
-                    FlareObject[i].transform.localPosition = new Vector3(0, 0, 1);
-                    FlareObject[i].transform.localRotation = Quaternion.Euler(0, 0, 0);
-                    FlareObject[i].transform.localScale = Vector3.one;
-                    FlareCollider[i] = FlareObject[i].AddComponent<BoxCollider>();
-                    FlareCollider[i].name = "flareCol";
-                    FlareCollider[i].size = 0.01f * Vector3.one;
-                    FlareCollider[i].center = Vector3.zero;
-                    FlareCollider[i].enabled = false;
-                    
-
-                    FlareFlame[i] = Instantiate(AssetManager.Instance.Flare.FlameFlare);
-                    FlareSmoke[i] = Instantiate(AssetManager.Instance.Flare.SmokeFlare);
-
-                    FlareFlame[i].transform.SetParent(FlareObject[i].transform);
-                    FlareFlame[i].transform.localPosition = Vector3.zero;
-                    FlareFlame[i].transform.localRotation = Quaternion.Euler(0,0,0);
-                    FlareFlame[i].transform.localScale = Vector3.one;
-
-                    FlareSmoke[i].transform.SetParent(FlareObject[i].transform);
-                    FlareSmoke[i].transform.localPosition = Vector3.zero;
-                    FlareSmoke[i].transform.localRotation = Quaternion.Euler(0, 0, 0);
-                    FlareSmoke[i].transform.localScale = Vector3.one;
-
-                    FlareFlameParticle[i] = FlareFlame[i].GetComponent<ParticleSystem>();
-                    FlareSmokeParticle[i] = FlareSmoke[i].GetComponent<ParticleSystem>();
-
-                    FlareFlame[i].SetActive(true);
-                    FlareSmoke[i].SetActive(true);
-                }
-                //FlareAssembly.SetActive(true);
+                Destroy(FlareObject);
             }
-            
-        }
+            catch { }
+            FlareObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            Destroy(FlareObject.GetComponent<MeshFilter>());
+            FlareObject.GetComponent<BoxCollider>().size = new Vector3(0.1f,0.1f,0.1f);
 
-        public void Release()
-        {
-            if (nextFlare >= 8)
-                return;
+            FlareFlame = (GameObject)Instantiate(AssetManager.Instance.Flare.FlameFlare, FlareObject.transform);
+            FlareSmoke = (GameObject)Instantiate(AssetManager.Instance.Flare.SmokeFlare, FlareObject.transform);
 
-            FlareObject[nextFlare].transform.SetParent(transform.parent.transform);
-            FlareObject[nextFlare].SetActive(true);
-            FlareCollider[nextFlare].enabled = true;
-            Rigidbody rig = FlareObject[nextFlare].AddComponent<Rigidbody>();
-            rig.velocity = BlockBehaviour.Rigidbody.velocity;
+            FlareFlame.transform.localPosition = Vector3.zero;
+            FlareFlame.transform.localRotation = Quaternion.Euler(0,0,0);
+            FlareFlame.transform.localScale = Vector3.one;
+
+            FlareSmoke.transform.localPosition = Vector3.zero;
+            FlareSmoke.transform.localRotation = Quaternion.Euler(0, 0, 0);
+            FlareSmoke.transform.localScale = Vector3.one;
+
+            FlareFlame.SetActive(true);
+            FlareSmoke.SetActive(true);
+
+            Rigidbody rig = FlareObject.AddComponent<Rigidbody>();
             rig.mass = 0.01f;
             rig.drag = 0.5f;
-            rig.AddRelativeForce(new Vector3(5 * UnityEngine.Random.value-2.5f, 5*UnityEngine.Random.value-2.5f, 30+10*UnityEngine.Random.value));
-            FlareFlameParticle[nextFlare].Play();
-            FlareSmokeParticle[nextFlare].Play();
-            Destroy(FlareObject[nextFlare],5);
-            nextFlare++;
+
+            FlareObject.SetActive(false);
         }
+            
+        public void Release(Vector3 velocity)
+        {
+            if (FlareAssembly.Count >=8)
+            {
+                return;
+            }
+            else
+            {
+                FlareAssembly.Add((GameObject)Instantiate(FlareObject, transform.position + 2*transform.forward, transform.rotation));
+                GameObject tmpFlare = FlareAssembly[FlareAssembly.Count - 1];
+                tmpFlare.SetActive(true);
+                Rigidbody tmpRig = tmpFlare.GetComponent<Rigidbody>();
+                tmpRig.velocity = velocity;
+                tmpRig.AddRelativeForce(new Vector3(5 * UnityEngine.Random.value - 2.5f, 5 * UnityEngine.Random.value - 2.5f, 30 + 10 * UnityEngine.Random.value));
+                tmpFlare.transform.GetChild(0).gameObject.GetComponent<ParticleSystem>().Play();
+                tmpFlare.transform.GetChild(1).gameObject.GetComponent<ParticleSystem>().Play();
+                Destroy(tmpFlare, 5);
+            }
+        }
+
+
+        public override void BuildingUpdate()
+        {
+            if (BlockBehaviour.Guid.GetHashCode() != 0 && BlockBehaviour.Guid.GetHashCode() != myGuid)
+                myGuid = BlockBehaviour.Guid.GetHashCode();
+        }
+
 
         public override void SafeAwake()
         {
-            ReleaseKey = AddKey("Launch", "Launch FLare", KeyCode.C);
+            myPlayerID = BlockBehaviour.ParentMachine.PlayerID;
+            ReleaseKey = AddKey("Launch", "Launch Flare", KeyCode.C);
             ReleaseInterval = AddSlider("Release Interval", "release interval", 0.2f, 0.05f, 0.5f);
             InitFlare();
 
@@ -112,28 +166,64 @@ namespace ModernAirCombat
         {
 
         }
-        
-        private void Update()
+
+        public override void SimulateUpdateHost()
         {
-            try
+            if (StatMaster.isMP)
             {
-                if (ReleaseKey.IsPressed)
+                Message HostLaunchPara = LaunchPara.CreateMessage(myGuid, (int)BlockBehaviour.ParentMachine.PlayerID, BlockBehaviour.Rigidbody.velocity);
+                ModNetworking.SendToAll(HostLaunchPara);
+            }
+            if (ReleaseKey.IsPressed)
+            {
+                time = 0f;
+                Release(BlockBehaviour.Rigidbody.velocity);
+            }
+            if (ReleaseKey.IsHeld)
+            {
+                time += Time.deltaTime;
+                if (time > ReleaseInterval.Value)
                 {
+                    Release(BlockBehaviour.Rigidbody.velocity);
                     time = 0f;
-                    Release();
-                }
-                if (ReleaseKey.IsHeld)
-                {
-                    time += Time.deltaTime;
-                    if (time > ReleaseInterval.Value)
-                    {
-                        Release();
-                        time = 0f;
-                    }
                 }
             }
-            catch { }
             
+        }
+
+        public override void SimulateUpdateClient()
+        {
+            HostVelocity = FlareMessageReciver.Instance.GetLaunchPara(myGuid,myPlayerID);
+            if (ReleaseKey.IsPressed)
+            {
+                time = 0f;
+                Release(HostVelocity);
+            }
+            if (ReleaseKey.IsHeld)
+            {
+                time += Time.deltaTime;
+                if (time > ReleaseInterval.Value)
+                {
+                    Release(HostVelocity);
+                    time = 0f;
+                }
+            }
+        }
+
+        public override void OnSimulateStop()
+        {
+            for (int i = 0; i < FlareAssembly.Count; i++)
+            {
+                if (FlareAssembly[i])
+                {
+                    Destroy(FlareAssembly[i]);
+                }
+            }
+        }
+
+        void OnGUI()
+        {
+            //GUI.Box(new Rect(100, 100, 200, 200), HostVelocity.ToString());
         }
     }
 }
