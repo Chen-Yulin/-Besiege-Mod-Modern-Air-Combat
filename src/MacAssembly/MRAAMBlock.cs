@@ -25,6 +25,7 @@ namespace ModernAirCombat
         }
         protected bool PassiveGetAim()
         {
+            
             try
             {
                 Vector3 targetVelocity = DataManager.Instance.BVRData[myPlayerID].velocity;
@@ -146,10 +147,7 @@ namespace ModernAirCombat
                         {
                             Destroy(TrailSmoke, 3);
                             Destroy(TrailFlame, 3);
-                            Destroy(ExploFireball, 3);
-                            Destroy(ExploDust, 3);
-                            Destroy(ExploShower, 3);
-                            Destroy(ExploSmokeBlack, 3);
+                            Destroy(Explo, 3);
                             effectDestroyed = true;
                         }
                     }

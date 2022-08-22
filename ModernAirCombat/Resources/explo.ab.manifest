@@ -1,9 +1,9 @@
 ManifestFileVersion: 0
-CRC: 1298191880
+CRC: 3167347987
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: c914a4cdbb344cf045e6887aea78d12b
+    Hash: 09c22ac028ebc505736301c537350877
   TypeTreeHash:
     serializedVersion: 2
     Hash: 8e73928d58048341e9b2fe1dbcc1debf
@@ -26,6 +26,7 @@ ClassTypes:
 Assets:
 - Assets/Explo/Fireball.prefab
 - Assets/Explo/Dust.prefab
+- Assets/Explo/Explosion.prefab
 - Assets/Explo/SmokeBlack.prefab
 - Assets/Explo/Shower.prefab
 Dependencies: []

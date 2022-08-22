@@ -17,6 +17,8 @@ namespace ModernAirCombat
         public MessageController()
         {
             ModNetworking.Callbacks[FlareBlock.LaunchPara] += FlareMessageReciver.Instance.ReceiveMsg;
+            ModNetworking.Callbacks[SRAAMBlock.MissleExplo] += MissleExploMessageReciver.Instance.ReceiveMsg;
+            ModNetworking.Callbacks[MRAAMBlock.MissleExplo] += MissleExploMessageReciver.Instance.ReceiveMsg;
         }
     }
 }

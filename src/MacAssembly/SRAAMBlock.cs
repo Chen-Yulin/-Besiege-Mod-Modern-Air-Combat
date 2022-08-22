@@ -13,6 +13,65 @@ using UnityEngine;
 
 namespace ModernAirCombat
 {
+    class MissleExploMessageReciver : SingleInstance<MissleExploMessageReciver>
+    {
+        public override string Name { get; } = "MissleExploMessageReciver";
+
+        public Dictionary<int, Dictionary<int, bool>> MissleExploMsg = new Dictionary<int, Dictionary<int, bool>>();
+
+        public void ReceiveMsg(Message msg)
+        {
+            int guid_msg = (int)msg.GetData(0);
+            int playerid_msg = (int)msg.GetData(1);
+            bool explo_msg = (bool)msg.GetData(2);
+
+            if (MissleExploMsg.ContainsKey(guid_msg))
+            {
+                if (MissleExploMsg[guid_msg].ContainsKey(playerid_msg))
+                {
+                    MissleExploMsg[guid_msg][playerid_msg] = explo_msg;
+                }
+                else
+                {
+                    MissleExploMsg[guid_msg].Add(playerid_msg, explo_msg);
+                }
+            }
+            else
+            {
+                Dictionary<int, bool> tmpDic = new Dictionary<int, bool>
+                {
+                    { playerid_msg, explo_msg }
+                };
+                MissleExploMsg.Add(guid_msg, tmpDic);
+
+            }
+
+        }
+
+        public bool GetExploMsg(int guid, int playerID)
+        {
+            if (MissleExploMsg.ContainsKey(guid))
+            {
+                if (MissleExploMsg[guid].ContainsKey(playerID))
+                {
+                    return MissleExploMsg[guid][playerID];
+                }
+                else
+                {
+                    return false;
+                }
+
+            }
+            else
+            {
+                return false;
+            }
+
+        }
+
+
+    }
+
     public class ScanCollisonHit : MonoBehaviour
     {
         public MPTeam team = MPTeam.None;
@@ -136,19 +195,16 @@ namespace ModernAirCombat
         public GameObject TrailSmoke;
         public ParticleSystem TrailFlameParticle;
         public ParticleSystem TrailSmokeParticle;
-        public GameObject ExploFireball;
-        public GameObject ExploDust;
-        public GameObject ExploSmokeBlack;
-        public GameObject ExploShower;
-        public ParticleSystem ExploFireballParticle;
-        public ParticleSystem ExploDustParticle;
-        public ParticleSystem ExploSmokeBlackParticle;
-        public ParticleSystem ExploShowerParticle;
+        public GameObject Explo;
+        public GameObject ExploClient;
+
 
         public float ExploPower = 100000f;
         public float ExploRadius = 20f;
 
+        public static MessageType MissleExplo = ModNetworking.CreateMessageType(DataType.Integer, DataType.Integer, DataType.Boolean);
 
+        private int myGuid;
 
         protected float estimatedTime;
         protected Transform myTransform;      //实例化Transform对象
@@ -207,24 +263,6 @@ namespace ModernAirCombat
                 ScanCollider.SetActive(false);
                 coneHit.Reset();
             }
-
-
-            //if (BlockBehaviour.transform.FindChild("Scanner Display") == null)
-            //{
-            //    // render the mesh of scanner
-            //    ScannerDisplay = new GameObject("Scanner Display");
-            //    ScannerDisplay.transform.SetParent(BlockBehaviour.transform);
-            //    ScannerDisplay.transform.localPosition = new Vector3(0f, 600f, 0.3f);
-            //    ScannerDisplay.transform.localRotation = Quaternion.Euler(90, 0, 0);
-            //    ScannerDisplay.transform.localScale = Vector3.one;
-            //    scannerMeshFilter = ScannerDisplay.AddComponent<MeshFilter>();
-            //    scannerRenderer = ScannerDisplay.AddComponent<MeshRenderer>();
-            //    scannerRenderer.material = new Material(Shader.Find("Particles/Alpha Blended"));
-            //    scannerColor = Color.green;
-            //    scannerColor.a = 0.05f;
-            //    scannerRenderer.material.SetColor("_TintColor", scannerColor);
-            //    ScannerDisplay.SetActive(false);
-            //}
         }
 
         public void initPF()
@@ -260,62 +298,49 @@ namespace ModernAirCombat
             TrailFlame.SetActive(true);
         }
 
-        protected void initExplo()
-        {
-            ExploFireball = Instantiate(AssetManager.Instance.Explo.ExploFireball);
-            ExploDust = Instantiate(AssetManager.Instance.Explo.ExploDust);
-            ExploSmokeBlack = Instantiate(AssetManager.Instance.Explo.ExploSmokeBlack);
-            ExploShower = Instantiate(AssetManager.Instance.Explo.ExploShower);
-
-            ExploFireball.transform.SetParent(BlockBehaviour.transform);
-            ExploDust.transform.SetParent(BlockBehaviour.transform);
-            ExploSmokeBlack.transform.SetParent(BlockBehaviour.transform);
-            ExploShower.transform.SetParent(BlockBehaviour.transform);
-
-            ExploFireball.transform.localPosition = new Vector3(0, -4f, 0.3f);
-            ExploFireball.transform.localRotation = Quaternion.Euler(90, 0, 0);
-            ExploFireball.transform.localScale = Vector3.one;
-
-            ExploDust.transform.localPosition = new Vector3(0, -4f, 0.3f);
-            ExploDust.transform.localRotation = Quaternion.Euler(90, 0, 0);
-            ExploDust.transform.localScale = Vector3.one;
-
-            ExploSmokeBlack.transform.localPosition = new Vector3(0, -4f, 0.3f);
-            ExploSmokeBlack.transform.localRotation = Quaternion.Euler(90, 0, 0);
-            ExploSmokeBlack.transform.localScale = Vector3.one;
-
-            ExploShower.transform.localPosition = new Vector3(0, -4f, 0.3f);
-            ExploShower.transform.localRotation = Quaternion.Euler(90, 0, 0);
-            ExploShower.transform.localScale = Vector3.one;
-
-            ExploFireball.SetActive(false);
-            ExploDust.SetActive(false);
-            ExploSmokeBlack.SetActive(false);
-            ExploShower.SetActive(false);
-        }
 
         protected void initParticleSystem()
         {
             TrailSmokeParticle = TrailSmoke.GetComponent<ParticleSystem>();
             TrailFlameParticle = TrailFlame.GetComponent<ParticleSystem>();
-            ExploFireballParticle = ExploFireball.GetComponent<ParticleSystem>();
-            ExploDustParticle = ExploDust.GetComponent<ParticleSystem>();
-            ExploSmokeBlackParticle = ExploSmokeBlack.GetComponent<ParticleSystem>();
-            ExploShowerParticle = ExploShower.GetComponent<ParticleSystem>();
+        }
+
+        protected void playExploEffect()
+        {
+            TrailSmokeParticle.Stop();
+            TrailFlameParticle.Stop();
+
+            if (StatMaster.isClient)
+            {
+                
+                ExploClient = (GameObject)Instantiate(AssetManager.Instance.Explo.Explo, transform.position, transform.rotation);
+                ExploClient.SetActive(true);
+                Destroy(ExploClient, 3);
+            }
+            else
+            {
+                Explo = (GameObject)Instantiate(AssetManager.Instance.Explo.Explo, transform.position, transform.rotation);
+                Explo.SetActive(true);
+                Destroy(Explo, 3);
+            }
+            
+
+            BlockBehaviour.MeshRenderer.enabled = false;
+            transform.FindChild("Colliders").gameObject.SetActive(false);
+            myStatus = status.exploded;
         }
 
         protected void playExplo()
         {
 
+            if (StatMaster.isMP)
+            {
+                Message missleExplo = MissleExplo.CreateMessage(myGuid, (int)myPlayerID, true);
+                ModNetworking.SendToAll(missleExplo);
+            }
+
+            playExploEffect();
             myRigidbody.constraints = RigidbodyConstraints.FreezePosition;
-            TrailSmokeParticle.Stop();
-            TrailFlameParticle.Stop();
-            ExploFireball.SetActive(true);
-            ExploDust.SetActive(true);
-            ExploSmokeBlack.SetActive(true);
-            ExploShower.SetActive(true);
-            BlockBehaviour.MeshRenderer.enabled = false;
-            myStatus = status.exploded;
 
             Collider[] ExploCol = Physics.OverlapSphere(transform.position, ExploRadius);
             foreach (Collider hits in ExploCol)
@@ -327,6 +352,7 @@ namespace ModernAirCombat
             }
             
         }
+
 
 
         protected void GetAim()
@@ -424,11 +450,17 @@ namespace ModernAirCombat
 
             initScan();//挂载上导弹前方的圆锥触发器
             initTrail();
-            initExplo();
+            //initExplo();
             initPF();
 
             AimIcon = ModResource.GetTexture("Aim Icon").Texture;
             myPlayerID = BlockBehaviour.ParentMachine.PlayerID;
+        }
+
+        public override void BuildingUpdate()
+        {
+            if (BlockBehaviour.Guid.GetHashCode() != 0 && BlockBehaviour.Guid.GetHashCode() != myGuid)
+                myGuid = BlockBehaviour.Guid.GetHashCode();
         }
 
         public void Start()
@@ -466,7 +498,11 @@ namespace ModernAirCombat
 
         public override void OnSimulateStart()
         {
-            base.OnSimulateStart();
+            if (StatMaster.isMP)
+            {
+                Message missleExplo = MissleExplo.CreateMessage(myGuid, (int)BlockBehaviour.ParentMachine.PlayerID, false);
+                ModNetworking.SendToAll(missleExplo);
+            }
         }
 
         public override void OnSimulateStop()
@@ -476,100 +512,100 @@ namespace ModernAirCombat
 
         protected void Update()
         {
-            if (IsSimulating)
+            try
             {
-                if (Launch.IsHeld && myStatus == status.stored)
+                if (IsSimulating)
                 {
-                    myStatus = status.launched;
-                    myRigidbody.drag = 0.1f;
-                    myRigidbody.angularDrag = 4.0f;
-                    //Debug.Log("missle launched");
-                    //Debug.Log(detectRange);
+                    if (Launch.IsHeld && myStatus == status.stored)
+                    {
+                        myStatus = status.launched;
+                        myRigidbody.drag = 0.1f;
+                        myRigidbody.angularDrag = 4.0f;
+                        //Debug.Log("missle launched");
+                        //Debug.Log(detectRange);
+                    }
+
+
                 }
-
-
             }
+            catch { }
+            
             
         }
 
-        //public override void SimulateFixedUpdateClient()
-        //{
-        //    if (Launch.EmulationHeld() && myStatus == status.stored)
-        //    {
-        //        myStatus = status.launched;
-        //    }
+        public override void SimulateFixedUpdateClient()
+        {
+            if (Launch.EmulationHeld() && myStatus == status.stored)
+            {
+                myStatus = status.launched;
+            }
 
-        //    if (myStatus == status.launched)
-        //    {
+            if (myStatus == status.launched)
+            {
 
-        //        if (time < 3.5f + launchDelay.Value)
-        //        {
-        //            if (time > launchDelay.Value)
-        //            {
-        //                if (activeTrail == false)
-        //                {
-        //                    TrailSmokeParticle.Play();
-        //                    TrailFlameParticle.Play();
-        //                    activeTrail = true;
-        //                }
+                if (time < 3.5f + launchDelay.Value)
+                {
+                    if (time > launchDelay.Value)
+                    {
+                        if (activeTrail == false)
+                        {
+                            TrailSmokeParticle.Play();
+                            TrailFlameParticle.Play();
+                            activeTrail = true;
+                        }
 
-        //            }
+                    }
 
-        //            if (time < detectDelay.Value + launchDelay.Value)
-        //            {
-        //            }
-        //            else
-        //            {
-        //                if (PFHit.explo == true)
-        //                {
-        //                    playExplo();
-        //                    BlockBehaviour.gameObject.SetActive(false);
-        //                }
-        //            }
-        //            time += Time.fixedDeltaTime;
-        //        }
-        //        else
-        //        {
-        //            if (activeTrail == true)
-        //            {
-        //                TrailSmokeParticle.Stop();
-        //                TrailFlameParticle.Stop();
-        //                activeTrail = false;
-        //            }
-        //            myStatus = status.missed;
+                    if (time < detectDelay.Value + launchDelay.Value)
+                    {
+                    }
+                    else
+                    {
+                        if (MissleExploMessageReciver.Instance.GetExploMsg(myGuid,myPlayerID))
+                        {
+                            Debug.Log("ClientExplo");
+                            playExploEffect();
+                        }
+                    }
+                    time += Time.fixedDeltaTime;
+                }
+                else
+                {
+                    if (activeTrail == true)
+                    {
+                        TrailSmokeParticle.Stop();
+                        TrailFlameParticle.Stop();
+                        activeTrail = false;
+                    }
+                    myStatus = status.missed;
 
-        //        }
-        //    }
-        //    if (myStatus == status.missed)
-        //    {
-        //        targetDetected = false;
+                }
+            }
+            if (myStatus == status.missed)
+            {
+                targetDetected = false;
 
-        //    }
-        //    if (myStatus == status.missed || myStatus == status.exploded)
-        //    {
-        //        if (!effectDestroyed)
-        //        {
-        //            Destroy(TrailSmoke, 3);
-        //            Destroy(TrailFlame, 3);
-        //            Destroy(ExploFireball, 3);
-        //            Destroy(ExploDust, 3);
-        //            Destroy(ExploShower, 3);
-        //            Destroy(ExploSmokeBlack, 3);
-        //            effectDestroyed = true;
-        //        }
+            }
+            if (myStatus == status.missed || myStatus == status.exploded)
+            {
+                if (!effectDestroyed)
+                {
+                    Destroy(TrailSmoke, 3);
+                    Destroy(TrailFlame, 3);
+                    effectDestroyed = true;
+                }
 
-        //        if (myStatus == status.exploded && !gameObjectDestroyed)
-        //        {
-        //            Destroy(BlockBehaviour.gameObject, 3.2f);
-        //            gameObjectDestroyed = true;
-        //        }
-        //    }
-        //}
+                if (myStatus == status.exploded && !gameObjectDestroyed)
+                {
+                    gameObjectDestroyed = true;
+                }
+            }
+        }
 
 
         public override void SimulateFixedUpdateHost()
         {
-
+            
             if (Launch.EmulationHeld() && myStatus == status.stored)
             {
                 myStatus = status.launched;
@@ -652,7 +688,7 @@ namespace ModernAirCombat
             
                 if (myRigidbody.position.y > 20)
                 {
-                    myTransform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(-180, 0, 0), 0.005f);
+                    myTransform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(-180, 0, 0), 0.001f);
                 }
             }
             if(myStatus == status.missed || myStatus == status.exploded)
@@ -661,16 +697,11 @@ namespace ModernAirCombat
                 {
                     Destroy(TrailSmoke, 3);
                     Destroy(TrailFlame, 3);
-                    Destroy(ExploFireball, 3);
-                    Destroy(ExploDust, 3);
-                    Destroy(ExploShower, 3);
-                    Destroy(ExploSmokeBlack, 3);
                     effectDestroyed = true;
                 }
                 
                 if (myStatus == status.exploded && !gameObjectDestroyed)
                 {
-                    Destroy(BlockBehaviour.gameObject, 3.2f);
                     gameObjectDestroyed = true;
                 }
             }
@@ -678,6 +709,7 @@ namespace ModernAirCombat
 
         void OnGUI()
         {
+            GUI.Box(new Rect(100, 200, 200, 50), MissleExploMessageReciver.Instance.GetExploMsg(myGuid, myPlayerID).ToString());
             if (BlockBehaviour.isSimulating)
             {
                 //GUI.Box(new Rect(100, 100, 200, 50), myRigidbody.velocity.ToString());
@@ -686,7 +718,7 @@ namespace ModernAirCombat
                     //GUI.Box(new Rect(100, 100, 100, 50), predictPosition.ToString());
                     
                     //GUI.Box(new Rect(100, 150, 200, 50), myRigidbody.transform.up.ToString());
-                    //GUI.Box(new Rect(100, 200, 200, 50), (predictPositionModified - myTransform.position).normalized.ToString());
+                    GUI.Box(new Rect(100, 200, 200, 50), MissleExploMessageReciver.Instance.GetExploMsg(myGuid, myPlayerID).ToString());
 
                     iconSize = 32;
                     GUI.color = Color.green;

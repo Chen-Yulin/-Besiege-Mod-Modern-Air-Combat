@@ -713,8 +713,8 @@ namespace ModernAirCombat
                 Vector3 onScreenPosition = Camera.main.WorldToScreenPoint(RadarTarget[lockRegion].position);
                 if (onScreenPosition.z >= 0)
                     GUI.DrawTexture(new Rect(onScreenPosition.x - iconSize / 2, Camera.main.pixelHeight - onScreenPosition.y - iconSize / 2, iconSize, iconSize), LockIconOnScreen);
-                GUI.Box(new Rect(100, 150, 200, 50), sendBVRData.velocity.ToString());
-                GUI.Box(new Rect(100, 200, 200, 50), sendBVRData.position.ToString());
+                //GUI.Box(new Rect(100, 150, 200, 50), sendBVRData.velocity.ToString());
+                //GUI.Box(new Rect(100, 200, 200, 50), sendBVRData.position.ToString());
             }
             
         }
