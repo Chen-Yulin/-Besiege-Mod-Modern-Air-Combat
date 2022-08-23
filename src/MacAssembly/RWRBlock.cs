@@ -15,12 +15,12 @@ namespace ModernAirCombat
 {
     public class MakeAudioSourceFixedPitch : MonoBehaviour
     {
-        private AudioSource FixedAS;
-        private void Start()
+        protected AudioSource FixedAS;
+        protected void Start()
         {
             FixedAS = base.GetComponent<AudioSource>();
         }
-        private void Update()
+        protected void Update()
         {
             FixedAS.pitch = Time.timeScale;
         }
@@ -34,8 +34,8 @@ namespace ModernAirCombat
         public AudioSource BeepAS;
         public GameObject[] Icon;
 
-        private int playerID;
-        //private bool hasRadiation;
+        protected int playerID;
+        //protected bool hasRadiation;
 
         public void InitBeep()
         {

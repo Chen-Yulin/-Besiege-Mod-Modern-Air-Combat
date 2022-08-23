@@ -90,9 +90,9 @@ namespace ModernAirCombat
         public int HostGuid;
         public Vector3 HostVelocity;
 
-        private float time = 0f;
-        private int myGuid;
-        private int myPlayerID;
+        protected float time = 0f;
+        protected int myGuid;
+        protected int myPlayerID;
 
         public void InitFlare()
         {

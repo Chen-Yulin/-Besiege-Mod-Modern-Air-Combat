@@ -17,7 +17,7 @@ namespace ModernAirCombat
     {
 
         
-        protected float thrustTime = 1f;
+        protected float thrustTime = 3f;
         protected void AddAerodynamics()
         {
             Vector3 tmp = Vector3.Cross(Vector3.Cross(myRigidbody.velocity, myTransform.up), myTransform.up);
@@ -63,7 +63,7 @@ namespace ModernAirCombat
                     modifiedDiff.z = (0.2f * positionDiff.z);
                 }
 
-                predictPositionModified = predictPosition + modifiedDiff;
+                predictPositionModified = predictPosition + modifiedDiff + Vector3.up * (targetPosition - transform.position).magnitude * 0.05f;
                 return true;
             }
             catch { return false; }
@@ -75,18 +75,26 @@ namespace ModernAirCombat
             {
                 if (IsSimulating)
                 {
-                    if (Launch.IsHeld && myStatus == status.stored)
-                    {
-                        if (DataManager.Instance.BVRData[myPlayerID].position != Vector3.zero)
-                        {
-                            myStatus = status.launched;
-                            myRigidbody.drag = 0.1f;
-                            myRigidbody.angularDrag = 4.0f;
-                            //Debug.Log("missle launched");
-                            //Debug.Log(detectRange);
-                        }
+                    if (BlockBehaviour.BuildingBlock.Guid.GetHashCode() != 0 && BlockBehaviour.BuildingBlock.Guid.GetHashCode() != myGuid)
+                        myGuid = BlockBehaviour.BuildingBlock.Guid.GetHashCode();
 
+                    if (!launchMsgInit)
+                    {
+                        launchMsgInit = !launchMsgInit;
+                        ModNetworking.SendToAll(KeymsgController.SendHeld.CreateMessage((int)myPlayerID, (int)myGuid, false));
                     }
+
+                    if (Launch.IsHeld && myStatus == status.stored && DataManager.Instance.BVRData[myPlayerID].position != Vector3.zero && !StatMaster.isClient)
+                    {
+                        if (!StatMaster.isClient)
+                        {
+                            ModNetworking.SendToAll(KeymsgController.SendHeld.CreateMessage((int)myPlayerID, (int)myGuid, true));
+                        }
+                        
+                        myStatus = status.launched;
+                    }
+
+                    
 
 
                 }
@@ -95,6 +103,54 @@ namespace ModernAirCombat
 
         }
 
+        public override void SimulateFixedUpdateClient()
+        {
+            try
+            {
+                if (KeymsgController.Instance.keyheld[myPlayerID][myGuid] && myStatus == status.stored)
+                {
+                    myStatus = status.launched;
+                }
+            }
+            catch { }
+            
+            if (myStatus == status.launched || myStatus == status.active)
+            {
+                if (time < thrustTime * 4 + launchDelay.Value)
+                {
+                    if (time > launchDelay.Value && time < thrustTime + launchDelay.Value)//play trail partical and add trust after launch delay 
+                    {
+                        if (activeTrail == false)
+                        {
+                            TrailSmokeParticle.Play();
+                            TrailFlameParticle.Play();
+                            activeTrail = true;
+                        }
+                    }
+                    if (time > thrustTime + launchDelay.Value)//deactive trail effect and destroy it after sometime
+                    {
+                        if (activeTrail == true)
+                        {
+                            TrailSmokeParticle.Stop();
+                            TrailFlameParticle.Stop();
+                            activeTrail = false;
+
+                        }
+                        if (!effectDestroyed)
+                        {
+                            Destroy(TrailSmoke, 3);
+                            Destroy(TrailFlame, 3);
+                            effectDestroyed = true;
+                        }
+                    }
+                    if (MissleExploMessageReciver.Instance.GetExploMsg(myGuid, myPlayerID))
+                    {
+                        playExploEffect();
+                    }
+                    time += Time.fixedDeltaTime;
+                }
+            }
+        }
         public override void SimulateFixedUpdateHost()
         {
 
@@ -120,7 +176,7 @@ namespace ModernAirCombat
 
 
                 
-                if (time < 8f + launchDelay.Value)
+                if (time < thrustTime*4 + launchDelay.Value)
                 {
                     if (time > launchDelay.Value && time < thrustTime + launchDelay.Value)//play trail partical and add trust after launch delay 
                     {
@@ -137,7 +193,7 @@ namespace ModernAirCombat
                     {
                         if (activeTrail == true)
                         {
-                            myRigidbody.drag = 0.1f;
+                            myRigidbody.drag = 0.05f;
                             TrailSmokeParticle.Stop();
                             TrailFlameParticle.Stop();
                             activeTrail = false;
@@ -147,11 +203,10 @@ namespace ModernAirCombat
                         {
                             Destroy(TrailSmoke, 3);
                             Destroy(TrailFlame, 3);
-                            Destroy(Explo, 3);
                             effectDestroyed = true;
                         }
+                        AddAerodynamics();
                     }
-
 
                     //judge whether the missle start to track enemy (passive or active) and active PF
                     if (time < detectDelay.Value + launchDelay.Value) //whether is frozen
@@ -185,6 +240,7 @@ namespace ModernAirCombat
                             {
                                 myStatus = status.active;
                             }
+                            
 
                         }
                         else    //start active track
@@ -197,33 +253,34 @@ namespace ModernAirCombat
                             {
                                 playExplo();
                             }
-                            GetAim();
-                            AxisLookAt(myTransform, predictPositionModified, Vector3.up);
-                            AddAerodynamics();
+                            else
+                            {
+                                GetAim();
+                                AxisLookAt(myTransform, predictPositionModified, Vector3.up);
+                            }
+                            
                         }
                     }
                     time += Time.fixedDeltaTime;
                 }
-
-                if (myStatus == status.exploded && !gameObjectDestroyed)
+                else
                 {
-                    Destroy(BlockBehaviour.gameObject, 3.2f);
-                    gameObjectDestroyed = true;
+                    if (PFCollider.activeSelf)
+                    {
+                        gameObject.SetActive(false);
+                        PFCollider.SetActive(false);
+                    }
+                    
                 }
-                
-
             }
-
-
-
-            
         }
 
         void OnGUI()
         {
             //if (myStatus == status.launched)
             //{
-                //GUI.Box(new Rect(100, 300, 200, 50), Vector3.Cross(Vector3.Cross(myRigidbody.velocity, myTransform.up), myTransform.up).ToString());
+            //GUI.Box(new Rect(100, 300, 200, 50), time.ToString());
+            //GUI.Box(new Rect(100, 200, 400, 50), myPlayerID.ToString() + MissleExploMessageReciver.Instance.GetExploMsg(myGuid, myPlayerID).ToString());
             //}
         }
     }

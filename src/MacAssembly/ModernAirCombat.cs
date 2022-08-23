@@ -20,6 +20,7 @@ namespace ModernAirCombat
 
 			Mod.AddComponent<FlareMessageReciver>();
 			Mod.AddComponent<MissleExploMessageReciver>();
+			Mod.AddComponent<KeymsgController>();
 
 			AssetManager.Instance.transform.SetParent(Mod.transform);
 			MessageController.Instance.transform.SetParent(Mod.transform);

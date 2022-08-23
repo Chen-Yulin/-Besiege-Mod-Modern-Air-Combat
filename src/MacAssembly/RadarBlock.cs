@@ -287,7 +287,7 @@ namespace ModernAirCombat
             InitScan();
             //InitAdvice();
             targetManagerRadar = new targetManager();
-        }
+        } 
 
         public override void BuildingUpdate()
         {

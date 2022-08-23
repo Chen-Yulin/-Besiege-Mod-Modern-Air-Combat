@@ -13,7 +13,7 @@ using UnityEngine;
 
 namespace ModernAirCombat
 {
-    class MissleExploMessageReciver : SingleInstance<MissleExploMessageReciver>
+    public class MissleExploMessageReciver : SingleInstance<MissleExploMessageReciver>
     {
         public override string Name { get; } = "MissleExploMessageReciver";
 
@@ -74,9 +74,9 @@ namespace ModernAirCombat
 
     public class ScanCollisonHit : MonoBehaviour
     {
-        public MPTeam team = MPTeam.None;
-        public bool IFF = true;
-        public ushort PlayerID = 0;
+        //public MPTeam team = MPTeam.None;
+        //public bool IFF = true;
+        //public ushort PlayerID = 0;
         public Stack<Collider> targetCols = new Stack<Collider>();
 
 
@@ -204,7 +204,7 @@ namespace ModernAirCombat
 
         public static MessageType MissleExplo = ModNetworking.CreateMessageType(DataType.Integer, DataType.Integer, DataType.Boolean);
 
-        private int myGuid;
+        protected int myGuid;
 
         protected float estimatedTime;
         protected Transform myTransform;      //实例化Transform对象
@@ -223,9 +223,9 @@ namespace ModernAirCombat
         protected bool getlaunchRotation = false;
         protected bool activeTrail = false;
         protected bool effectDestroyed = false;
-        protected bool gameObjectDestroyed = false;
 
-        protected ushort myPlayerID;
+        public ushort myPlayerID;
+        public bool launchMsgInit = false;
 
 
         public void AxisLookAt(Transform tr_self, Vector3 lookPos, Vector3 directionAxis)
@@ -307,8 +307,13 @@ namespace ModernAirCombat
 
         protected void playExploEffect()
         {
-            TrailSmokeParticle.Stop();
-            TrailFlameParticle.Stop();
+            try
+            {
+                TrailSmokeParticle.Stop();
+                TrailFlameParticle.Stop();
+            }
+            catch { }
+            
 
             if (StatMaster.isClient)
             {
@@ -337,6 +342,7 @@ namespace ModernAirCombat
             {
                 Message missleExplo = MissleExplo.CreateMessage(myGuid, (int)myPlayerID, true);
                 ModNetworking.SendToAll(missleExplo);
+                //Debug.Log(myGuid.ToString());
             }
 
             playExploEffect();
@@ -444,7 +450,7 @@ namespace ModernAirCombat
             //IFF = AddToggle("开启友伤", "IFF", true);
             //showScanner = AddToggle("显示探测范围", "showScanner", false);
             //detectAngleSlider = AddSlider("探测角度", "detection angle", 90.0f, 60.0f, 120.0f);
-            detectDelay = AddSlider("Safty delay", "detection delay", 0.2f, 0.0f, 1f);
+            detectDelay = AddSlider("Safety delay", "detection delay", 0.2f, 0.0f, 1f);
             launchDelay = AddSlider("Launch delay", "launch delay", 0.1f, 0.0f, 0.3f);
             PFRang = AddSlider("Proximity fuse range", "PF range", 5f, 1f, 10f);
 
@@ -459,12 +465,12 @@ namespace ModernAirCombat
 
         public override void BuildingUpdate()
         {
-            if (BlockBehaviour.Guid.GetHashCode() != 0 && BlockBehaviour.Guid.GetHashCode() != myGuid)
-                myGuid = BlockBehaviour.Guid.GetHashCode();
+            
         }
 
         public void Start()
         {
+            
             myTransform = gameObject.GetComponent<Transform>();        //获取相应对象的引用
             myRigidbody = gameObject.GetComponent<Rigidbody>();
 
@@ -477,8 +483,8 @@ namespace ModernAirCombat
             //ScannerDisplay.transform.localScale = ScanColScale;
             //Debug.Log(ScanColScale);
             //coneHit.IFF = IFF.IsActive;
-            coneHit.team = BlockBehaviour.Team;
-            coneHit.PlayerID = myPlayerID;
+            //coneHit.team = BlockBehaviour.Team;
+            //coneHit.PlayerID = myPlayerID;
 
             //if (showScanner.IsActive)
             //{
@@ -498,9 +504,10 @@ namespace ModernAirCombat
 
         public override void OnSimulateStart()
         {
+            
             if (StatMaster.isMP)
             {
-                Message missleExplo = MissleExplo.CreateMessage(myGuid, (int)BlockBehaviour.ParentMachine.PlayerID, false);
+                Message missleExplo = MissleExplo.CreateMessage(BlockBehaviour.BuildingBlock.Guid.GetHashCode(), (int)BlockBehaviour.ParentMachine.PlayerID, false);
                 ModNetworking.SendToAll(missleExplo);
             }
         }
@@ -512,20 +519,30 @@ namespace ModernAirCombat
 
         protected void Update()
         {
+            
             try
             {
                 if (IsSimulating)
                 {
-                    if (Launch.IsHeld && myStatus == status.stored)
+                    if (BlockBehaviour.BuildingBlock.Guid.GetHashCode() != 0 && BlockBehaviour.BuildingBlock.Guid.GetHashCode() != myGuid)
+                        myGuid = BlockBehaviour.BuildingBlock.Guid.GetHashCode();
+
+                    if (!launchMsgInit)
                     {
-                        myStatus = status.launched;
-                        myRigidbody.drag = 0.1f;
-                        myRigidbody.angularDrag = 4.0f;
-                        //Debug.Log("missle launched");
-                        //Debug.Log(detectRange);
+                        launchMsgInit = !launchMsgInit;
+                        ModNetworking.SendToAll(KeymsgController.SendHeld.CreateMessage((int)myPlayerID, (int)myGuid, false));
                     }
 
+                    if (Launch.IsHeld && myStatus == status.stored && !StatMaster.isClient)
+                    {
 
+                        if (!StatMaster.isClient)
+                        {
+                            ModNetworking.SendToAll(KeymsgController.SendHeld.CreateMessage((int)myPlayerID, (int)myGuid, true));
+                        }
+
+                        myStatus = status.launched;
+                    }
                 }
             }
             catch { }
@@ -535,11 +552,14 @@ namespace ModernAirCombat
 
         public override void SimulateFixedUpdateClient()
         {
-            if (Launch.EmulationHeld() && myStatus == status.stored)
+            try
             {
-                myStatus = status.launched;
+                if (KeymsgController.Instance.keyheld[myPlayerID][myGuid] && myStatus == status.stored)
+                {
+                    myStatus = status.launched;
+                }
             }
-
+            catch { }
             if (myStatus == status.launched)
             {
 
@@ -563,7 +583,7 @@ namespace ModernAirCombat
                     {
                         if (MissleExploMessageReciver.Instance.GetExploMsg(myGuid,myPlayerID))
                         {
-                            Debug.Log("ClientExplo");
+                            //Debug.Log("ClientExplo");
                             playExploEffect();
                         }
                     }
@@ -594,11 +614,6 @@ namespace ModernAirCombat
                     Destroy(TrailFlame, 3);
                     effectDestroyed = true;
                 }
-
-                if (myStatus == status.exploded && !gameObjectDestroyed)
-                {
-                    gameObjectDestroyed = true;
-                }
             }
         }
 
@@ -620,7 +635,7 @@ namespace ModernAirCombat
             {
                 if (!getlaunchRotation)
                 {
-                    
+                    myRigidbody.drag = 0.1f;
                     myRigidbody.angularDrag = 4.0f;
                     launchRotation = transform.rotation;
                     getlaunchRotation = true;
@@ -699,33 +714,24 @@ namespace ModernAirCombat
                     Destroy(TrailFlame, 3);
                     effectDestroyed = true;
                 }
-                
-                if (myStatus == status.exploded && !gameObjectDestroyed)
-                {
-                    gameObjectDestroyed = true;
-                }
             }
         }
 
         void OnGUI()
         {
-            GUI.Box(new Rect(100, 200, 200, 50), MissleExploMessageReciver.Instance.GetExploMsg(myGuid, myPlayerID).ToString());
+            //GUI.Box(new Rect(100, 200, 200, 50), MissleExploMessageReciver.Instance.GetExploMsg(myGuid, myPlayerID).ToString());
             if (BlockBehaviour.isSimulating)
             {
                 //GUI.Box(new Rect(100, 100, 200, 50), myRigidbody.velocity.ToString());
-                if (targetDetected)
-                {
-                    //GUI.Box(new Rect(100, 100, 100, 50), predictPosition.ToString());
-                    
-                    //GUI.Box(new Rect(100, 150, 200, 50), myRigidbody.transform.up.ToString());
-                    GUI.Box(new Rect(100, 200, 200, 50), MissleExploMessageReciver.Instance.GetExploMsg(myGuid, myPlayerID).ToString());
-
-                    iconSize = 32;
-                    GUI.color = Color.green;
-                    Vector3 onScreenPosition = Camera.main.WorldToScreenPoint(predictPosition);
-                    if (onScreenPosition.z >= 0)
-                        GUI.DrawTexture(new Rect(onScreenPosition.x - iconSize / 2, Camera.main.pixelHeight - onScreenPosition.y - iconSize / 2, iconSize, iconSize), AimIcon);
-                }
+                //if (targetDetected)
+                //{
+                //iconSize = 32;
+                //GUI.color = Color.green;
+                //Vector3 onScreenPosition = Camera.main.WorldToScreenPoint(predictPosition);
+                //if (onScreenPosition.z >= 0)
+                //    GUI.DrawTexture(new Rect(onScreenPosition.x - iconSize / 2, Camera.main.pixelHeight - onScreenPosition.y - iconSize / 2, iconSize, iconSize), AimIcon);
+                //}
+                //GUI.Box(new Rect(100, 300, 400, 50), myPlayerID.ToString() + MissleExploMessageReciver.Instance.GetExploMsg(myGuid, myPlayerID).ToString());
             }
         }
         
