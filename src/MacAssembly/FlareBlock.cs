@@ -147,11 +147,11 @@ namespace ModernAirCombat
         }
 
 
-        public override void BuildingUpdate()
-        {
-            if (BlockBehaviour.Guid.GetHashCode() != 0 && BlockBehaviour.Guid.GetHashCode() != myGuid)
-                myGuid = BlockBehaviour.Guid.GetHashCode();
-        }
+        //public override void BuildingUpdate()
+        //{
+        //    if (BlockBehaviour.Guid.GetHashCode() != 0 && BlockBehaviour.Guid.GetHashCode() != myGuid)
+        //        myGuid = BlockBehaviour.Guid.GetHashCode();
+        //}
 
 
         public override void SafeAwake()
@@ -162,23 +162,30 @@ namespace ModernAirCombat
             InitFlare();
 
         }
-        public void Start()
+        public override void OnSimulateStart()
         {
+            myGuid = BlockBehaviour.BuildingBlock.Guid.GetHashCode();
 
+            if (!StatMaster.isClient)
+            {
+                KeymsgController.Instance.keyheld[myPlayerID].Add(myGuid, false);
+            }
+           
         }
 
         public override void SimulateUpdateHost()
         {
+            if (BlockBehaviour.BuildingBlock.Guid.GetHashCode() != 0 && BlockBehaviour.BuildingBlock.Guid.GetHashCode() != myGuid)
+                myGuid = BlockBehaviour.BuildingBlock.Guid.GetHashCode();
+
             if (StatMaster.isMP)
             {
                 Message HostLaunchPara = LaunchPara.CreateMessage(myGuid, (int)BlockBehaviour.ParentMachine.PlayerID, BlockBehaviour.Rigidbody.velocity);
                 ModNetworking.SendToAll(HostLaunchPara);
+
+                ModNetworking.SendToAll(KeymsgController.SendHeld.CreateMessage((int)myPlayerID, (int)myGuid, ReleaseKey.IsHeld));
             }
-            if (ReleaseKey.IsPressed)
-            {
-                time = 0f;
-                Release(BlockBehaviour.Rigidbody.velocity);
-            }
+
             if (ReleaseKey.IsHeld)
             {
                 time += Time.deltaTime;
@@ -188,26 +195,37 @@ namespace ModernAirCombat
                     time = 0f;
                 }
             }
+            else
+            {
+                time = ReleaseInterval.Value;
+            }
             
         }
 
         public override void SimulateUpdateClient()
         {
+            if (BlockBehaviour.BuildingBlock.Guid.GetHashCode() != 0 && BlockBehaviour.BuildingBlock.Guid.GetHashCode() != myGuid)
+                myGuid = BlockBehaviour.BuildingBlock.Guid.GetHashCode();
+
             HostVelocity = FlareMessageReciver.Instance.GetLaunchPara(myGuid,myPlayerID);
-            if (ReleaseKey.IsPressed)
+            try
             {
-                time = 0f;
-                Release(HostVelocity);
-            }
-            if (ReleaseKey.IsHeld)
-            {
-                time += Time.deltaTime;
-                if (time > ReleaseInterval.Value)
+                if (KeymsgController.Instance.keyheld[myPlayerID][myGuid])
                 {
-                    Release(HostVelocity);
-                    time = 0f;
+                    time += Time.deltaTime;
+                    if (time > ReleaseInterval.Value)
+                    {
+                        Release(HostVelocity);
+                        time = 0f;
+                    }
+                }
+                else
+                {
+                    time = ReleaseInterval.Value;
                 }
             }
+            catch { }
+
         }
 
         public override void OnSimulateStop()
@@ -219,11 +237,12 @@ namespace ModernAirCombat
                     Destroy(FlareAssembly[i]);
                 }
             }
+            KeymsgController.Instance.keyheld[myPlayerID].Remove(myGuid);
         }
 
         void OnGUI()
         {
-            //GUI.Box(new Rect(100, 100, 200, 200), HostVelocity.ToString());
+            //GUI.Box(new Rect(100, 100, 200, 200), myGuid.ToString());
         }
     }
 }

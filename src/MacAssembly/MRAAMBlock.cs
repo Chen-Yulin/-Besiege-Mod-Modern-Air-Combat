@@ -69,39 +69,6 @@ namespace ModernAirCombat
             catch { return false; }
         }
 
-        protected new void Update()
-        {
-            try
-            {
-                if (IsSimulating)
-                {
-                    if (BlockBehaviour.BuildingBlock.Guid.GetHashCode() != 0 && BlockBehaviour.BuildingBlock.Guid.GetHashCode() != myGuid)
-                        myGuid = BlockBehaviour.BuildingBlock.Guid.GetHashCode();
-
-                    if (!launchMsgInit)
-                    {
-                        launchMsgInit = !launchMsgInit;
-                        ModNetworking.SendToAll(KeymsgController.SendHeld.CreateMessage((int)myPlayerID, (int)myGuid, false));
-                    }
-
-                    if (Launch.IsHeld && myStatus == status.stored && DataManager.Instance.BVRData[myPlayerID].position != Vector3.zero && !StatMaster.isClient)
-                    {
-                        if (!StatMaster.isClient)
-                        {
-                            ModNetworking.SendToAll(KeymsgController.SendHeld.CreateMessage((int)myPlayerID, (int)myGuid, true));
-                        }
-                        
-                        myStatus = status.launched;
-                    }
-
-                    
-
-
-                }
-            }
-            catch { }
-
-        }
 
         public override void SimulateFixedUpdateClient()
         {

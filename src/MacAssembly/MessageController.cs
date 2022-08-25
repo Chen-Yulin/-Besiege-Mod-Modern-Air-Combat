@@ -22,6 +22,14 @@ namespace ModernAirCombat
 
             ModNetworking.Callbacks[KeymsgController.SendHeld] += KeymsgController.HeldRcved;
             ModNetworking.Callbacks[KeymsgController.SendPressed] += KeymsgController.PressedRcved;
+            ModNetworking.Callbacks[KeymsgController.SendHelds] += KeymsgController.HeldsRcved;
+            ModNetworking.Callbacks[DisplayerBlock.ClientTargetDistanceMsg] += DisplayerMsgReceiver.Instance.DistanceReceiver;
+            ModNetworking.Callbacks[DisplayerBlock.ClientTargetPositionMsg] += DisplayerMsgReceiver.Instance.PositionReceiver;
+            ModNetworking.Callbacks[DisplayerBlock.ClientPanelMsg] += DisplayerMsgReceiver.Instance.PanelReceiver;
+            ModNetworking.Callbacks[DisplayerBlock.ClientLockingMsg] += DisplayerMsgReceiver.Instance.LockingReceiver;
+            ModNetworking.Callbacks[DisplayerBlock.ClientChooserMsg] += DisplayerMsgReceiver.Instance.ChooserPositionReceiver;
+            ModNetworking.Callbacks[DisplayerBlock.ClientLockedTargetMsg] += DisplayerMsgReceiver.Instance.LockedTargetReceiver;
+            ModNetworking.Callbacks[DisplayerBlock.ClientOnGuiTargetMsg] += DisplayerMsgReceiver.Instance.OnGuiTargetPositionReceiver;
         }
     }
 }

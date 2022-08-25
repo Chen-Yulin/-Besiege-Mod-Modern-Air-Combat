@@ -504,7 +504,14 @@ namespace ModernAirCombat
 
         public override void OnSimulateStart()
         {
+            myGuid = BlockBehaviour.BuildingBlock.Guid.GetHashCode();
+            if (!StatMaster.isClient)
+            {
+                KeymsgController.Instance.keyheld[myPlayerID].Add(myGuid, false);
+            }
             
+
+
             if (StatMaster.isMP)
             {
                 Message missleExplo = MissleExplo.CreateMessage(BlockBehaviour.BuildingBlock.Guid.GetHashCode(), (int)BlockBehaviour.ParentMachine.PlayerID, false);
@@ -514,10 +521,10 @@ namespace ModernAirCombat
 
         public override void OnSimulateStop()
         {
-            base.OnSimulateStop();
+            KeymsgController.Instance.keyheld[myPlayerID].Remove(myGuid);
         }
 
-        protected void Update()
+        public override void SimulateUpdateHost()
         {
             
             try

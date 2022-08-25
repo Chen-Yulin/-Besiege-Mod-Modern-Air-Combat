@@ -29,7 +29,7 @@ namespace ModernAirCombat
         {
             hasObject = false;
         }
-
+        
         public Target(Collider col, BlockBehaviour radar)
         {
             hasObject = true;

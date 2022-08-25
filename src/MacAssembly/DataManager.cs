@@ -52,5 +52,6 @@ namespace ModernAirCombat
         public BVRTargetData[] BVRData = new BVRTargetData[10];
         public float[,] RWRData = new float[10,8];
         
+        
     }
 }
