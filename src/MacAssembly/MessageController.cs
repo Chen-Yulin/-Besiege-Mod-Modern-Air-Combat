@@ -30,6 +30,7 @@ namespace ModernAirCombat
             ModNetworking.Callbacks[DisplayerBlock.ClientChooserMsg] += DisplayerMsgReceiver.Instance.ChooserPositionReceiver;
             ModNetworking.Callbacks[DisplayerBlock.ClientLockedTargetMsg] += DisplayerMsgReceiver.Instance.LockedTargetReceiver;
             ModNetworking.Callbacks[DisplayerBlock.ClientOnGuiTargetMsg] += DisplayerMsgReceiver.Instance.OnGuiTargetPositionReceiver;
+            ModNetworking.Callbacks[RadarBlock.ClientRadarHeadMsg] += RadarMsgReceiver.Instance.RadarHeadMsgReceiver;
         }
     }
 }

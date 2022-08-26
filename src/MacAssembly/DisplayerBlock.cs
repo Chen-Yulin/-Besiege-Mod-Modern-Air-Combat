@@ -657,7 +657,7 @@ namespace ModernAirCombat
             Chooser.SetActive(true);
             Mode.SetActive(true);
             PitchIndicatorSelf.SetActive(true);
-            if (!StatMaster.isClient)
+            if (!StatMaster.isClient && StatMaster.isMP)
             {
                 StartCoroutine(SendPanelMsg());
             }
@@ -665,7 +665,7 @@ namespace ModernAirCombat
 
         public override void OnSimulateStop()
         {
-            if (!StatMaster.isClient)
+            if (!StatMaster.isClient && StatMaster.isMP)
             {
                 StopCoroutine(SendPanelMsg());
             }

@@ -13,7 +13,21 @@ using UnityEngine;
 
 namespace ModernAirCombat
 {
-    
+    class RadarMsgReceiver : SingleInstance<RadarMsgReceiver>
+    {
+        public override string Name { get; } = "RadarMsgReceiver";
+
+        public Vector3[] ScanColLocalRotation = new Vector3[16];
+        
+        public void RadarHeadMsgReceiver(Message msg)
+        {
+            ScanColLocalRotation[(int)msg.GetData(0)] = (Vector3)msg.GetData(1);
+        }
+
+
+    }
+
+
     public class Target
     {
         public bool isMissle;
@@ -23,7 +37,6 @@ namespace ModernAirCombat
         public Vector3 velocity;
         public float closingRate;
         public float distance;
-        //public float displayAngle;
 
         public Target()
         {
@@ -119,7 +132,6 @@ namespace ModernAirCombat
         public MeshFilter radarMF;
         public MeshRenderer radarMR;
         public GameObject RadarScanDisplayer;
-        public GameObject buildAdvice;
         public GameObject RadarBase;
         public ScanCollisonHit radarHit;
         public GameObject RadarHead;
@@ -127,18 +139,28 @@ namespace ModernAirCombat
         public MeshRenderer RadarHeadMR;
 
 
-
+        public static MessageType ClientRadarHeadMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Vector3);
 
         protected Mesh scannerMesh;
         protected Mesh radarHeadMesh;
         protected Texture radarHeadTexture;
         
         protected Color displayColor;
-        protected TextMesh adviceTextMesh;
 
-        protected int playerID;
+        protected int myPlayerID;
         protected Transform myTransform;
 
+        IEnumerator SendRadarMsg()
+        {
+            while (true)
+            {
+                yield return new WaitForSeconds(0.05f);
+                if (!StatMaster.isClient)
+                {
+                    ModNetworking.SendToAll(ClientRadarHeadMsg.CreateMessage((int)myPlayerID, (Vector3)ScanCollider.transform.rotation.eulerAngles));
+                }
+            }
+        }
         public bool OnClockWise(Vector2 from, Vector2 to)
         {
             if (from.x * to.y - to.x * from.y < 0)
@@ -150,30 +172,10 @@ namespace ModernAirCombat
                 return false;
             }
         }
-        public void InitAdvice()
-        {
-            if (!transform.FindChild("Advice"))
-            {
-                buildAdvice = new GameObject("Advice");
-                buildAdvice.transform.SetParent(transform);
-                buildAdvice.transform.localPosition = new Vector3(0f, 0.5f, 0.4f);
-                buildAdvice.transform.localRotation = Quaternion.Euler(0, 180, 0);
-                buildAdvice.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-                adviceTextMesh = buildAdvice.AddComponent<TextMesh>();
-                adviceTextMesh.text = "This side up";
-                adviceTextMesh.characterSize = 0.25f;
-                adviceTextMesh.fontSize = 64;
-                adviceTextMesh.anchor = TextAnchor.MiddleCenter;
-                adviceTextMesh.color = Color.green;
-                buildAdvice.SetActive(false);
-            }
-
-        }
         protected void InitScan()
         {
             if (transform.FindChild("Radar Base") == null)
             {
-                scannerMesh = ModResource.GetMesh("RadarScan Mesh").Mesh;
                 RadarBase = new GameObject("Radar Base");
                 RadarBase.transform.SetParent(transform);
                 RadarBase.transform.localPosition = new Vector3(0, 0, 0.5f);
@@ -184,6 +186,7 @@ namespace ModernAirCombat
 
             if (RadarBase.transform.FindChild("RadarScanCol") == null)
             {
+                scannerMesh = ModResource.GetMesh("RadarScan Mesh").Mesh;
                 ScanCollider = new GameObject("RadarScanCol");
                 ScanCollider.transform.SetParent(RadarBase.transform);
                 ScanCollider.transform.localPosition = new Vector3(0f, 0f, 0f);
@@ -283,27 +286,21 @@ namespace ModernAirCombat
             ShowScan = AddToggle("Display Scanner", "display scanner", false);
 
             myTransform = transform;
-            playerID = BlockBehaviour.ParentMachine.PlayerID;
+            myPlayerID = BlockBehaviour.ParentMachine.PlayerID;
             InitScan();
-            //InitAdvice();
             targetManagerRadar = new targetManager();
         } 
 
-        public override void BuildingUpdate()
-        {
-            //if (!buildAdvice.activeSelf)
-            //{
-            //    buildAdvice.SetActive(true);
-            //}
-        }
-
         public override void OnSimulateStart()
         {
-            //buildAdvice.SetActive(false);
             ScanCollider.SetActive(true);
-            if (ShowScan.IsActive)
+            if (ShowScan.IsActive && !StatMaster.isMP)
             {
                 RadarScanDisplayer.SetActive(true);
+            }
+            if (StatMaster.isMP && !StatMaster.isClient)
+            {
+                StartCoroutine(SendRadarMsg());
             }
         }
 
@@ -311,46 +308,39 @@ namespace ModernAirCombat
         public override void OnSimulateStop()
         {
             RadarScanDisplayer.SetActive(false);
+            if (StatMaster.isMP && !StatMaster.isClient)
+            {
+                StopCoroutine(SendRadarMsg());
+            }
         }
 
         public override void SimulateFixedUpdateHost()
         {
             GetTWSAim();
-            RadarBase.transform.position = myTransform.position+0.5f*myTransform.localScale.z*transform.forward;
+            //RadarBase.transform.position = myTransform.position+0.5f*myTransform.localScale.z*transform.forward;
             RadarBase.transform.rotation = Quaternion.LookRotation((myTransform.rotation * Vector3.back).normalized);
+            
             try
             {
                 //DisplayerBlock tmp;
                 //tmp = transform.parent.FindChild("Displayer").GetComponent<DisplayerBlock>();
-                scanAngle = DataManager.Instance.DisplayerData[playerID].radarAngle;
-                scanPitch = DataManager.Instance.DisplayerData[playerID].radarPitch;
+                scanAngle = DataManager.Instance.DisplayerData[myPlayerID].radarAngle;
+                scanPitch = DataManager.Instance.DisplayerData[myPlayerID].radarPitch;
 
                 ScanCollider.transform.localRotation = Quaternion.Euler(270f+scanPitch, scanAngle, 0);
+
                 radarHit.Reset();
-                DataManager.Instance.TargetData[playerID] = targetManagerRadar;
-                DataManager.Instance.RadarTransformForward[playerID] = transform.forward;
+                DataManager.Instance.TargetData[myPlayerID] = targetManagerRadar;
+                DataManager.Instance.RadarTransformForward[myPlayerID] = transform.forward;
 
             }
             catch
             {}
-            //Debug.Log(scanAngle);
-
- 
-
         }
-
-
-
-
-            void OnGUI()
+        public override void SimulateFixedUpdateClient()
         {
-            if (BlockBehaviour.isSimulating)
-            {
-
-                //GUI.Box(new Rect(100, 100, 200, 50), displayerScript.SLController.currAngle.ToString());
-
-            }
+            RadarBase.transform.rotation = Quaternion.LookRotation((myTransform.rotation * Vector3.back).normalized);
+            ScanCollider.transform.localRotation = Quaternion.Lerp(ScanCollider.transform.localRotation, Quaternion.Euler(RadarMsgReceiver.Instance.ScanColLocalRotation[myPlayerID]),0.2f);
         }
-
     }
 }
