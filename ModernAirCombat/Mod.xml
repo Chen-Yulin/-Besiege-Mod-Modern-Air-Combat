@@ -9,7 +9,7 @@
 	<Name>ModernAirCombat</Name>
 	<Author>Humble Cavalry</Author> <!-- FIX: Insert your name here. -->
 	<!-- Major.Minor.Build -->
-	<Version>0.1.2</Version>
+	<Version>0.2.0</Version>
 	
 	<Description>
 	A mod for simulating modern air combat in besiege. 
@@ -33,6 +33,7 @@
 		<Block path="MRAAM.xml" />
 		<Block path="RWR.xml" />
 		<Block path="FlareBlock.xml" />
+		<Block path="MachineGun.xml" />
 	</Blocks>
 	
 	<!-- Any entities (level objects) your mod adds to the game.
@@ -86,7 +87,7 @@
 		<Texture name="Chooser Texture" path="Displayer\Chooser.png"/>
 		<Mesh name="Radar Mesh" path="Radar\radar.obj"/>
 		<Texture name="Radar Texture" path="Radar\radar.png"/>
-		<Mesh name="RadarScan Mesh" path="Radar\radarScan.obj"/>
+		<Mesh name="RadarScan Mesh" path="Radar\radarScan2.obj"/>
 		<Mesh name="RadarHead Mesh" path="Radar\radarhead.obj"/>
 		<Texture name="RadarHead Texture" path="Radar\radarhead.png"/>
 		<Texture name="LockIconScreen Texture" path="LockIconScreen.png"/>
@@ -95,7 +96,16 @@
 		<Mesh name="Flare Mesh" path="Flare\Flare.obj"/>
 		<Texture name="Flare Texture" path="Flare\Flare.png"/>
 		<AssetBundle name="Flare Effect" path="flare.ab"/>
+		<AssetBundle name="Gun Effect" path="gunfire.ab"/>
 		<AudioClip name="RWRBeep Audio" path="RWR\RWRBeep.wav" />
+		<Mesh name="MachineGun Mesh" path="MachineGun\MG.obj"/>
+		<Texture name="MachineGun Texture" path="MachineGun\MG.png"/>
+		<AudioClip name="MachineGun Audio" path="MachineGun\shot2.wav" />
+		<AudioClip name="Flying Audio" path="MachineGun\flying.wav" />
+		<AudioClip name="BulletHit Audio" path="MachineGun\hit.wav" />
+		<AudioClip name="MissileLaunch Audio" path="SRAAM\Launch.wav" />
+		<AudioClip name="MissileExplo Audio" path="SRAAM\explo.wav" />
+
 	</Resources>
 
 

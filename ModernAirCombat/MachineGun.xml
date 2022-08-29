@@ -1,0 +1,42 @@
+<Block>
+	<Debug>false</Debug>
+	<ID>7</ID>
+	<Name>MachineGun</Name>
+	<Mass>1</Mass>
+
+	<Script>ModernAirCombat.MachineGunBlock</Script>
+
+	<Mesh name="MachineGun Mesh">
+		<Position x="0.0" y="0" z="0" />
+		<Rotation x="90" y="0.0" z="0" />
+		<Scale x="1.0" y="1.0" z="1.0" />
+	</Mesh>
+	
+	<Texture name="MachineGun Texture" /> <!-- Must be defined as a resource in the manifest. -->
+
+	
+	<Icon>
+		<Position x="0.0" y="0.0" z="0.0" />
+		<Rotation x="0.0" y="0.0" z="0.0" />
+		<Scale x="1" y="1.0" z="1.0" />
+	</Icon>
+
+	
+	<Colliders>
+		<BoxCollider>
+			<Position x="0.0" y="0.0" z="0.55" />
+			<Rotation x="0.0" y="0.0" z="0.0" />
+			<Scale x="0.1" y="0.1" z="0.9" />
+		</BoxCollider>
+	</Colliders>
+	
+	<BasePoint hasAddingPoint="false">
+		<Stickiness enabled="true" radius="0.2" />
+		<!-- Can only have motion if sticky -->
+		<Motion x="false" y="false" z="false" /> <!-- Optional -->
+	</BasePoint>
+	
+	<AddingPoints>
+		<!-- TODO: Insert AddingPoint definitions here. Example:-->
+	</AddingPoints>
+</Block>

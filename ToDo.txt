@@ -1,8 +1,7 @@
-
-+ using instantiation to optimize code
-
-+ on-line compatibility
-
 + add overload detection in DisplayerBlock（BlackOut）
+
++ machine gun ignite
+
++ machine gun color slider
 
 + add Hub Block

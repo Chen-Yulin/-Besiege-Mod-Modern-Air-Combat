@@ -31,6 +31,9 @@ namespace ModernAirCombat
             ModNetworking.Callbacks[DisplayerBlock.ClientLockedTargetMsg] += DisplayerMsgReceiver.Instance.LockedTargetReceiver;
             ModNetworking.Callbacks[DisplayerBlock.ClientOnGuiTargetMsg] += DisplayerMsgReceiver.Instance.OnGuiTargetPositionReceiver;
             ModNetworking.Callbacks[RadarBlock.ClientRadarHeadMsg] += RadarMsgReceiver.Instance.RadarHeadMsgReceiver;
+            ModNetworking.Callbacks[MachineGunBlock.ClientFirePara] += MachineGunMsgReceiver.Instance.FireParaReceiver;
+            ModNetworking.Callbacks[MachineGunBlock.ClientBulletExploMsg] += MachineGunMsgReceiver.Instance.BulletExploMsgReceiver;
+            ModNetworking.Callbacks[RWRBlock.ClientRWRData] += RWRMsgReceiver.Instance.DataReceiver;
         }
     }
 }

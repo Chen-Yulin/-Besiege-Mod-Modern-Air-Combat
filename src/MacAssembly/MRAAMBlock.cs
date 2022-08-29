@@ -92,6 +92,10 @@ namespace ModernAirCombat
                             TrailSmokeParticle.Play();
                             TrailFlameParticle.Play();
                             activeTrail = true;
+                            GameObject LaunchSoundEffect = (GameObject)Instantiate(LaunchSound, transform, false);
+                            LaunchSoundEffect.SetActive(true);
+                            LaunchSoundEffect.GetComponent<AudioSource>().Play();
+                            Destroy(LaunchSoundEffect, 3.5f);
                         }
                     }
                     if (time > thrustTime + launchDelay.Value)//deactive trail effect and destroy it after sometime
@@ -153,6 +157,10 @@ namespace ModernAirCombat
                             TrailSmokeParticle.Play();
                             TrailFlameParticle.Play();
                             activeTrail = true;
+                            GameObject LaunchSoundEffect = (GameObject)Instantiate(LaunchSound, transform, false);
+                            LaunchSoundEffect.SetActive(true);
+                            LaunchSoundEffect.GetComponent<AudioSource>().Play();
+                            Destroy(LaunchSoundEffect, 3.5f);
                         }
                         myRigidbody.AddRelativeForce(new Vector3(0, 13500, 0), ForceMode.Force);
                     }

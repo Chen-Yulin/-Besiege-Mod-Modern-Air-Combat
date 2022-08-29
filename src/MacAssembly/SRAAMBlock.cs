@@ -141,24 +141,27 @@ namespace ModernAirCombat
         {
             try
             {
-                MPTeam hitedTeam;
                 if (explo == true)
                     return;
                 if (col.isTrigger || col.transform.parent.GetInstanceID() == col.GetInstanceID())
                     return;
                 if (col.attachedRigidbody.gameObject.name == "missle")
                     return;
-                try
+                if (col.name == "flareCol")
                 {
-                    BlockBehaviour hitedBlock = col.attachedRigidbody.gameObject.GetComponent<BlockBehaviour>();
-                    hitedTeam = hitedBlock.Team;
+                    if (UnityEngine.Random.value > 0.5f)
+                    {
+                        explo = true;
+                    }
+                    else
+                    {
+                        return;
+                    }
                 }
-                catch
-                {
-                    return;
-                }
+                    
+                        
+
                 explo = true;
-                //Debug.Log("Explo!!!");
             }
             catch { }
             
@@ -195,8 +198,14 @@ namespace ModernAirCombat
         public GameObject TrailSmoke;
         public ParticleSystem TrailFlameParticle;
         public ParticleSystem TrailSmokeParticle;
-        public GameObject Explo;
-        public GameObject ExploClient;
+
+        public GameObject LaunchSound;
+        public AudioClip LaunchClip;
+        public AudioSource LaunchAS;
+
+        public GameObject ExploSound;
+        public AudioClip ExploClip;
+        public AudioSource ExploAS;
 
 
         public float ExploPower = 100000f;
@@ -228,6 +237,7 @@ namespace ModernAirCombat
         public bool launchMsgInit = false;
 
 
+
         public void AxisLookAt(Transform tr_self, Vector3 lookPos, Vector3 directionAxis)
         {
             var rotation = tr_self.rotation;
@@ -243,6 +253,38 @@ namespace ModernAirCombat
 
         }//from CSDN
 
+
+        public void InitSoundEffect()
+        {
+            LaunchClip = ModResource.GetAudioClip("MissileLaunch Audio");
+            LaunchSound = new GameObject("Launch sound");
+            LaunchAS = LaunchSound.GetComponent<AudioSource>() ?? LaunchSound.AddComponent<AudioSource>();
+            LaunchSound.AddComponent<MakeAudioSourceFixedPitch>();
+            LaunchAS.clip = LaunchClip;
+            LaunchAS.spatialBlend = 1.0f;
+            LaunchAS.volume = 60f;
+
+            LaunchAS.SetSpatializerFloat(1, 1f);
+            LaunchAS.SetSpatializerFloat(2, 0);
+            LaunchAS.SetSpatializerFloat(3, 12);
+            LaunchAS.SetSpatializerFloat(4, 1000f);
+            LaunchAS.SetSpatializerFloat(5, 1f);
+            LaunchSound.SetActive(false);
+
+            ExploClip = ModResource.GetAudioClip("MissileExplo Audio");
+            ExploSound = new GameObject("Explo sound");
+            ExploAS = ExploSound.GetComponent<AudioSource>() ?? ExploSound.AddComponent<AudioSource>();
+            ExploSound.AddComponent<MakeAudioSourceFixedPitch>();
+            ExploAS.clip = ExploClip;
+            ExploAS.spatialBlend = 1.0f;
+            ExploAS.volume = 10f;
+            ExploAS.SetSpatializerFloat(1, 1f);
+            ExploAS.SetSpatializerFloat(2, 0);
+            ExploAS.SetSpatializerFloat(3, 12);
+            ExploAS.SetSpatializerFloat(4, 1000f);
+            ExploAS.SetSpatializerFloat(5, 1f);
+            ExploSound.SetActive(false);
+        }
 
         public void initScan()
         {
@@ -313,22 +355,17 @@ namespace ModernAirCombat
                 TrailFlameParticle.Stop();
             }
             catch { }
-            
 
-            if (StatMaster.isClient)
-            {
-                
-                ExploClient = (GameObject)Instantiate(AssetManager.Instance.Explo.Explo, transform.position, transform.rotation);
-                ExploClient.SetActive(true);
-                Destroy(ExploClient, 3);
-            }
-            else
-            {
-                Explo = (GameObject)Instantiate(AssetManager.Instance.Explo.Explo, transform.position, transform.rotation);
-                Explo.SetActive(true);
-                Destroy(Explo, 3);
-            }
-            
+            GameObject ExploSoundEffect = (GameObject)Instantiate(ExploSound, transform, false);
+            ExploSoundEffect.SetActive(true);
+            ExploSoundEffect.GetComponent<AudioSource>().Play();
+            Destroy(ExploSoundEffect, 3.5f);
+
+
+            GameObject ExploParticleEffect = (GameObject)Instantiate(AssetManager.Instance.Explo.Explo, transform.position, transform.rotation);
+            ExploParticleEffect.SetActive(true);
+            Destroy(ExploParticleEffect, 3);
+          
 
             BlockBehaviour.MeshRenderer.enabled = false;
             transform.FindChild("Colliders").gameObject.SetActive(false);
@@ -458,6 +495,7 @@ namespace ModernAirCombat
             initTrail();
             //initExplo();
             initPF();
+            InitSoundEffect();
 
             AimIcon = ModResource.GetTexture("Aim Icon").Texture;
             myPlayerID = BlockBehaviour.ParentMachine.PlayerID;
@@ -579,6 +617,10 @@ namespace ModernAirCombat
                             TrailSmokeParticle.Play();
                             TrailFlameParticle.Play();
                             activeTrail = true;
+                            GameObject LaunchSoundEffect = (GameObject)Instantiate(LaunchSound, transform, false);
+                            LaunchSoundEffect.SetActive(true);
+                            LaunchSoundEffect.GetComponent<AudioSource>().Play();
+                            Destroy(LaunchSoundEffect, 3.5f);
                         }
 
                     }
@@ -659,7 +701,14 @@ namespace ModernAirCombat
                             TrailSmokeParticle.Play();
                             TrailFlameParticle.Play();
                             activeTrail = true;
+
+                            GameObject LaunchSoundEffect = (GameObject)Instantiate(LaunchSound, transform, false);
+                            LaunchSoundEffect.SetActive(true);
+                            LaunchSoundEffect.GetComponent<AudioSource>().Play();
+                            Destroy(LaunchSoundEffect, 3.5f);
+
                         }
+                        
 
                         myRigidbody.AddRelativeForce(new Vector3(0, 3000, 0), ForceMode.Force);
                     }

@@ -56,6 +56,7 @@
     <Compile Include="DisplayerBlock.cs" />
     <Compile Include="FlareBlock.cs" />
     <Compile Include="KeyMsgController.cs" />
+    <Compile Include="MachineGunBlock.cs" />
     <Compile Include="MessageController.cs" />
     <Compile Include="ModernAirCombat.cs" />
     <Compile Include="MRAAMBlock.cs" />

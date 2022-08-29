@@ -13,6 +13,23 @@ using UnityEngine;
 
 namespace ModernAirCombat
 {
+    class RWRMsgReceiver : SingleInstance<RWRMsgReceiver>
+    {
+        public override string Name { get; } = "RWRMsgReceiver";
+
+        public float[,] RWRData = new float[16, 8];
+
+        public void DataReceiver(Message msg)
+        {
+            int playerID = (int)msg.GetData(0);
+            for (int i = 0; i < 8; i++)
+            {
+                RWRData[playerID, i] = (float)msg.GetData(i + 1);
+            }
+        }
+
+    }
+
     public class MakeAudioSourceFixedPitch : MonoBehaviour
     {
         protected AudioSource FixedAS;
@@ -34,8 +51,37 @@ namespace ModernAirCombat
         public AudioSource BeepAS;
         public GameObject[] Icon;
 
-        protected int playerID;
+        IEnumerator sendData;
+
+        public int myPlayerID;
         //protected bool hasRadiation;
+
+        public static MessageType ClientRWRData = ModNetworking.CreateMessageType( DataType.Integer,
+                                                                            DataType.Single, DataType.Single, DataType.Single, DataType.Single,
+                                                                            DataType.Single, DataType.Single, DataType.Single, DataType.Single);
+
+
+        IEnumerator SendData()
+        {
+            while (true)
+            {
+                yield return new WaitForSeconds(0.05f);
+                try
+                {
+                    ModNetworking.SendToAll(ClientRWRData.CreateMessage(myPlayerID, DataManager.Instance.RWRData[myPlayerID, 0],
+                                                                                    DataManager.Instance.RWRData[myPlayerID, 1],
+                                                                                    DataManager.Instance.RWRData[myPlayerID, 2],
+                                                                                    DataManager.Instance.RWRData[myPlayerID, 3],
+                                                                                    DataManager.Instance.RWRData[myPlayerID, 4],
+                                                                                    DataManager.Instance.RWRData[myPlayerID, 5],
+                                                                                    DataManager.Instance.RWRData[myPlayerID, 6],
+                                                                                    DataManager.Instance.RWRData[myPlayerID, 7]
+                                                                                    ));
+                }
+                catch { }
+                
+            }
+        }
 
         public void InitBeep()
         {
@@ -178,71 +224,90 @@ namespace ModernAirCombat
         
         public override void SafeAwake()
         {
-            playerID = BlockBehaviour.ParentMachine.PlayerID;
+            myPlayerID = BlockBehaviour.ParentMachine.PlayerID;
 
             Volume = AddSlider("Volume", "volume", 0.4f, 0.1f, 1f);
 
             
         }
+        public void Start()
+        { }
         public override void OnSimulateStart()
         {
             InitBeep();
             InitIcon();
+
+            sendData = SendData();
+            StartCoroutine(sendData);
         }
-        protected void Update()
+        public override void OnSimulateStop()
         {
-            //hasRadiation = false;
-            for (int i = 0; i < 8; i++)
-            {
-                if (DataManager.Instance.RWRData[playerID, i] > 0)
-                {
-                    if (DataManager.Instance.RWRData[playerID, i] == 1)
-                    {
-                        BeepAS.Play();
-                    }
-                    if (!Icon[i].activeSelf)
-                    {
-                        Icon[i].SetActive(true);
-                    }
-                    DataManager.Instance.RWRData[playerID, i] -= Time.deltaTime;
-                }
-                else
-                {
-                    if (Icon[i].activeSelf)
-                    {
-                        Icon[i].SetActive(false);
-                    }
-                    DataManager.Instance.RWRData[playerID, i] = 0;
-                }
-            }
-            
+            StopCoroutine(sendData);
         }
 
-        //public override void SimulateUpdateClient()
-        //{
-        //    for (int i = 0; i < 8; i++)
-        //    {
-        //        if (DataManager.Instance.RWRData[playerID, i] > 0)
-        //        {
-        //            if (DataManager.Instance.RWRData[playerID, i] == 1)
-        //            {
-        //                BeepAS.Play();
-        //            }
-        //            if (!Icon[i].activeSelf)
-        //            {
-        //                Icon[i].SetActive(true);
-        //            }
-        //        }
-        //        else
-        //        {
-        //            if (Icon[i].activeSelf)
-        //            {
-        //                Icon[i].SetActive(false);
-        //            }
-        //            DataManager.Instance.RWRData[playerID, i] = 0;
-        //        }
-        //    }
-        //} 
+        public override void SimulateUpdateHost()
+        {
+            //hasRadiation = false;
+            try
+            {
+                for (int i = 0; i < 8; i++)
+                {
+                    if (DataManager.Instance.RWRData[myPlayerID, i] > 0)
+                    {
+                        if (DataManager.Instance.RWRData[myPlayerID, i] == 1)
+                        {
+                            BeepAS.Play();
+                        }
+                        if (!Icon[i].activeSelf)
+                        {
+                            Icon[i].SetActive(true);
+                        }
+                        DataManager.Instance.RWRData[myPlayerID, i] -= Time.deltaTime;
+                    }
+                    else
+                    {
+                        if (Icon[i].activeSelf)
+                        {
+                            Icon[i].SetActive(false);
+                        }
+                        DataManager.Instance.RWRData[myPlayerID, i] = 0;
+                    }
+                }
+            }
+            catch { }
+        }
+
+        public override void SimulateUpdateClient()
+        {
+            try
+            {
+                for (int i = 0; i < 8; i++)
+                {
+                    if (RWRMsgReceiver.Instance.RWRData[myPlayerID, i] > 0)
+                    {
+                        if (RWRMsgReceiver.Instance.RWRData[myPlayerID, i] >=0.9 && !BeepAS.isPlaying)
+                        {
+                            BeepAS.Play();
+                        }
+                        if (!Icon[i].activeSelf)
+                        {
+                            Icon[i].SetActive(true);
+                        }
+                        RWRMsgReceiver.Instance.RWRData[myPlayerID, i] -= Time.deltaTime;
+                    }
+                    else
+                    {
+                        if (Icon[i].activeSelf)
+                        {
+                            Icon[i].SetActive(false);
+                        }
+                        RWRMsgReceiver.Instance.RWRData[myPlayerID, i] = 0;
+                    }
+                }
+            }
+            catch { }
+        }
+
 
         void OnGUI()
         {

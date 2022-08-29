@@ -102,6 +102,7 @@ namespace ModernAirCombat
             }
             catch { }
             FlareObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            FlareObject.name = "flare";
             Destroy(FlareObject.GetComponent<MeshFilter>());
             FlareObject.GetComponent<BoxCollider>().size = new Vector3(0.1f,0.1f,0.1f);
 

@@ -56,6 +56,28 @@ namespace ModernAirCombat
         }
     }
 
+    public class Asset_GunFire
+    {
+        public GameObject GunFire;
+        public Asset_GunFire(ModAssetBundle modAssetBundle)
+        {
+            GunFire = modAssetBundle.LoadAsset<GameObject>("GunFire");
+            GunFire.AddComponent<DestroyIfEditMode>();
+            GunFire.SetActive(false);
+        }
+    }
+
+    public class Asset_BulletExplo
+    {
+        public GameObject BulletExplo;
+        public Asset_BulletExplo(ModAssetBundle modAssetBundle)
+        {
+            BulletExplo = modAssetBundle.LoadAsset<GameObject>("bulletExplo");
+            BulletExplo.AddComponent<DestroyIfEditMode>();
+            BulletExplo.SetActive(false);
+        }
+    }
+
     public class AssetManager : SingleInstance<AssetManager>
     {
         public override string Name { get; } = "Asset Manager";
@@ -63,12 +85,19 @@ namespace ModernAirCombat
         public Asset_Trail Trail { get; protected set; }
         public Asset_Explo Explo { get; protected set; }
         public Asset_Flare Flare { get; protected set; }
+        public Asset_GunFire GunFire { get; protected set; }
+        public Asset_BulletExplo BulletExplo { get; protected set; }
+
+
 
         protected void Awake()
         {
             Trail = new Asset_Trail(ModResource.GetAssetBundle("Trail Effect"));
             Explo = new Asset_Explo(ModResource.GetAssetBundle("Explo Effect"));
             Flare = new Asset_Flare(ModResource.GetAssetBundle("Flare Effect"));
+            GunFire = new Asset_GunFire(ModResource.GetAssetBundle("Gun Effect"));
+            BulletExplo = new Asset_BulletExplo(ModResource.GetAssetBundle("Gun Effect"));
+
         }
     }
 }

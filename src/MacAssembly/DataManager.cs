@@ -11,17 +11,6 @@ using UnityEngine;
 
 namespace ModernAirCombat
 {
-    public class RWRTargetData
-    {
-        //public bool hasRadiation;
-        
-        
-        public RWRTargetData()
-        {
-            //hasRadiation = false;
-            
-        }
-    }
     public class BVRTargetData
     {
         public Vector3 position;
@@ -46,11 +35,22 @@ namespace ModernAirCombat
     public class DataManager : SingleInstance<DataManager>
     {
         public override string Name { get; } = "Data Manager";
-        public Vector3[] RadarTransformForward = new Vector3[10];
-        public targetManager[] TargetData = new targetManager[10];
-        public displayerData[] DisplayerData = new displayerData[10];
-        public BVRTargetData[] BVRData = new BVRTargetData[10];
-        public float[,] RWRData = new float[10,8];
+        public Vector3[] RadarTransformForward = new Vector3[16];
+        public targetManager[] TargetData = new targetManager[16];
+        public displayerData[] DisplayerData = new displayerData[16];
+        public BVRTargetData[] BVRData = new BVRTargetData[16];
+        public float[,] RWRData = new float[16,8];
+
+        public DataManager()
+        {
+            for (int i = 0; i < 16; i++)
+            {
+                RadarTransformForward[i] = Vector3.zero;
+                TargetData[i] = new targetManager();
+                DisplayerData[i] = new displayerData(0,0);
+                BVRData[i] = new BVRTargetData();
+            }
+        }
         
         
     }
