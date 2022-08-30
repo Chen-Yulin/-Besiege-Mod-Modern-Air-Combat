@@ -28,7 +28,7 @@
 		<BoxCollider>
 			<Position x="0.0" y="0.0" z="0.3" />
 			<Rotation x="0" y="45" z="0" />
-			<Scale x="0.35" y="2" z="0.35" />
+			<Scale x="0.18" y="2" z="0.18" />
 		</BoxCollider>
 		<CapsuleCollider>
 			<Position x="0.0" y="0.2" z="0.3" />

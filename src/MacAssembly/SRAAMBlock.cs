@@ -209,7 +209,7 @@ namespace ModernAirCombat
 
 
         public float ExploPower = 100000f;
-        public float ExploRadius = 20f;
+        public float ExploRadius = 10f;
 
         public static MessageType MissleExplo = ModNetworking.CreateMessageType(DataType.Integer, DataType.Integer, DataType.Boolean);
 
@@ -390,7 +390,13 @@ namespace ModernAirCombat
             {
                 if (hits.GetComponent<Rigidbody>())
                 {
-                    hits.GetComponent<Rigidbody>().AddExplosionForce(ExploPower, transform.position, ExploRadius);
+                    hits.GetComponent<Rigidbody>().AddExplosionForce(ExploPower, transform.position, 2*ExploRadius);
+                    try
+                    {
+                        hits.attachedRigidbody.gameObject.GetComponent<BlockBehaviour>().fireTag.Ignite();
+                    }
+                    catch { }
+                    
                 }
             }
             

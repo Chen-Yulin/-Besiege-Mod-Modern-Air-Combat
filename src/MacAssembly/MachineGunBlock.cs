@@ -171,6 +171,11 @@ namespace ModernAirCombat
                         {
                             hit.collider.attachedRigidbody.AddForce(bullet.transform.forward * 2000f * Caliber.Value, ForceMode.Force);
                             hit.collider.attachedRigidbody.AddTorque(bullet.transform.up * 500000f * Caliber.Value, ForceMode.Force);
+                            //if (UnityEngine.Random.value>0.95)
+                            //{
+                            //    hit.collider.attachedRigidbody.gameObject.GetComponent<BlockBehaviour>().fireTag.Ignite();
+                            //}
+                            
                         }
                         catch { }
                         if (Caliber.Value > 20)
@@ -180,7 +185,7 @@ namespace ModernAirCombat
                             {
                                 if (hits.GetComponent<Rigidbody>())
                                 {
-                                    hits.GetComponent<Rigidbody>().AddExplosionForce(20000f*(Caliber.Value-20), hit.point, 20f);
+                                    hits.GetComponent<Rigidbody>().AddExplosionForce(7000f*(Caliber.Value-20), hit.point, 20f);
                                 }
                             }
                         }

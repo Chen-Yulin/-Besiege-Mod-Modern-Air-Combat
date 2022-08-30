@@ -36,6 +36,8 @@ namespace ModernAirCombat
         public string[] LockInfo = new string[16];
 
         public Vector3[] OnGuiTargetPosition = new Vector3[16];
+
+        public float[] BlackoutData = new float[16];
  
         public void DistanceReceiver(Message msg)
         {
@@ -73,6 +75,11 @@ namespace ModernAirCombat
         public void OnGuiTargetPositionReceiver(Message msg)
         {
             OnGuiTargetPosition[(int)msg.GetData(0)] = (Vector3)msg.GetData(1);
+        }
+
+        public void BlackoutReceiver(Message msg)
+        {
+            BlackoutData[(int)msg.GetData(0)] = (float)msg.GetData(1);
         }
 
     }
@@ -141,6 +148,8 @@ namespace ModernAirCombat
         public GameObject[] EnemyIconsTWS;
         public GameObject PitchIndicatorSelf;
         public GameObject PitchIndicatorTarget;
+        public GameObject BlackOut;
+
         public Rigidbody myRigid;
 
         public Target[] RadarTarget;
@@ -158,7 +167,12 @@ namespace ModernAirCombat
         public static MessageType ClientLockedTargetMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Single, DataType.Boolean, DataType.String);
         public static MessageType ClientOnGuiTargetMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Vector3);
 
+        public static MessageType ClientBlackoutMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Single);
 
+        public Vector3 preVeclocity = Vector3.zero;
+        public Vector3 overLoad = Vector3.zero;
+        public float blackoutIndex = 0;
+        
 
 
         protected MeshFilter BaseGridMeshFilter;
@@ -199,6 +213,66 @@ namespace ModernAirCombat
         protected int iconSize = 28;
         protected float deltaPitch = 0;
 
+        
+
+        public void DisplayBlackout()
+        {
+            if (!StatMaster.isMP || (StatMaster.isMP && !StatMaster.isClient))
+            {
+                //calculate camera height and width
+                float halfFOV = (Camera.current.fieldOfView * 0.4f) * Mathf.Deg2Rad;
+                float height = 0.4f * Mathf.Tan(halfFOV);
+                float width = height * Camera.current.aspect;
+                BlackOut.transform.localScale = new Vector3(width * 0.5f, 0.1f, height * 0.5f);
+
+                overLoad = (myRigid.velocity - preVeclocity) / Time.fixedDeltaTime;
+                //Debug.Log(overLoad.magnitude);
+
+                preVeclocity = myRigid.velocity;
+
+                if (overLoad.magnitude > 10 * 10)
+                {
+                    blackoutIndex += (overLoad.magnitude - 10 * 10) / (50 * 150f);
+                    blackoutIndex = Math.Min(blackoutIndex, 2);
+                }
+                else
+                {
+                    blackoutIndex -= 0.005f;
+                    blackoutIndex = Math.Max(blackoutIndex, 0);
+                }
+                if (!StatMaster.isClient)
+                {
+                    ModNetworking.SendToAll(ClientBlackoutMsg.CreateMessage(myPlayerID, blackoutIndex));
+                    
+                }
+            }
+            else
+            {
+                blackoutIndex = DisplayerMsgReceiver.Instance.BlackoutData[(int)PlayerData.localPlayer.networkId];
+            }
+
+
+            if (StatMaster.isMP)
+            {
+                if ((int)PlayerData.localPlayer.networkId == myPlayerID)
+                {
+                    BlackOut.GetComponent<MeshRenderer>().sharedMaterial.SetColor("_TintColor", new Color(0, 0, 0, blackoutIndex));
+                }
+            }
+            else
+            {
+                BlackOut.GetComponent<MeshRenderer>().sharedMaterial.SetColor("_TintColor", new Color(0, 0, 0, blackoutIndex));
+            }
+
+            
+            
+
+            
+
+            
+
+
+        }
 
         public void DisplayLockedTargetClient()
         {
@@ -509,6 +583,33 @@ namespace ModernAirCombat
 
         }
 
+        public void InitBlackOut()
+        {
+            if (BlackOut == null)
+            {
+                BlackOut = GameObject.CreatePrimitive(PrimitiveType.Plane);
+                BlackOut.name = "Blackout";
+                BlackOut.transform.SetParent(Camera.main.transform);
+                BlackOut.transform.localPosition = new Vector3(0, 0, 0.4f);
+
+                //calculate camera height and width
+                float halfFOV = (Camera.current.fieldOfView * 0.4f) * Mathf.Deg2Rad;
+                float height = 0.4f * Mathf.Tan(halfFOV);
+                float width = height * Camera.current.aspect;
+
+                BlackOut.transform.localScale = new Vector3(width * 0.3f, 0.1f, height * 0.3f);
+                BlackOut.transform.localRotation = Quaternion.Euler(90, 0, 0);
+                Destroy(BlackOut.GetComponent<Collider>());
+                Destroy(BlackOut.GetComponent<Rigidbody>());
+                Material blackoutMaterial = new Material(Shader.Find("Particles/Alpha Blended"));
+                blackoutMaterial.mainTexture = ModResource.GetTexture("BlackOut Texture").Texture;
+                blackoutMaterial.SetColor("_TintColor", new Color(0,0,0,0f));
+                BlackOut.GetComponent<MeshRenderer>().sharedMaterial = blackoutMaterial;
+                BlackOut.SetActive(true);
+
+            }
+        }
+
         public void InitMode(string mode)
         {
             if (!transform.FindChild("Mode"))
@@ -644,12 +745,14 @@ namespace ModernAirCombat
             InitMode(mode);
             InitEnemyIcons();
             InitPitchIndicator();
+            
             LockIconOnScreen = ModResource.GetTexture("LockIconScreen Texture").Texture;
         }
 
         
         public override void OnSimulateStart()
         {
+            InitBlackOut();
             SLController = transform.gameObject.AddComponent<ScanLineController>();
             ScanLine.SetActive(true);
             LeftAngleIndicator.SetActive(true);
@@ -665,6 +768,7 @@ namespace ModernAirCombat
 
         public override void OnSimulateStop()
         {
+            Destroy(BlackOut);
             if (!StatMaster.isClient && StatMaster.isMP)
             {
                 StopCoroutine(SendPanelMsg());
@@ -673,6 +777,8 @@ namespace ModernAirCombat
 
         protected void Update()
         {
+
+
             if (IsSimulating)
             {
                 //set the position of scanLine
@@ -779,6 +885,7 @@ namespace ModernAirCombat
         }
         public override void SimulateFixedUpdateHost()
         {
+            DisplayBlackout();
             try
             {
                 currRegion = (int)Math.Floor((SLController.currAngle + 60) / 1.2f + 0.5f);
@@ -905,6 +1012,7 @@ namespace ModernAirCombat
 
         public override void SimulateFixedUpdateClient()
         {
+            DisplayBlackout();
             PanelRectifyClient();
             locking = DisplayerMsgReceiver.Instance.locking[myPlayerID];
 
@@ -1011,6 +1119,15 @@ namespace ModernAirCombat
                 if (onScreenPosition.z >= 0)
                     GUI.DrawTexture(new Rect(onScreenPosition.x - iconSize / 2, Camera.main.pixelHeight - onScreenPosition.y - iconSize / 2, iconSize, iconSize), LockIconOnScreen);
             }
+            if (StatMaster.isMP && !StatMaster.isClient)
+            {
+                GUI.Box(new Rect(100, 100, 200, 50), PlayerData.localPlayer.networkId.ToString() + " " + myPlayerID.ToString() + "   " + DisplayerMsgReceiver.Instance.BlackoutData[PlayerData.localPlayer.networkId].ToString());
+            }
+            if (StatMaster.isMP && StatMaster.isClient)
+            {
+                GUI.Box(new Rect(100, 150, 200, 50), PlayerData.localPlayer.networkId.ToString() + " " + myPlayerID.ToString() + "   " + DisplayerMsgReceiver.Instance.BlackoutData[PlayerData.localPlayer.networkId].ToString());
+            }
+
 
         }
 

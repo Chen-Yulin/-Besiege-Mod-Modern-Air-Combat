@@ -105,6 +105,7 @@
 		<AudioClip name="BulletHit Audio" path="MachineGun\hit.wav" />
 		<AudioClip name="MissileLaunch Audio" path="SRAAM\Launch.wav" />
 		<AudioClip name="MissileExplo Audio" path="SRAAM\explo.wav" />
+		<Texture name="BlackOut Texture" path="Displayer\BlackOut.png"/>
 
 	</Resources>
 
