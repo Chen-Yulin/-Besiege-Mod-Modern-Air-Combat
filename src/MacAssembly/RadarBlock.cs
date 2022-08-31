@@ -167,6 +167,7 @@ namespace ModernAirCombat
         public MeshFilter RadarHeadMF;
         public MeshRenderer RadarHeadMR;
 
+        public IEnumerator SendRadarHead;
 
         public static MessageType ClientRadarHeadMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Vector3);
 
@@ -186,7 +187,7 @@ namespace ModernAirCombat
                 yield return new WaitForSeconds(0.05f);
                 if (!StatMaster.isClient)
                 {
-                    ModNetworking.SendToAll(ClientRadarHeadMsg.CreateMessage((int)myPlayerID, (Vector3)ScanCollider.transform.rotation.eulerAngles));
+                    ModNetworking.SendToAll(ClientRadarHeadMsg.CreateMessage((int)myPlayerID, (Vector3)ScanCollider.transform.localRotation.eulerAngles));
                 }
             }
         }
@@ -312,6 +313,7 @@ namespace ModernAirCombat
 
         public override void SafeAwake()
         {
+
             ShowScan = AddToggle("Display Scanner", "display scanner", false);
             DopplerFeature = AddToggle("Doppler Feature", "Doppler Feature", true);
 
@@ -330,7 +332,8 @@ namespace ModernAirCombat
             }
             if (StatMaster.isMP && !StatMaster.isClient)
             {
-                StartCoroutine(SendRadarMsg());
+                SendRadarHead = SendRadarMsg();
+                StartCoroutine(SendRadarHead);
             }
         }
 
@@ -340,7 +343,7 @@ namespace ModernAirCombat
             RadarScanDisplayer.SetActive(false);
             if (StatMaster.isMP && !StatMaster.isClient)
             {
-                StopCoroutine(SendRadarMsg());
+                StopCoroutine(SendRadarHead);
             }
         }
 
