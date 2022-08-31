@@ -7,9 +7,9 @@
 
 	<!-- General information about the mod. -->
 	<Name>ModernAirCombat</Name>
-	<Author>Humble Cavalry</Author> <!-- FIX: Insert your name here. -->
+	<Author>Chen, Yulin</Author> <!-- FIX: Insert your name here. -->
 	<!-- Major.Minor.Build -->
-	<Version>0.2.0</Version>
+	<Version>0.2.1</Version>
 	
 	<Description>
 	A mod for simulating modern air combat in besiege. 

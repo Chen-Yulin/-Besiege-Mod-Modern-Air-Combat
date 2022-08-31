@@ -134,6 +134,8 @@ namespace ModernAirCombat
         public MKey scanDown;
         public MKey Lock;
 
+        public MToggle GTolerance;
+
         public GameObject BaseGrid;
         public ScanLineController SLController;
         public GameObject ScanLine;
@@ -219,12 +221,6 @@ namespace ModernAirCombat
         {
             if (!StatMaster.isMP || (StatMaster.isMP && !StatMaster.isClient))
             {
-                //calculate camera height and width
-                float halfFOV = (Camera.current.fieldOfView * 0.4f) * Mathf.Deg2Rad;
-                float height = 0.4f * Mathf.Tan(halfFOV);
-                float width = height * Camera.current.aspect;
-                BlackOut.transform.localScale = new Vector3(width * 0.5f, 0.1f, height * 0.5f);
-
                 overLoad = (myRigid.velocity - preVeclocity) / Time.fixedDeltaTime;
                 //Debug.Log(overLoad.magnitude);
 
@@ -233,13 +229,13 @@ namespace ModernAirCombat
                 if (overLoad.magnitude > 10 * 10)
                 {
                     blackoutIndex += (overLoad.magnitude - 10 * 10) / (50 * 150f);
-                    blackoutIndex = Math.Min(blackoutIndex, 2);
                 }
                 else
                 {
                     blackoutIndex -= 0.005f;
-                    blackoutIndex = Math.Max(blackoutIndex, 0);
                 }
+                blackoutIndex = Math.Min(blackoutIndex, 2);
+                blackoutIndex = Math.Max(blackoutIndex, 0);
                 if (!StatMaster.isClient)
                 {
                     ModNetworking.SendToAll(ClientBlackoutMsg.CreateMessage(myPlayerID, blackoutIndex));
@@ -263,14 +259,6 @@ namespace ModernAirCombat
             {
                 BlackOut.GetComponent<MeshRenderer>().sharedMaterial.SetColor("_TintColor", new Color(0, 0, 0, blackoutIndex));
             }
-
-            
-            
-
-            
-
-            
-
 
         }
 
@@ -585,6 +573,10 @@ namespace ModernAirCombat
 
         public void InitBlackOut()
         {
+            if (StatMaster.isMP)
+            {
+                Debug.Log("Player " + myPlayerID.ToString() + " G-tolerance: " + GTolerance.isDefaultValue.ToString());
+            }
             if (BlackOut == null)
             {
                 BlackOut = GameObject.CreatePrimitive(PrimitiveType.Plane);
@@ -593,11 +585,8 @@ namespace ModernAirCombat
                 BlackOut.transform.localPosition = new Vector3(0, 0, 0.4f);
 
                 //calculate camera height and width
-                float halfFOV = (Camera.current.fieldOfView * 0.4f) * Mathf.Deg2Rad;
-                float height = 0.4f * Mathf.Tan(halfFOV);
-                float width = height * Camera.current.aspect;
 
-                BlackOut.transform.localScale = new Vector3(width * 0.3f, 0.1f, height * 0.3f);
+                BlackOut.transform.localScale = new Vector3(1, 0.1f, 1);
                 BlackOut.transform.localRotation = Quaternion.Euler(90, 0, 0);
                 Destroy(BlackOut.GetComponent<Collider>());
                 Destroy(BlackOut.GetComponent<Rigidbody>());
@@ -605,7 +594,7 @@ namespace ModernAirCombat
                 blackoutMaterial.mainTexture = ModResource.GetTexture("BlackOut Texture").Texture;
                 blackoutMaterial.SetColor("_TintColor", new Color(0,0,0,0f));
                 BlackOut.GetComponent<MeshRenderer>().sharedMaterial = blackoutMaterial;
-                BlackOut.SetActive(true);
+                BlackOut.SetActive(GTolerance.isDefaultValue);
 
             }
         }
@@ -739,6 +728,7 @@ namespace ModernAirCombat
             ChooserRight = AddKey("Cursor right", "ChooserRight", KeyCode.J);
             scanUp = AddKey("Radar pitch up", "scan up", KeyCode.I);
             scanDown = AddKey("Radar pitch down", "scan down", KeyCode.K);
+            GTolerance = AddToggle("G-Tolerence", "G-Tolerence", true);
 
             InitGrid();
             InitPanel();
@@ -752,6 +742,9 @@ namespace ModernAirCombat
         
         public override void OnSimulateStart()
         {
+            preVeclocity = Vector3.zero;
+            overLoad = Vector3.zero;
+            blackoutIndex = 0;
             InitBlackOut();
             SLController = transform.gameObject.AddComponent<ScanLineController>();
             ScanLine.SetActive(true);
@@ -768,6 +761,10 @@ namespace ModernAirCombat
 
         public override void OnSimulateStop()
         {
+            preVeclocity = Vector3.zero;
+            overLoad = Vector3.zero;
+            blackoutIndex = 0;
+            ModNetworking.SendToAll(ClientBlackoutMsg.CreateMessage(myPlayerID, 0f));
             Destroy(BlackOut);
             if (!StatMaster.isClient && StatMaster.isMP)
             {
@@ -777,8 +774,6 @@ namespace ModernAirCombat
 
         protected void Update()
         {
-
-
             if (IsSimulating)
             {
                 //set the position of scanLine
@@ -1112,21 +1107,17 @@ namespace ModernAirCombat
 
         void OnGUI()
         {
-            if (locking)
+            if (locking && PlayerData.localPlayer.networkId == myPlayerID && IsSimulating)
             {
                 GUI.color = Color.green;
                 Vector3 onScreenPosition = Camera.main.WorldToScreenPoint(OnGuiTargetPosition);
                 if (onScreenPosition.z >= 0)
                     GUI.DrawTexture(new Rect(onScreenPosition.x - iconSize / 2, Camera.main.pixelHeight - onScreenPosition.y - iconSize / 2, iconSize, iconSize), LockIconOnScreen);
             }
-            if (StatMaster.isMP && !StatMaster.isClient)
-            {
-                GUI.Box(new Rect(100, 100, 200, 50), PlayerData.localPlayer.networkId.ToString() + " " + myPlayerID.ToString() + "   " + DisplayerMsgReceiver.Instance.BlackoutData[PlayerData.localPlayer.networkId].ToString());
-            }
-            if (StatMaster.isMP && StatMaster.isClient)
-            {
-                GUI.Box(new Rect(100, 150, 200, 50), PlayerData.localPlayer.networkId.ToString() + " " + myPlayerID.ToString() + "   " + DisplayerMsgReceiver.Instance.BlackoutData[PlayerData.localPlayer.networkId].ToString());
-            }
+            //if (myPlayerID == PlayerData.localPlayer.networkId)
+            //{
+            //    GUI.Box(new Rect(100, 100, 200, 50), myPlayerID.ToString() + "   " + DisplayerMsgReceiver.Instance.BlackoutData[PlayerData.localPlayer.networkId].ToString());
+            //}
 
 
         }
