@@ -143,10 +143,13 @@ namespace ModernAirCombat
             {
                 if (explo == true)
                     return;
-                if (col.isTrigger || col.transform.parent.GetInstanceID() == col.GetInstanceID())
-                    return;
-                if (col.attachedRigidbody.gameObject.name == "missle")
-                    return;
+                try
+                {
+                    if (col.isTrigger || col.transform.parent.GetInstanceID() == col.GetInstanceID() || col.attachedRigidbody.gameObject.name == "missle")
+                        return;
+                }
+                catch { }
+                
                 if (col.name == "flareCol")
                 {
                     if (UnityEngine.Random.value > 0.5f)
@@ -158,9 +161,6 @@ namespace ModernAirCombat
                         return;
                     }
                 }
-                    
-                        
-
                 explo = true;
             }
             catch { }
@@ -238,7 +238,7 @@ namespace ModernAirCombat
 
 
 
-        public void AxisLookAt(Transform tr_self, Vector3 lookPos, Vector3 directionAxis)
+        public void AxisLookAt(Transform tr_self, Vector3 lookPos, Vector3 directionAxis, float speed)
         {
             var rotation = tr_self.rotation;
             var targetDir = lookPos - tr_self.position;
@@ -249,7 +249,7 @@ namespace ModernAirCombat
             //计算当前方向和目标方向的夹角
             var angle = Vector3.Angle(fromDir, targetDir);
             //将当前朝向向目标方向旋转一定角度，这个角度值可以做插值
-            tr_self.rotation = Quaternion.Lerp(rotation, Quaternion.AngleAxis(angle, axis) * rotation,0.1f);
+            tr_self.rotation = Quaternion.Lerp(rotation, Quaternion.AngleAxis(angle, axis) * rotation,speed);
 
         }//from CSDN
 
@@ -294,7 +294,7 @@ namespace ModernAirCombat
 
                 ScanCollider = new GameObject("ScanCol");
                 ScanCollider.transform.SetParent(BlockBehaviour.transform);
-                ScanCollider.transform.localPosition = new Vector3(0f, 600f, 0.3f);
+                ScanCollider.transform.localPosition = new Vector3(0f, 650f, 0.3f);
                 ScanCollider.transform.localRotation = Quaternion.Euler(90, 0, 0);
                 ScanCollider.transform.localScale = Vector3.one;
                 missleScan = ScanCollider.AddComponent<SphereCollider>();
@@ -313,7 +313,7 @@ namespace ModernAirCombat
             {
                 PFCollider = new GameObject("PFCol");
                 PFCollider.transform.SetParent(BlockBehaviour.transform);
-                PFCollider.transform.localPosition = new Vector3(0f, 1f, 0.3f);
+                PFCollider.transform.localPosition = new Vector3(0f, 6f, 0.3f);
                 PFCollider.transform.localRotation = Quaternion.Euler(0, 0, 0);
                 PFCollider.transform.localScale = Vector3.one;
                 misslePF = PFCollider.AddComponent<SphereCollider>();
@@ -741,7 +741,7 @@ namespace ModernAirCombat
                         else
                         {
                             //myTransform.up = Vector3.Lerp(myTransform.up, predictPositionModified - myTransform.position,0.01f);
-                            AxisLookAt(myTransform, predictPositionModified, Vector3.up);
+                            AxisLookAt(myTransform, predictPositionModified, Vector3.up, 0.08f);
                         }
                     }
                     time += Time.fixedDeltaTime;

@@ -42,6 +42,14 @@ namespace ModernAirCombat
         {
             hasObject = false;
         }
+
+        public float calculateClossingRate(Vector3 position, Vector3 velocity, Vector3 radarPosition, Vector3 radarVelocity)
+        {
+            Vector3 relativeVelocity = velocity - radarVelocity;
+            Vector3 relativePositionNormalized = (radarPosition - position).normalized;
+            float closingRate = relativeVelocity.x * relativePositionNormalized.x + relativeVelocity.y * relativePositionNormalized.y + relativeVelocity.z * relativePositionNormalized.z;
+            return closingRate;
+        }
         
         public Target(Collider col, BlockBehaviour radar)
         {
@@ -58,10 +66,7 @@ namespace ModernAirCombat
             velocity = col.attachedRigidbody.velocity;
             distance = Vector3.Distance(radar.transform.position, position);
             //calculating the closingRate
-            Vector3 myVelocity = radar.GetComponent<Rigidbody>().velocity;
-            Vector3 relativeVelocity = velocity - myVelocity;
-            Vector3 relativePositionNormalized = (radar.transform.position - position).normalized;
-            closingRate = relativeVelocity.x * relativePositionNormalized.x + relativeVelocity.y * relativePositionNormalized.y + relativeVelocity.z * relativePositionNormalized.z;
+            closingRate = calculateClossingRate(position, velocity, radar.transform.position, radar.GetComponent<Rigidbody>().velocity);
             //calculate the angle displayed on displayer
             //displayAngle = vector2angle(new Vector2(myVelocity.x, myVelocity.z))-vector2angle(new Vector2(-relativePositionNormalized.x,-relativePositionNormalized.z));
             
@@ -91,6 +96,14 @@ namespace ModernAirCombat
     {
         public Target[] targets = new Target[101];
 
+        public float calculateClossingRate(Vector3 position, Vector3 velocity, Vector3 radarPosition, Vector3 radarVelocity)
+        {
+            Vector3 relativeVelocity = velocity - radarVelocity;
+            Vector3 relativePositionNormalized = (radarPosition - position).normalized;
+            float closingRate = relativeVelocity.x * relativePositionNormalized.x + relativeVelocity.y * relativePositionNormalized.y + relativeVelocity.z * relativePositionNormalized.z;
+            return closingRate;
+        }
+
         public targetManager()
         {
             for (int i = 0; i < 101; i++)
@@ -101,9 +114,24 @@ namespace ModernAirCombat
             }
         }
         
-        public void AddTarget(int currRegion, Collider col, BlockBehaviour radar)
+        public void AddTarget(int currRegion, Collider col, BlockBehaviour radar, bool DopplerFeature)
         {
-            targets[currRegion] = new Target(col, radar);
+            
+            if (DopplerFeature)
+            {
+                Target tmpTarget = new Target(col, radar);
+                float staticClosingRate = calculateClossingRate(tmpTarget.position, Vector3.zero, radar.transform.position, radar.GetComponent<Rigidbody>().velocity);
+                if (Math.Abs(tmpTarget.closingRate - staticClosingRate) > 20 || col.transform.position.y > 200)
+                {
+                    targets[currRegion] = tmpTarget;
+                }
+            }
+            else
+            {
+                targets[currRegion] = new Target(col, radar);
+            }
+            
+            
             //Debug.Log(currRegion.ToString() + " add a target");
         }
 
@@ -123,6 +151,7 @@ namespace ModernAirCombat
     public class RadarBlock : BlockScript
     {
         public MToggle ShowScan;
+        public MToggle DopplerFeature;
 
         public targetManager targetManagerRadar;
         public float scanAngle = 0;
@@ -251,7 +280,7 @@ namespace ModernAirCombat
             {
                 Collider targetCol = radarHit.targetCols.Peek();
                 //Debug.Log(targetCol.name);
-                targetManagerRadar.AddTarget(currRegion, targetCol, BlockBehaviour);
+                targetManagerRadar.AddTarget(currRegion, targetCol, BlockBehaviour, DopplerFeature.isDefaultValue);
 
                 //determine RWR message
                 try
@@ -284,12 +313,13 @@ namespace ModernAirCombat
         public override void SafeAwake()
         {
             ShowScan = AddToggle("Display Scanner", "display scanner", false);
+            DopplerFeature = AddToggle("Doppler Feature", "Doppler Feature", true);
 
             myTransform = transform;
             myPlayerID = BlockBehaviour.ParentMachine.PlayerID;
             InitScan();
             targetManagerRadar = new targetManager();
-        } 
+        }
 
         public override void OnSimulateStart()
         {

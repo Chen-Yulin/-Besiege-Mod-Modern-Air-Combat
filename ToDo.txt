@@ -1,4 +1,4 @@
-+ optimize mraam
++ Default Lock width of displayer
 
 + machine gun color slider
 

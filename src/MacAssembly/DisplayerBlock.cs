@@ -742,6 +742,7 @@ namespace ModernAirCombat
         
         public override void OnSimulateStart()
         {
+            DataManager.Instance.BVRData[myPlayerID] = new BVRTargetData();
             preVeclocity = Vector3.zero;
             overLoad = Vector3.zero;
             blackoutIndex = 0;
@@ -770,6 +771,7 @@ namespace ModernAirCombat
             {
                 StopCoroutine(SendPanelMsg());
             }
+            
         }
 
         protected void Update()
@@ -997,6 +999,10 @@ namespace ModernAirCombat
                     sendBVRData.velocity = RadarTarget[lockRegion].velocity;
                     DataManager.Instance.BVRData[myPlayerID] = sendBVRData;
                 }
+                else
+                {
+                    DataManager.Instance.BVRData[myPlayerID] = new BVRTargetData();
+                }
             }
             catch
             {
@@ -1107,8 +1113,15 @@ namespace ModernAirCombat
 
         void OnGUI()
         {
-            if (locking && PlayerData.localPlayer.networkId == myPlayerID && IsSimulating)
+            if (locking && IsSimulating)
             {
+                if (StatMaster.isMP)
+                {
+                    if (PlayerData.localPlayer.networkId != myPlayerID)
+                    {
+                        return;
+                    }
+                }
                 GUI.color = Color.green;
                 Vector3 onScreenPosition = Camera.main.WorldToScreenPoint(OnGuiTargetPosition);
                 if (onScreenPosition.z >= 0)

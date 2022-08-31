@@ -21,7 +21,7 @@ namespace ModernAirCombat
         protected void AddAerodynamics()
         {
             Vector3 tmp = Vector3.Cross(Vector3.Cross(myRigidbody.velocity, myTransform.up), myTransform.up);
-            myRigidbody.AddForce(new Vector3(tmp.x,tmp.y,tmp.z)*10,ForceMode.Force);
+            myRigidbody.AddForce(new Vector3(tmp.x,tmp.y,tmp.z)*17,ForceMode.Force);
         }
         protected bool PassiveGetAim()
         {
@@ -125,17 +125,21 @@ namespace ModernAirCombat
         public override void SimulateFixedUpdateHost()
         {
 
-            if (Launch.EmulationHeld() && myStatus == status.stored && DataManager.Instance.BVRData[myPlayerID].position != Vector3.zero)
+            if (Launch.EmulationHeld() && myStatus == status.stored)
             {
                 myStatus = status.launched;
                 //Debug.Log("missle launched");
                 //Debug.Log(detectRange);
-                myRigidbody.drag = 0.1f;
+                myRigidbody.drag = 0.05f;
                 myRigidbody.angularDrag = 4.0f;
             }
 
             if (myStatus == status.launched || myStatus == status.active)
             {
+                if (DataManager.Instance.BVRData[myPlayerID].position == Vector3.zero)
+                {
+                    myStatus = status.active;
+                }
                 //get the launch rotation at the begining of launch
                 if (!getlaunchRotation)
                 {
@@ -153,7 +157,7 @@ namespace ModernAirCombat
                     {
                         if (activeTrail == false)
                         {
-                            myRigidbody.drag = 3f;
+                            myRigidbody.drag = 1f;
                             TrailSmokeParticle.Play();
                             TrailFlameParticle.Play();
                             activeTrail = true;
@@ -162,7 +166,8 @@ namespace ModernAirCombat
                             LaunchSoundEffect.GetComponent<AudioSource>().Play();
                             Destroy(LaunchSoundEffect, 3.5f);
                         }
-                        myRigidbody.AddRelativeForce(new Vector3(0, 13500, 0), ForceMode.Force);
+                        myRigidbody.AddRelativeForce(new Vector3(0, 4200, 0), ForceMode.Force);
+                        AddAerodynamics();
                     }
                     if(time > thrustTime+launchDelay.Value)//deactive trail effect and destroy it after sometime
                     {
@@ -207,7 +212,7 @@ namespace ModernAirCombat
 
                             if (PassiveGetAim())
                             {
-                                AxisLookAt(myTransform, predictPositionModified, Vector3.up);
+                                AxisLookAt(myTransform, predictPositionModified, Vector3.up, 0.02f);
                             }
                             
 
@@ -231,7 +236,10 @@ namespace ModernAirCombat
                             else
                             {
                                 GetAim();
-                                AxisLookAt(myTransform, predictPositionModified, Vector3.up);
+                                if (targetDetected)
+                                {
+                                    AxisLookAt(myTransform, predictPositionModified, Vector3.up, 0.04f);
+                                }
                             }
                             
                         }
