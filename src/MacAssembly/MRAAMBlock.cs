@@ -216,7 +216,7 @@ namespace ModernAirCombat
                             }
                             
 
-                            if (Vector3.Distance(predictPositionModified,myTransform.position)<= 1000)
+                            if (Vector3.Distance(predictPositionModified,myTransform.position)<= 1200)
                             {
                                 myStatus = status.active;
                             }

@@ -274,10 +274,12 @@ namespace ModernAirCombat
             ExploClip = ModResource.GetAudioClip("MissileExplo Audio");
             ExploSound = new GameObject("Explo sound");
             ExploAS = ExploSound.GetComponent<AudioSource>() ?? ExploSound.AddComponent<AudioSource>();
-            ExploSound.AddComponent<MakeAudioSourceFixedPitch>();
+            //ExploSound.AddComponent<MakeAudioSourceFixedPitch>();
             ExploAS.clip = ExploClip;
             ExploAS.spatialBlend = 1.0f;
-            ExploAS.volume = 10f;
+            ExploAS.volume = 0.1f;
+            ExploAS.rolloffMode = AudioRolloffMode.Linear;
+            ExploAS.maxDistance = 1000;
             ExploAS.SetSpatializerFloat(1, 1f);
             ExploAS.SetSpatializerFloat(2, 0);
             ExploAS.SetSpatializerFloat(3, 12);
