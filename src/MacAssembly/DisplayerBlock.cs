@@ -25,6 +25,7 @@ namespace ModernAirCombat
         public float[] currAngle = new float[16];
         public bool[] SLDirection = new bool[16];
         public float[] radarPitch = new float[16];
+        public float[] deltaScanAngle = new float[16];
 
         public bool[] panelUpdated = new bool[16];
             
@@ -56,6 +57,7 @@ namespace ModernAirCombat
             currAngle[playerID] = (float)msg.GetData(3);
             SLDirection[playerID] = (bool)msg.GetData(4);
             radarPitch[playerID] = (float)msg.GetData(5);
+            deltaScanAngle[playerID] = (float)msg.GetData(6);
         }
         public void ChooserPositionReceiver(Message msg)
         {
@@ -136,6 +138,8 @@ namespace ModernAirCombat
 
         public MToggle GTolerance;
 
+        public MSlider ScanRegionAfterLock;
+
         public GameObject BaseGrid;
         public ScanLineController SLController;
         public GameObject ScanLine;
@@ -162,8 +166,8 @@ namespace ModernAirCombat
         public static MessageType ClientTargetPositionMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Integer, DataType.Vector3);
         public static MessageType ClientTargetDistanceMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Integer, DataType.Single);
 
-        //playerID, leftScanAngle, rightScanAngle, currAngle, SLDirection, radarPitch
-        public static MessageType ClientPanelMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Single, DataType.Single, DataType.Single, DataType.Boolean, DataType.Single);
+        //playerID, leftScanAngle, rightScanAngle, currAngle, SLDirection, radarPitch, deltaScanAngle
+        public static MessageType ClientPanelMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Single, DataType.Single, DataType.Single, DataType.Boolean, DataType.Single, DataType.Single);
         public static MessageType ClientChooserMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Single, DataType.Single);
         public static MessageType ClientLockingMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Boolean);
         public static MessageType ClientLockedTargetMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Single, DataType.Boolean, DataType.String);
@@ -174,6 +178,8 @@ namespace ModernAirCombat
         public Vector3 preVeclocity = Vector3.zero;
         public Vector3 overLoad = Vector3.zero;
         public float blackoutIndex = 0;
+
+        public IEnumerator sendPanelMsg;
         
 
 
@@ -310,7 +316,7 @@ namespace ModernAirCombat
                 SLController.currAngle = DisplayerMsgReceiver.Instance.currAngle[myPlayerID];
                 SLController.direction = DisplayerMsgReceiver.Instance.SLDirection[myPlayerID];
                 radarPitch = DisplayerMsgReceiver.Instance.radarPitch[myPlayerID];
-                
+                deltaScanAngle = DisplayerMsgReceiver.Instance.deltaScanAngle[myPlayerID];
             }
             ChooserPosition = DisplayerMsgReceiver.Instance.ChooserPosition[myPlayerID];
 
@@ -390,27 +396,35 @@ namespace ModernAirCombat
         }
         public void DisplayEnemyHost()
         {
+            for (int i = currRegion-2; i < currRegion+3; i++)
+            {
+                if (i<0 || i>100)
+                {
+                    return;
+                }
+                if (RadarTarget[i].hasObject)
+                {
+                    EnemyIconsTWS[i].transform.localPosition = new Vector3(0.0021f * (i - 50), -0.105f + RadarTarget[i].distance * 0.000035f, 0f);
+                    EnemyIconsTWS[i].SetActive(true);
+                    if (StatMaster.isMP)
+                    {
+                        Message TargetDistanceMsg = ClientTargetDistanceMsg.CreateMessage((int)myPlayerID, (int)i, (Single)RadarTarget[currRegion].distance);
+                        ModNetworking.SendToAll(TargetDistanceMsg);
+                    }
+                }
+                else
+                {
+                    EnemyIconsTWS[i].SetActive(false);
+                    if (StatMaster.isMP)
+                    {
+                        Message TargetDistanceMsg = ClientTargetDistanceMsg.CreateMessage((int)myPlayerID, (int)i, (Single)0);
+                        ModNetworking.SendToAll(TargetDistanceMsg);
+                    }
 
-            if (RadarTarget[currRegion].hasObject)
-            {
-                EnemyIconsTWS[currRegion].transform.localPosition = new Vector3(0.002f * (currRegion - 50), -0.105f + RadarTarget[currRegion].distance * 0.000035f, 0f);
-                EnemyIconsTWS[currRegion].SetActive(true);
-                if (StatMaster.isMP)
-                {
-                    Message TargetDistanceMsg = ClientTargetDistanceMsg.CreateMessage((int)myPlayerID, (int)currRegion, (Single)RadarTarget[currRegion].distance);
-                    ModNetworking.SendToAll(TargetDistanceMsg);
                 }
             }
-            else
-            {
-                EnemyIconsTWS[currRegion].SetActive(false);
-                if (StatMaster.isMP)
-                {
-                    Message TargetDistanceMsg = ClientTargetDistanceMsg.CreateMessage((int)myPlayerID, (int)currRegion, (Single)0);
-                    ModNetworking.SendToAll(TargetDistanceMsg);
-                }
-                
-            }
+
+            
             ClearBlank();
         }
         public void DisplayEnemyClient()
@@ -459,7 +473,7 @@ namespace ModernAirCombat
                 yield return new WaitForSeconds(1f);
                 if (!StatMaster.isClient)
                 {
-                    Message PanelMessage = ClientPanelMsg.CreateMessage(myPlayerID, leftScanAngle, rightScanAngle, SLController.currAngle, SLController.direction, radarPitch);
+                    Message PanelMessage = ClientPanelMsg.CreateMessage(myPlayerID, leftScanAngle, rightScanAngle, SLController.currAngle, SLController.direction, radarPitch, deltaScanAngle);
                     ModNetworking.SendToAll(PanelMessage);
                     //Debug.Log("Panel Message sent"+ SLController.currAngle.ToString());
                 }
@@ -729,6 +743,9 @@ namespace ModernAirCombat
             scanUp = AddKey("Radar pitch up", "scan up", KeyCode.I);
             scanDown = AddKey("Radar pitch down", "scan down", KeyCode.K);
             GTolerance = AddToggle("G-Tolerence", "G-Tolerence", true);
+            ScanRegionAfterLock = AddSlider("Default scan angle when locking", "Default scan angle when locking", 20f, 5f, 60f);
+
+            sendPanelMsg = SendPanelMsg();
 
             InitGrid();
             InitPanel();
@@ -756,7 +773,7 @@ namespace ModernAirCombat
             PitchIndicatorSelf.SetActive(true);
             if (!StatMaster.isClient && StatMaster.isMP)
             {
-                StartCoroutine(SendPanelMsg());
+                StartCoroutine(sendPanelMsg);
             }
         }
 
@@ -769,7 +786,7 @@ namespace ModernAirCombat
             Destroy(BlackOut);
             if (!StatMaster.isClient && StatMaster.isMP)
             {
-                StopCoroutine(SendPanelMsg());
+                StopCoroutine(sendPanelMsg);
             }
             
         }
@@ -870,8 +887,14 @@ namespace ModernAirCombat
                 if (Lock.IsPressed && !StatMaster.isClient)
                 {
                     locking = !locking;
+                    deltaScanAngle = ScanRegionAfterLock.Value;
+                    if (StatMaster.isMP)
+                        ModNetworking.SendToAll(ClientPanelMsg.CreateMessage(myPlayerID, leftScanAngle, rightScanAngle, SLController.currAngle, SLController.direction, radarPitch, deltaScanAngle));
                     if (!locking)//what to do when mode is switched manuelly to unlock
                     {
+                        deltaScanAngle = 60f;
+                        if(StatMaster.isMP)
+                            ModNetworking.SendToAll(ClientPanelMsg.CreateMessage(myPlayerID, leftScanAngle, rightScanAngle, SLController.currAngle, SLController.direction, radarPitch, deltaScanAngle));
                         radarPitch = 0f;
                         LockIcon.SetActive(false);
                         PitchIndicatorTarget.SetActive(false);
@@ -900,6 +923,9 @@ namespace ModernAirCombat
                 {
                     if (!FindLockedTarget())//what to do when mode is switched passively to unlock
                     {
+                        deltaScanAngle = 60f;
+                        if (StatMaster.isMP)
+                            ModNetworking.SendToAll(ClientPanelMsg.CreateMessage(myPlayerID, leftScanAngle, rightScanAngle, SLController.currAngle, SLController.direction, radarPitch, deltaScanAngle));
                         radarPitch = 0f;
                         LockIcon.SetActive(false);
                         PitchIndicatorTarget.SetActive(false);
@@ -943,6 +969,8 @@ namespace ModernAirCombat
                     deltaScanAngle -= 0.4f;
                 }
 
+
+                //calculate real left and right angle
                 if (middleScanAngle - deltaScanAngle >= -60)
                 {
                     realMiddleScanAngle = middleScanAngle;
@@ -959,12 +987,9 @@ namespace ModernAirCombat
                 {
                     realMiddleScanAngle = -60 + deltaScanAngle;
                 }
-
-
-                //leftScanAngle = Math.Max(-60f, middleScanAngle - deltaScanAngle);
-                //rightScanAngle = Math.Min(60f, middleScanAngle + deltaScanAngle);
                 leftScanAngle = realMiddleScanAngle - deltaScanAngle;
                 rightScanAngle = realMiddleScanAngle + deltaScanAngle;
+
 
                 //adjust the pitch of radar according to key
                 if (upScan && radarPitch < 35)

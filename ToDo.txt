@@ -1,7 +1,8 @@
-+ Default Lock width of displayer
++ enhance Flare
 
-+ machine gun color slider
++ kill air wall
 
 + add Hub Block
 
-+ kill air wall
++ machine gun color slider
+

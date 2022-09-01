@@ -180,6 +180,8 @@ namespace ModernAirCombat
         public MSlider detectDelay;
         public MSlider launchDelay;
         public MSlider PFRang;
+
+
         public enum status { stored, launched, active, missed, exploded };
         public status myStatus;
         public GameObject ScanCollider;
