@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 using UnityEngine;
 
@@ -35,6 +33,7 @@ namespace ModernAirCombat
             ModNetworking.Callbacks[MachineGunBlock.ClientBulletExploMsg] += MachineGunMsgReceiver.Instance.BulletExploMsgReceiver;
             ModNetworking.Callbacks[RWRBlock.ClientRWRData] += RWRMsgReceiver.Instance.DataReceiver;
             ModNetworking.Callbacks[DisplayerBlock.ClientBlackoutMsg] += DisplayerMsgReceiver.Instance.BlackoutReceiver;
+            ModNetworking.Callbacks[HUDBlock.ClientHUDBVRMsg] += HUDMsgReceiver.Instance.DataReceiver;
         }
     }
 }

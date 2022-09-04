@@ -21,3 +21,4 @@ S:\SteamLibrary\steamapps\common\Besiege\Besiege_Data\Mods\ModernAirCombat Proje
 S:\SteamLibrary\steamapps\common\Besiege\Besiege_Data\Mods\ModernAirCombat Project\src\MacAssembly\obj\Debug\MacAssembly.csproj.CopyComplete
 S:\SteamLibrary\steamapps\common\Besiege\Besiege_Data\Mods\ModernAirCombat Project\src\MacAssembly\obj\Debug\MacAssembly.dll
 S:\SteamLibrary\steamapps\common\Besiege\Besiege_Data\Mods\ModernAirCombat Project\src\MacAssembly\obj\Debug\MacAssembly.pdb
+S:\SteamLibrary\steamapps\common\Besiege\Besiege_Data\Mods\ModernAirCombat Project\src\MacAssembly\bin\Debug\System.Runtime.Serialization.dll

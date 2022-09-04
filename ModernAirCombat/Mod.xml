@@ -9,7 +9,7 @@
 	<Name>ModernAirCombat</Name>
 	<Author>Chen, Yulin</Author> <!-- FIX: Insert your name here. -->
 	<!-- Major.Minor.Build -->
-	<Version>0.2.2</Version>
+	<Version>0.3.0</Version>
 	
 	<Description>
 	A mod for simulating modern air combat in besiege. 
@@ -34,6 +34,7 @@
 		<Block path="RWR.xml" />
 		<Block path="FlareBlock.xml" />
 		<Block path="MachineGun.xml" />
+		<Block path="HUD.xml" />
 	</Blocks>
 	
 	<!-- Any entities (level objects) your mod adds to the game.
@@ -106,6 +107,14 @@
 		<AudioClip name="MissileLaunch Audio" path="SRAAM\Launch.wav" />
 		<AudioClip name="MissileExplo Audio" path="SRAAM\explo.wav" />
 		<Texture name="BlackOut Texture" path="Displayer\BlackOut.png"/>
+		<Mesh name="HUD Mesh" path="HUD\HUD.obj"/>
+		<Texture name="HUD Texture" path="HUD\HUD.png"/>
+		<Texture name="HUDAimer Texture" path="HUD\Aimer.png"/>
+		<Texture name="HUDPitchDown Texture" path="HUD\PitchDown.png"/>
+		<Texture name="HUDPitchUp Texture" path="HUD\PitchUp.png"/>
+		<Texture name="DataBox Texture" path="HUD\DataBox.png"/>
+		<Texture name="GunAim Texture" path="HUD\GunAim.png"/>
+		<Texture name="GunAim2 Texture" path="HUD\GunAim2.png"/>
 
 	</Resources>
 

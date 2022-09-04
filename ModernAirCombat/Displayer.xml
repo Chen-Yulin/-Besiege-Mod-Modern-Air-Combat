@@ -34,7 +34,7 @@
 	</Colliders>
 	
 	<BasePoint hasAddingPoint="false">
-		<Stickiness enabled="true" radius="0.6" />
+		<Stickiness enabled="true" radius="0.3" />
 		<!-- Can only have motion if sticky -->
 		<Motion x="false" y="false" z="false" /> <!-- Optional -->
 	</BasePoint>

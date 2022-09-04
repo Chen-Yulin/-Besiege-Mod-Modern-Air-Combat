@@ -7,6 +7,7 @@
 	<Name>MRAAM</Name>
 
 	<Mass>3</Mass>
+	
 	<Script>ModernAirCombat.MRAAMBlock</Script>
 
 	<Mesh name="MRAAM Mesh">

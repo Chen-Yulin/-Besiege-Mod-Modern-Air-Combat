@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ModernAirCombat</RootNamespace>
     <AssemblyName>MacAssembly</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
@@ -55,9 +55,11 @@
     <Compile Include="DataManager.cs" />
     <Compile Include="DisplayerBlock.cs" />
     <Compile Include="FlareBlock.cs" />
+    <Compile Include="HUD.cs" />
     <Compile Include="KeyMsgController.cs" />
     <Compile Include="MachineGunBlock.cs" />
     <Compile Include="MessageController.cs" />
+    <Compile Include="ModController.cs" />
     <Compile Include="ModernAirCombat.cs" />
     <Compile Include="MRAAMBlock.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

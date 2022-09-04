@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Xml.Serialization;
 using System.Collections;
-using System.Numerics;
 
 using Modding.Modules;
 using Modding;
@@ -97,10 +95,7 @@ namespace ModernAirCombat
             try
             {
                 MPTeam hitedTeam;
-                if (col.name == "flareCol")
-                    if (UnityEngine.Random.value > 0.5f)
-                        targetCols.Push(col);
-                if (targetCols.Count > 5)
+                if (targetCols.Count > 5 || col.name == "flare(Clone)")
                     return;
                 if (col.isTrigger || col.transform.parent.GetInstanceID() == col.GetInstanceID())
                     return;
@@ -117,6 +112,51 @@ namespace ModernAirCombat
                 return;
             }
             
+        }
+
+
+    }
+
+    public class ScanCollisonHitFlare : MonoBehaviour
+    {
+        //public MPTeam team = MPTeam.None;
+        //public bool IFF = true;
+        //public ushort PlayerID = 0;
+        public Stack<Collider> FlareCols = new Stack<Collider>();
+
+        public void Reset()
+        {
+            FlareCols.Clear();
+        }
+        void Start()
+        {
+        }
+        void Update()
+        {
+        }
+
+        void OnTriggerEnter(Collider col)
+        {
+            try
+            {
+                if (FlareCols.Count > 1)
+                {
+                    return;
+                }
+                if (col.gameObject.name == "flare(Clone)")
+                {
+                    Debug.Log("find");
+                    if (UnityEngine.Random.value > 0.5f)
+                    {
+                        FlareCols.Push(col);
+                    }
+                }
+            }
+            catch
+            {
+                return;
+            }
+
         }
 
 
@@ -187,6 +227,8 @@ namespace ModernAirCombat
         public GameObject ScanCollider;
         public SphereCollider missleScan;
         public ScanCollisonHit coneHit;
+        public GameObject ScanFlare;
+        public ScanCollisonHitFlare flareHit;
         //public GameObject ScannerDisplay;
         public GameObject PFCollider;
         public PFCollisionHit PFHit;
@@ -211,7 +253,7 @@ namespace ModernAirCombat
 
 
         public float ExploPower = 100000f;
-        public float ExploRadius = 10f;
+        public float ExploRadius = 15f;
 
         public static MessageType MissleExplo = ModNetworking.CreateMessageType(DataType.Integer, DataType.Integer, DataType.Boolean);
 
@@ -258,36 +300,42 @@ namespace ModernAirCombat
 
         public void InitSoundEffect()
         {
-            LaunchClip = ModResource.GetAudioClip("MissileLaunch Audio");
-            LaunchSound = new GameObject("Launch sound");
-            LaunchAS = LaunchSound.GetComponent<AudioSource>() ?? LaunchSound.AddComponent<AudioSource>();
-            LaunchSound.AddComponent<MakeAudioSourceFixedPitch>();
-            LaunchAS.clip = LaunchClip;
-            LaunchAS.spatialBlend = 1.0f;
-            LaunchAS.volume = 60f;
+            if (!transform.FindChild("Launch sound"))
+            {
+                LaunchClip = ModResource.GetAudioClip("MissileLaunch Audio");
+                LaunchSound = new GameObject("Launch sound");
+                LaunchSound.transform.SetParent(transform);
+                LaunchAS = LaunchSound.GetComponent<AudioSource>() ?? LaunchSound.AddComponent<AudioSource>();
+                LaunchSound.AddComponent<MakeAudioSourceFixedPitch>();
+                LaunchAS.clip = LaunchClip;
+                LaunchAS.spatialBlend = 1.0f;
+                LaunchAS.volume = 60f;
 
-            LaunchAS.SetSpatializerFloat(1, 1f);
-            LaunchAS.SetSpatializerFloat(2, 0);
-            LaunchAS.SetSpatializerFloat(3, 12);
-            LaunchAS.SetSpatializerFloat(4, 1000f);
-            LaunchAS.SetSpatializerFloat(5, 1f);
-            LaunchSound.SetActive(false);
+                LaunchAS.SetSpatializerFloat(1, 1f);
+                LaunchAS.SetSpatializerFloat(2, 0);
+                LaunchAS.SetSpatializerFloat(3, 12);
+                LaunchAS.SetSpatializerFloat(4, 1000f);
+                LaunchAS.SetSpatializerFloat(5, 1f);
+                LaunchSound.SetActive(false);
 
-            ExploClip = ModResource.GetAudioClip("MissileExplo Audio");
-            ExploSound = new GameObject("Explo sound");
-            ExploAS = ExploSound.GetComponent<AudioSource>() ?? ExploSound.AddComponent<AudioSource>();
-            //ExploSound.AddComponent<MakeAudioSourceFixedPitch>();
-            ExploAS.clip = ExploClip;
-            ExploAS.spatialBlend = 1.0f;
-            ExploAS.volume = 0.1f;
-            ExploAS.rolloffMode = AudioRolloffMode.Linear;
-            ExploAS.maxDistance = 1000;
-            ExploAS.SetSpatializerFloat(1, 1f);
-            ExploAS.SetSpatializerFloat(2, 0);
-            ExploAS.SetSpatializerFloat(3, 12);
-            ExploAS.SetSpatializerFloat(4, 1000f);
-            ExploAS.SetSpatializerFloat(5, 1f);
-            ExploSound.SetActive(false);
+                ExploClip = ModResource.GetAudioClip("MissileExplo Audio");
+                ExploSound = new GameObject("Explo sound");
+                ExploSound.transform.SetParent(transform);
+                ExploAS = ExploSound.GetComponent<AudioSource>() ?? ExploSound.AddComponent<AudioSource>();
+                ExploSound.AddComponent<MakeAudioSourceFixedPitch>();
+                ExploAS.clip = ExploClip;
+                ExploAS.spatialBlend = 1.0f;
+                ExploAS.volume = 0.1f;
+                ExploAS.rolloffMode = AudioRolloffMode.Linear;
+                ExploAS.maxDistance = 1000;
+                ExploAS.SetSpatializerFloat(1, 1f);
+                ExploAS.SetSpatializerFloat(2, 0);
+                ExploAS.SetSpatializerFloat(3, 12);
+                ExploAS.SetSpatializerFloat(4, 1000f);
+                ExploAS.SetSpatializerFloat(5, 1f);
+                ExploSound.SetActive(false);
+            }
+            
         }
 
         public void initScan()
@@ -309,8 +357,24 @@ namespace ModernAirCombat
                 ScanCollider.SetActive(false);
                 coneHit.Reset();
             }
-        }
+            if (BlockBehaviour.transform.FindChild("ScanFlare") == null)
+            {
+                ScanFlare = new GameObject("ScanFlare");
+                ScanFlare.transform.SetParent(BlockBehaviour.transform);
+                ScanFlare.transform.localPosition = new Vector3(0f, 25f, 0.3f);
+                ScanFlare.transform.localRotation = Quaternion.Euler(90, 0, 0);
+                ScanFlare.transform.localScale = new Vector3(35,35,35);
+                SphereCollider ScanFlareCol = ScanFlare.AddComponent<SphereCollider>();
+                ScanFlareCol.radius = 1;
+                ScanFlareCol.isTrigger = true;
+                flareHit = ScanFlare.AddComponent<ScanCollisonHitFlare>();
 
+                ScanFlare.SetActive(false);
+                flareHit.Reset();
+
+
+            }
+        }
         public void initPF()
         {
             if (BlockBehaviour.transform.FindChild("PFCol") == null)
@@ -413,13 +477,16 @@ namespace ModernAirCombat
             try
             {
                 ScanCollider.SetActive(true);
+                ScanFlare.SetActive(true);
+                
 
                 detectFreqTime += Time.fixedDeltaTime;
 
 
                 if (detectFreqTime >= 0.02)
                 {
-                    if (coneHit.targetCols.Count == 0)
+                    //judge whether there is a target
+                    if (coneHit.targetCols.Count == 0 && flareHit.FlareCols.Count < 2)
                     {
                         targetDetected = false;
                         return;
@@ -430,13 +497,18 @@ namespace ModernAirCombat
                     }
                     detectFreqTime = 0;
 
-                    //Debug.Log("Targets:");
-                    //foreach (Collider col in coneHit.targetCols)
-                    //{
-                    //    Debug.Log(col.transform.parent.gameObject.name);
-                    //}
 
-                    Collider targetCol = coneHit.targetCols.Peek();
+                    //judge whether use flare's collider or real target's collider
+                    Collider targetCol;
+                    if (UnityEngine.Random.value < 0.5f && flareHit.FlareCols.Count == 2)
+                    {
+                        targetCol = flareHit.FlareCols.Peek();
+                        Debug.Log("distracted");
+                    }
+                    else
+                    {
+                        targetCol = coneHit.targetCols.Peek();
+                    }
                     Vector3 targetPosition = targetCol.transform.position;
                     //Debug.Log(targetPosition);
                     Vector3 targetVelocity = targetCol.attachedRigidbody.velocity;
@@ -454,7 +526,9 @@ namespace ModernAirCombat
                     predictPosition = targetPosition + targetVelocity * estimatedTime;
                     launchRotation = transform.rotation;
                     ScanCollider.SetActive(false);
+                    ScanFlare.SetActive(false);
                     coneHit.Reset();
+                    flareHit.Reset();
                 }
                 Vector3 positionDiff = predictPosition - (transform.position + Rigidbody.velocity * estimatedTime);
                 //Debug.Log(positionDiff);

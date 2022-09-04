@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 using Modding.Modules;
 using Modding;
@@ -11,11 +9,11 @@ using UnityEngine;
 
 namespace ModernAirCombat
 {
-    public class BVRTargetData
+    public class RadarTargetData
     {
         public Vector3 position;
         public Vector3 velocity;
-        public BVRTargetData()
+        public RadarTargetData()
         {
             position = new Vector3(0, 0, 0);
             velocity = new Vector3(0, 0, 0);
@@ -38,7 +36,7 @@ namespace ModernAirCombat
         public Vector3[] RadarTransformForward = new Vector3[16];
         public targetManager[] TargetData = new targetManager[16];
         public displayerData[] DisplayerData = new displayerData[16];
-        public BVRTargetData[] BVRData = new BVRTargetData[16];
+        public RadarTargetData[] BVRData = new RadarTargetData[16];
         public float[,] RWRData = new float[16,8];
 
         public DataManager()
@@ -48,7 +46,7 @@ namespace ModernAirCombat
                 RadarTransformForward[i] = Vector3.zero;
                 TargetData[i] = new targetManager();
                 DisplayerData[i] = new displayerData(0,0);
-                BVRData[i] = new BVRTargetData();
+                BVRData[i] = new RadarTargetData();
             }
         }
         

@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Xml.Serialization;
 using System.Collections;
-using System.Numerics;
 
 using Modding.Modules;
 using Modding;
@@ -97,53 +95,66 @@ namespace ModernAirCombat
 
         public void InitHitSound()
         {
-            HitClip = ModResource.GetAudioClip("BulletHit Audio");
-            HitSound = new GameObject("Hit sound");
-            HitAS = HitSound.GetComponent<AudioSource>() ?? HitSound.AddComponent<AudioSource>();
-            HitSound.AddComponent<MakeAudioSourceFixedPitch>();
-            HitAS.clip = HitClip;
-            HitAS.spatialBlend = 1.0f;
-            HitAS.volume = 0.02f * Caliber.Value;
-            HitAS.SetSpatializerFloat(1, 1f);
-            HitAS.SetSpatializerFloat(2, 0);
-            HitAS.SetSpatializerFloat(3, 12);
-            HitAS.SetSpatializerFloat(4, 1000f);
-            HitAS.SetSpatializerFloat(5, 1f);
-            HitSound.SetActive(false);
+            if (!transform.FindChild("Hit sound"))
+            {
+                HitClip = ModResource.GetAudioClip("BulletHit Audio");
+                HitSound = new GameObject("Hit sound");
+                HitSound.transform.SetParent(transform);
+                HitAS = HitSound.GetComponent<AudioSource>() ?? HitSound.AddComponent<AudioSource>();
+                HitSound.AddComponent<MakeAudioSourceFixedPitch>();
+                HitAS.clip = HitClip;
+                HitAS.spatialBlend = 1.0f;
+                HitAS.volume = 0.02f * Caliber.Value;
+                HitAS.SetSpatializerFloat(1, 1f);
+                HitAS.SetSpatializerFloat(2, 0);
+                HitAS.SetSpatializerFloat(3, 12);
+                HitAS.SetSpatializerFloat(4, 1000f);
+                HitAS.SetSpatializerFloat(5, 1f);
+                HitSound.SetActive(false);
+            }
+
         }
         public void InitShotSound()
         {
-            ShotClip = ModResource.GetAudioClip("MachineGun Audio");
-            ShotSound = new GameObject("shot sound");
-            ShotAS = ShotSound.GetComponent<AudioSource>() ?? ShotSound.AddComponent<AudioSource>();
-            ShotSound.AddComponent<MakeAudioSourceFixedPitch>();
-            ShotAS.clip = ShotClip;
-            ShotAS.spatialBlend = 1.0f;
-            ShotAS.volume = 0.02f * Caliber.Value;
-            ShotAS.SetSpatializerFloat(1, 1f);
-            ShotAS.SetSpatializerFloat(2, 0);
-            ShotAS.SetSpatializerFloat(3, 12);
-            ShotAS.SetSpatializerFloat(4, 1000f);
-            ShotAS.SetSpatializerFloat(5, 1f);
-            ShotSound.SetActive(false);
+            if (!transform.FindChild("shot sound"))
+            {
+                ShotClip = ModResource.GetAudioClip("MachineGun Audio");
+                ShotSound = new GameObject("shot sound");
+                ShotSound.transform.SetParent(transform);
+                ShotAS = ShotSound.GetComponent<AudioSource>() ?? ShotSound.AddComponent<AudioSource>();
+                ShotSound.AddComponent<MakeAudioSourceFixedPitch>();
+                ShotAS.clip = ShotClip;
+                ShotAS.spatialBlend = 1.0f;
+                ShotAS.volume = 0.02f * Caliber.Value;
+                ShotAS.SetSpatializerFloat(1, 1f);
+                ShotAS.SetSpatializerFloat(2, 0);
+                ShotAS.SetSpatializerFloat(3, 12);
+                ShotAS.SetSpatializerFloat(4, 1000f);
+                ShotAS.SetSpatializerFloat(5, 1f);
+                ShotSound.SetActive(false);
+            }
         }
 
         public void InitFlyingSound()
         {
-            FlyingClip = ModResource.GetAudioClip("Flying Audio");
-            FlyingSound = new GameObject("Flying sound");
-            FlyingAS = FlyingSound.GetComponent<AudioSource>() ?? FlyingSound.AddComponent<AudioSource>();
-            FlyingSound.AddComponent<MakeAudioSourceFixedPitch>();
-            FlyingAS.clip = FlyingClip;
-            FlyingAS.loop = true;
-            FlyingAS.spatialBlend = 1.0f;
-            FlyingAS.volume = 5f * Caliber.Value;
-            FlyingAS.SetSpatializerFloat(1, 1f);
-            FlyingAS.SetSpatializerFloat(2, 0);
-            FlyingAS.SetSpatializerFloat(3, 12);
-            FlyingAS.SetSpatializerFloat(4, 1000f);
-            FlyingAS.SetSpatializerFloat(5, 1f);
-            FlyingSound.SetActive(false);
+            if (!transform.FindChild("Flying sound"))
+            {
+                FlyingClip = ModResource.GetAudioClip("Flying Audio");
+                FlyingSound = new GameObject("Flying sound");
+                FlyingSound.transform.SetParent(transform);
+                FlyingAS = FlyingSound.GetComponent<AudioSource>() ?? FlyingSound.AddComponent<AudioSource>();
+                FlyingSound.AddComponent<MakeAudioSourceFixedPitch>();
+                FlyingAS.clip = FlyingClip;
+                FlyingAS.loop = true;
+                FlyingAS.spatialBlend = 1.0f;
+                FlyingAS.volume = 5f * Caliber.Value;
+                FlyingAS.SetSpatializerFloat(1, 1f);
+                FlyingAS.SetSpatializerFloat(2, 0);
+                FlyingAS.SetSpatializerFloat(3, 12);
+                FlyingAS.SetSpatializerFloat(4, 1000f);
+                FlyingAS.SetSpatializerFloat(5, 1f);
+                FlyingSound.SetActive(false);
+            }
         }
 
         public void BulletExplo()
@@ -250,7 +261,7 @@ namespace ModernAirCombat
 
             Rigidbody rig = Bullet.GetComponent<Rigidbody>() ?? Bullet.AddComponent<Rigidbody>();
             rig.mass = 0.01f;
-            rig.drag = 0.1f;
+            rig.drag = 0.02f;
 
             Bullet.SetActive(false);
 

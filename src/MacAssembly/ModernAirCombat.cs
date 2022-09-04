@@ -15,7 +15,7 @@ namespace ModernAirCombat
 		public static GameObject Mod;
 		public override void OnLoad()
 		{
-			Mod = new GameObject("Morden Firearm Kit Mod");
+			Mod = new GameObject("Morden Air Combat Mod");
 			UnityEngine.Object.DontDestroyOnLoad(Mod);
 
 			Mod.AddComponent<FlareMessageReciver>();
@@ -25,6 +25,8 @@ namespace ModernAirCombat
 			Mod.AddComponent<DisplayerMsgReceiver>();
 			Mod.AddComponent<MachineGunMsgReceiver>();
 			Mod.AddComponent<RWRMsgReceiver>();
+			Mod.AddComponent<RadarMsgReceiver>();
+			//Mod.AddComponent<ModController>();
 
 			AssetManager.Instance.transform.SetParent(Mod.transform);
 			MessageController.Instance.transform.SetParent(Mod.transform);

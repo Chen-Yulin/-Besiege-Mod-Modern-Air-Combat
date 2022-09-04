@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Xml.Serialization;
 using System.Collections;
-using System.Numerics;
 
 using Modding.Modules;
 using Modding;
@@ -212,7 +210,7 @@ namespace ModernAirCombat
         protected bool upScan = false;
         protected string mode = "TWS";
         public displayerData DisplayerData = new displayerData(0, 0);
-        public BVRTargetData sendBVRData = new BVRTargetData();
+        public RadarTargetData sendBVRData = new RadarTargetData();
         protected int myPlayerID;
         protected int currRegion;
         
@@ -220,8 +218,6 @@ namespace ModernAirCombat
         protected int lockRegion = 0;
         protected int iconSize = 28;
         protected float deltaPitch = 0;
-
-        
 
         public void DisplayBlackout()
         {
@@ -282,7 +278,7 @@ namespace ModernAirCombat
                 PitchIndicatorTarget.transform.localPosition = new Vector3(-0.1f, -radarPitch / (350 + 150 / 2), 0.095f);
                 try
                 {
-                    DestroyImmediate(LockIcon.transform.FindChild("LockInfo").gameObject);
+                    Destroy(LockIcon.transform.FindChild("LockInfo").gameObject);
                 }
                 catch { }
 
@@ -759,7 +755,7 @@ namespace ModernAirCombat
         
         public override void OnSimulateStart()
         {
-            DataManager.Instance.BVRData[myPlayerID] = new BVRTargetData();
+            DataManager.Instance.BVRData[myPlayerID] = new RadarTargetData();
             preVeclocity = Vector3.zero;
             overLoad = Vector3.zero;
             blackoutIndex = 0;
@@ -1002,12 +998,12 @@ namespace ModernAirCombat
                 }
 
             
-                    DisplayerData.radarPitch = radarPitch;
+                DisplayerData.radarPitch = radarPitch;
                 DisplayerData.radarAngle = SLController.currAngle;
                 DataManager.Instance.DisplayerData[myPlayerID] = DisplayerData;
 
             
-                    RadarTarget = DataManager.Instance.TargetData[myPlayerID].targets;
+                RadarTarget = DataManager.Instance.TargetData[myPlayerID].targets;
             
             
             
@@ -1026,7 +1022,7 @@ namespace ModernAirCombat
                 }
                 else
                 {
-                    DataManager.Instance.BVRData[myPlayerID] = new BVRTargetData();
+                    DataManager.Instance.BVRData[myPlayerID] = new RadarTargetData();
                 }
             }
             catch

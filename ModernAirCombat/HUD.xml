@@ -1,0 +1,46 @@
+<Block>
+	<Debug>false</Debug>
+
+	<ID>8</ID>
+
+	<Name>HUD</Name>
+
+	<Mass>0.1</Mass>
+
+	<Script>ModernAirCombat.HUDBlock</Script>
+
+	<Mesh name="HUD Mesh"> 
+		<Position x="0.0" y="0.0" z="0.0" />
+		<Rotation x="90.0" y="0.0" z="0.0" />
+		<Scale x="1.0" y="1.0" z="1.0" />
+	</Mesh>
+	
+	<Texture name="HUD Texture" /> <!-- Must be defined as a resource in the manifest. -->
+	
+	<Icon>
+		<Position x="0.05" y="-0.2" z="-1.0" />
+		<Rotation x="20.0" y="210.0" z="0.0" />
+		<Scale x="1.5" y="1.5" z="1.5" />
+	</Icon>
+	
+	<Colliders>
+		<!-- TODO: Insert Collider definitions here.
+			 Examples: -->
+		<BoxCollider>
+			<Position x="0.0" y="0.0" z="0.11" />
+			<Rotation x="0.0" y="0.0" z="0.0" />
+			<Scale x="0.22" y="0.4" z="0.18" />
+		</BoxCollider>
+	</Colliders>
+	
+	<BasePoint hasAddingPoint="false">
+		<Stickiness enabled="true" radius="0.3" />
+		<!-- Can only have motion if sticky -->
+		<Motion x="false" y="false" z="false" /> <!-- Optional -->
+	</BasePoint>
+
+	<AddingPoints>
+		<!-- TODO: Insert AddingPoint definitions here. Example:-->
+
+	</AddingPoints>
+</Block>
