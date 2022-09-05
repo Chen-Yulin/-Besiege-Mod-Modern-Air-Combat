@@ -67,6 +67,16 @@ namespace ModernAirCombat
             catch { return false; }
         }
 
+        public override void InitModelType()
+        {
+            modelType = AddMenu("Missile Type", 0, new List<string>
+            {
+                "R-27",
+                "R-77",
+                "Aim-54",
+                "Aim-120"
+            }, false);
+        }
 
         public override void SimulateFixedUpdateClient()
         {

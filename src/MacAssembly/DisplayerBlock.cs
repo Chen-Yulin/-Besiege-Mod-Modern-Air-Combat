@@ -400,9 +400,9 @@ namespace ModernAirCombat
                 }
                 if (RadarTarget[i].hasObject)
                 {
-                    EnemyIconsTWS[i].transform.localPosition = new Vector3(0.0021f * (i - 50), -0.105f + RadarTarget[i].distance * 0.000035f, 0f);
+                    EnemyIconsTWS[i].transform.localPosition = new Vector3(0.0021f * (i - 50), - 0.0025f -0.105f + RadarTarget[i].distance * 0.000035f, 0f);
                     EnemyIconsTWS[i].SetActive(true);
-                    if (StatMaster.isMP)
+                    if (StatMaster.isMP && i==currRegion)
                     {
                         Message TargetDistanceMsg = ClientTargetDistanceMsg.CreateMessage((int)myPlayerID, (int)i, (Single)RadarTarget[currRegion].distance);
                         ModNetworking.SendToAll(TargetDistanceMsg);
@@ -411,7 +411,7 @@ namespace ModernAirCombat
                 else
                 {
                     EnemyIconsTWS[i].SetActive(false);
-                    if (StatMaster.isMP)
+                    if (StatMaster.isMP && i == currRegion)
                     {
                         Message TargetDistanceMsg = ClientTargetDistanceMsg.CreateMessage((int)myPlayerID, (int)i, (Single)0);
                         ModNetworking.SendToAll(TargetDistanceMsg);
@@ -431,7 +431,7 @@ namespace ModernAirCombat
                 clientTargetDistance = DisplayerMsgReceiver.Instance.ClientTargetDistance[myPlayerID, i];
                 if (clientTargetDistance != 0)
                 {
-                    EnemyIconsTWS[i].transform.localPosition = new Vector3(0.002f * (i - 50), -0.105f + clientTargetDistance * 0.000035f, 0f);
+                    EnemyIconsTWS[i].transform.localPosition = new Vector3(0.002f * (i - 50), -0.0025f - 0.105f + clientTargetDistance * 0.000035f, 0f);
                     EnemyIconsTWS[i].SetActive(true);
                 }
                 else
@@ -704,6 +704,7 @@ namespace ModernAirCombat
             {
                 if (i < leftRegion)
                 {
+
                     EnemyIconsTWS[i].SetActive(false);
                 }
                 else

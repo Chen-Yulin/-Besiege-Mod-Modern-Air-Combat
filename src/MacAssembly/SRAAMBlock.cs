@@ -220,6 +220,7 @@ namespace ModernAirCombat
         public MSlider detectDelay;
         public MSlider launchDelay;
         public MSlider PFRang;
+        public MMenu modelType;
 
 
         public enum status { stored, launched, active, missed, exploded };
@@ -279,7 +280,17 @@ namespace ModernAirCombat
 
         public ushort myPlayerID;
         public bool launchMsgInit = false;
+        public int currModelType = 0;
 
+
+        public virtual void InitModelType()
+        {
+            modelType = AddMenu("Missile Type", 0, new List<string>
+            {
+                "R-73",
+                "Aim-9"
+            }, false);
+        }
 
 
         public void AxisLookAt(Transform tr_self, Vector3 lookPos, Vector3 directionAxis, float speed)
@@ -566,6 +577,7 @@ namespace ModernAirCombat
 
         public override void SafeAwake()
         {
+            InitModelType();
             gameObject.name = "missle";
             Launch = AddKey("Launch", "launch", KeyCode.X);
             //IFF = AddToggle("开启友伤", "IFF", true);
@@ -587,7 +599,12 @@ namespace ModernAirCombat
 
         public override void BuildingUpdate()
         {
-            
+            if (currModelType != modelType.Value)
+            {
+                BlockBehaviour.transform.FindChild("Vis").GetComponent<MeshFilter>().sharedMesh = ModResource.GetMesh(modelType.Selection + " Mesh").Mesh;
+                BlockBehaviour.transform.FindChild("Vis").GetComponent<MeshRenderer>().material.SetTexture("_MainTex", ModResource.GetTexture(modelType.Selection + " Texture").Texture);
+                currModelType = modelType.Value;
+            }
         }
 
         public void Start()
