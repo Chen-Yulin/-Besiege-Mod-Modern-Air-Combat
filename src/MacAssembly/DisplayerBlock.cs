@@ -1142,7 +1142,7 @@ namespace ModernAirCombat
 
         void OnGUI()
         {
-            GUI.Box(new Rect(100, 100, 200, 50), currLockedPlayerID.ToString());
+            //GUI.Box(new Rect(100, 100, 200, 50), currLockedPlayerID.ToString());
             if (locking && IsSimulating)
             {
                 if (StatMaster.isMP)
