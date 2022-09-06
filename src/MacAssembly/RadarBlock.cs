@@ -35,6 +35,7 @@ namespace ModernAirCombat
         public Vector3 velocity;
         public float closingRate;
         public float distance;
+        public int playerID = -1;
 
         public Target()
         {
@@ -51,6 +52,7 @@ namespace ModernAirCombat
         
         public Target(Collider col, BlockBehaviour radar)
         {
+            playerID = col.attachedRigidbody.gameObject.GetComponent<BlockBehaviour>().ParentMachine.PlayerID;
             hasObject = true;
             if (col.attachedRigidbody.gameObject.name == "missle")
             {

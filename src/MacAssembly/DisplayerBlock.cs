@@ -219,6 +219,8 @@ namespace ModernAirCombat
         protected int iconSize = 28;
         protected float deltaPitch = 0;
 
+        protected int currLockedPlayerID = -1;
+
         public void DisplayBlackout()
         {
             if (!StatMaster.isMP || (StatMaster.isMP && !StatMaster.isClient))
@@ -637,16 +639,18 @@ namespace ModernAirCombat
             {
                 if (lockRegion - i >= 0 && lockRegion + i <= 100)
                 {
-                    if (RadarTarget[lockRegion + i].hasObject && !RadarTarget[lockRegion + i].isMissle)
+                    if (RadarTarget[lockRegion + i].hasObject && !RadarTarget[lockRegion + i].isMissle && (currLockedPlayerID == -1 || currLockedPlayerID == RadarTarget[lockRegion + i].playerID))
                     {
+                        currLockedPlayerID = RadarTarget[lockRegion + i].playerID;
                         lockRegion = lockRegion + i;
                         res = true;
                     }
-                    else if (RadarTarget[lockRegion - i].hasObject && !RadarTarget[lockRegion - i].isMissle)
+                    else if (RadarTarget[lockRegion - i].hasObject && !RadarTarget[lockRegion - i].isMissle && (currLockedPlayerID == -1 || currLockedPlayerID == RadarTarget[lockRegion - i].playerID))
                     {
-
+                        currLockedPlayerID = RadarTarget[lockRegion - i].playerID;
                         lockRegion = lockRegion - i;
                         res = true;
+                        
                     }
 
                     if (res)
@@ -756,6 +760,7 @@ namespace ModernAirCombat
         
         public override void OnSimulateStart()
         {
+            currLockedPlayerID = -1;
             DataManager.Instance.BVRData[myPlayerID] = new RadarTargetData();
             preVeclocity = Vector3.zero;
             overLoad = Vector3.zero;
@@ -883,6 +888,7 @@ namespace ModernAirCombat
                 //judage wether the key for toggle lock mode is pressed
                 if (Lock.IsPressed && !StatMaster.isClient)
                 {
+                    currLockedPlayerID = -1;
                     locking = !locking;
                     deltaScanAngle = ScanRegionAfterLock.Value;
                     if (StatMaster.isMP)
@@ -920,6 +926,7 @@ namespace ModernAirCombat
                 {
                     if (!FindLockedTarget())//what to do when mode is switched passively to unlock
                     {
+                        currLockedPlayerID = -1;
                         deltaScanAngle = 60f;
                         if (StatMaster.isMP)
                             ModNetworking.SendToAll(ClientPanelMsg.CreateMessage(myPlayerID, leftScanAngle, rightScanAngle, SLController.currAngle, SLController.direction, radarPitch, deltaScanAngle));
@@ -1135,6 +1142,7 @@ namespace ModernAirCombat
 
         void OnGUI()
         {
+            GUI.Box(new Rect(100, 100, 200, 50), currLockedPlayerID.ToString());
             if (locking && IsSimulating)
             {
                 if (StatMaster.isMP)
