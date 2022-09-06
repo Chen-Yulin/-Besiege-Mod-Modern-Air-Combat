@@ -1,7 +1,5 @@
 x kill air wall
 
-+ add Hub Block
-
 + add grouping funciton to flare launcher
 
 + machine gun color slider
