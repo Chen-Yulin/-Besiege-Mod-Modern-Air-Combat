@@ -219,7 +219,7 @@ namespace ModernAirCombat
         protected int iconSize = 28;
         protected float deltaPitch = 0;
 
-        protected int currLockedPlayerID = -1;
+        public int currLockedPlayerID = -1;
 
         public void DisplayBlackout()
         {
@@ -1142,7 +1142,7 @@ namespace ModernAirCombat
 
         void OnGUI()
         {
-            GUI.Box(new Rect(100, 100, 200, 50), currLockedPlayerID.ToString());
+            //GUI.Box(new Rect(100, 100, 200, 50), currLockedPlayerID.ToString());
             if (locking && IsSimulating)
             {
                 if (StatMaster.isMP)

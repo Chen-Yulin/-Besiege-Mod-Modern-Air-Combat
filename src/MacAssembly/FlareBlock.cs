@@ -75,6 +75,7 @@ namespace ModernAirCombat
 
     public class FlareBlock : BlockScript
     {
+        public MMenu launchedType;
         public MKey ReleaseKey;
         public MSlider ReleaseInterval;
 
@@ -83,6 +84,9 @@ namespace ModernAirCombat
         public GameObject FlareFlame;
         public GameObject FlareSmoke;
         public List<GameObject> FlareAssembly = new List<GameObject>();
+        public List<GameObject> ChaffAssembly = new List<GameObject>();
+
+        public GameObject Chaff;
 
         public static MessageType LaunchPara = ModNetworking.CreateMessageType(DataType.Integer, DataType.Integer, DataType.Vector3);
         public int HostGuid;
@@ -92,11 +96,23 @@ namespace ModernAirCombat
         protected int myGuid;
         protected int myPlayerID;
 
+        public void InitChaff()
+        {
+            if (!GameObject.Find("chaff"))
+            {
+                Chaff = (GameObject)Instantiate(AssetManager.Instance.Chaff.Chaff);
+                Chaff.name = "chaff";
+                BoxCollider chaffCol = Chaff.AddComponent<BoxCollider>();
+                chaffCol.size = new Vector3(0.1f, 0.1f, 0.1f);
+                Chaff.SetActive(false);
+            }
+        }
+
         public void InitFlare()
         {
             try
             {
-                Destroy(FlareObject);
+                Destroy(GameObject.Find("flare"));
             }
             catch { }
             FlareObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -127,22 +143,42 @@ namespace ModernAirCombat
             
         public void Release(Vector3 velocity)
         {
-            if (FlareAssembly.Count >=8)
+            if (launchedType.Value == 0)
             {
-                return;
+                if (FlareAssembly.Count >= 8)
+                {
+                    return;
+                }
+                else
+                {
+                    FlareAssembly.Add((GameObject)Instantiate(FlareObject, transform.position + 2 * transform.forward, transform.rotation));
+                    GameObject tmpFlare = FlareAssembly[FlareAssembly.Count - 1];
+                    tmpFlare.name = "flare";
+                    tmpFlare.SetActive(true);
+                    Rigidbody tmpRig = tmpFlare.GetComponent<Rigidbody>();
+                    tmpRig.velocity = velocity;
+                    tmpRig.AddRelativeForce(new Vector3(5 * UnityEngine.Random.value - 2.5f, 5 * UnityEngine.Random.value - 2.5f, 30 + 10 * UnityEngine.Random.value));
+                    tmpFlare.transform.GetChild(0).gameObject.GetComponent<ParticleSystem>().Play();
+                    tmpFlare.transform.GetChild(1).gameObject.GetComponent<ParticleSystem>().Play();
+                    Destroy(tmpFlare, 5);
+                }
             }
             else
             {
-                FlareAssembly.Add((GameObject)Instantiate(FlareObject, transform.position + 2*transform.forward, transform.rotation));
-                GameObject tmpFlare = FlareAssembly[FlareAssembly.Count - 1];
-                tmpFlare.SetActive(true);
-                Rigidbody tmpRig = tmpFlare.GetComponent<Rigidbody>();
-                tmpRig.velocity = velocity;
-                tmpRig.AddRelativeForce(new Vector3(5 * UnityEngine.Random.value - 2.5f, 5 * UnityEngine.Random.value - 2.5f, 30 + 10 * UnityEngine.Random.value));
-                tmpFlare.transform.GetChild(0).gameObject.GetComponent<ParticleSystem>().Play();
-                tmpFlare.transform.GetChild(1).gameObject.GetComponent<ParticleSystem>().Play();
-                Destroy(tmpFlare, 5);
+                if (ChaffAssembly.Count >= 8)
+                {
+                    return;
+                }
+                else
+                {
+                    ChaffAssembly.Add((GameObject)Instantiate(Chaff, transform.position + 5 * transform.forward, transform.rotation));
+                    GameObject tmpChaff = ChaffAssembly[ChaffAssembly.Count - 1];
+                    tmpChaff.name = "chaff";
+                    tmpChaff.SetActive(true);
+                    Destroy(tmpChaff, 5);
+                }
             }
+            
         }
 
 
@@ -156,9 +192,15 @@ namespace ModernAirCombat
         public override void SafeAwake()
         {
             myPlayerID = BlockBehaviour.ParentMachine.PlayerID;
+            launchedType = AddMenu("Type", 0, new List<string>
+            {
+                "Flare",
+                "Chaff"
+            }, false);
             ReleaseKey = AddKey("Launch", "Launch Flare", KeyCode.C);
             ReleaseInterval = AddSlider("Release Interval", "release interval", 0.2f, 0.05f, 0.5f);
             InitFlare();
+            InitChaff();
 
         }
         public override void OnSimulateStart()
@@ -236,6 +278,14 @@ namespace ModernAirCombat
                     Destroy(FlareAssembly[i]);
                 }
             }
+            for (int i = 0; i < ChaffAssembly.Count; i++)
+            {
+                if (ChaffAssembly[i])
+                {
+                    Destroy(ChaffAssembly[i]);
+                }
+            }
+
             KeymsgController.Instance.keyheld[myPlayerID].Remove(myGuid);
         }
 

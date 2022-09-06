@@ -1,0 +1,28 @@
+ManifestFileVersion: 0
+CRC: 1564124158
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 8e8bbdd3820fe574aa5f93bbb204e48d
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 8e73928d58048341e9b2fe1dbcc1debf
+HashAppended: 0
+ClassTypes:
+- Class: 1
+  Script: {instanceID: 0}
+- Class: 4
+  Script: {instanceID: 0}
+- Class: 21
+  Script: {instanceID: 0}
+- Class: 28
+  Script: {instanceID: 0}
+- Class: 48
+  Script: {instanceID: 0}
+- Class: 198
+  Script: {instanceID: 0}
+- Class: 199
+  Script: {instanceID: 0}
+Assets:
+- Assets/Trail/Chaff.prefab
+Dependencies: []

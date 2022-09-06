@@ -62,6 +62,7 @@ namespace ModernAirCombat
             {
                 isMissle = false;
             }
+
             position = col.gameObject.transform.position;
             velocity = col.attachedRigidbody.velocity;
             distance = Vector3.Distance(radar.transform.position, position);
@@ -120,7 +121,7 @@ namespace ModernAirCombat
             {
                 Target tmpTarget = new Target(col, radar);
                 float staticClosingRate = calculateClossingRate(tmpTarget.position, Vector3.zero, radar.transform.position, radar.GetComponent<Rigidbody>().velocity);
-                if (Math.Abs(tmpTarget.closingRate - staticClosingRate) > 20 || col.transform.position.y > 200)
+                if (Math.Abs(tmpTarget.closingRate - staticClosingRate) > 35 || col.transform.position.y > 500)
                 {
                     targets[currRegion] = tmpTarget;
                 }
@@ -234,6 +235,7 @@ namespace ModernAirCombat
                 radarHit.Reset();
                 radarHit.myTeam = BlockBehaviour.Team;
                 radarHit.IFF = !IFF.isDefaultValue;
+                radarHit.isRadarScan = true;
                 
             }
 
@@ -250,6 +252,7 @@ namespace ModernAirCombat
                 radarFarHit.Reset();
                 radarFarHit.myTeam = BlockBehaviour.Team;
                 radarFarHit.IFF = !IFF.isDefaultValue;
+                radarFarHit.isRadarScan= true;
 
             }
 

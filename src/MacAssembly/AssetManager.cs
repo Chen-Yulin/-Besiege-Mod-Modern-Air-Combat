@@ -22,6 +22,18 @@ namespace ModernAirCombat
         }
     }
 
+    public class Asset_Chaff
+    {
+        public GameObject Chaff;
+        public Asset_Chaff(ModAssetBundle modAssetBundle)
+        {
+            Chaff = modAssetBundle.LoadAsset<GameObject>("Chaff");
+            Chaff.AddComponent<DestroyIfEditMode>();
+            Chaff.SetActive(false);
+        }
+
+    }
+
     public class Asset_Trail
     {
         public GameObject FlameTrail;
@@ -53,6 +65,7 @@ namespace ModernAirCombat
             
         }
     }
+    
 
     public class Asset_GunFire
     {
@@ -83,6 +96,7 @@ namespace ModernAirCombat
         public Asset_Trail Trail { get; protected set; }
         public Asset_Explo Explo { get; protected set; }
         public Asset_Flare Flare { get; protected set; }
+        public Asset_Chaff Chaff { get; protected set; }
         public Asset_GunFire GunFire { get; protected set; }
         public Asset_BulletExplo BulletExplo { get; protected set; }
 
@@ -93,6 +107,7 @@ namespace ModernAirCombat
             Trail = new Asset_Trail(ModResource.GetAssetBundle("Trail Effect"));
             Explo = new Asset_Explo(ModResource.GetAssetBundle("Explo Effect"));
             Flare = new Asset_Flare(ModResource.GetAssetBundle("Flare Effect"));
+            Chaff = new Asset_Chaff(ModResource.GetAssetBundle("Chaff Effect"));
             GunFire = new Asset_GunFire(ModResource.GetAssetBundle("Gun Effect"));
             BulletExplo = new Asset_BulletExplo(ModResource.GetAssetBundle("Gun Effect"));
 

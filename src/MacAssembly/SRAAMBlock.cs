@@ -76,6 +76,7 @@ namespace ModernAirCombat
         public bool IFF = false;
         //public ushort PlayerID = 0;
         public Stack<Collider> targetCols = new Stack<Collider>();
+        public bool isRadarScan = false;
 
 
         public void Reset()
@@ -94,11 +95,28 @@ namespace ModernAirCombat
         {
             try
             {
+                
                 MPTeam hitedTeam;
-                if (targetCols.Count > 5 || col.name == "flare(Clone)")
+                if (targetCols.Count > 5 || col.name == "flare")
                     return;
+
+                //chaff has no rigidbody so put it here
+                if (isRadarScan && col.name == "chaff")
+                {
+                    if (UnityEngine.Random.value > 0.4)
+                    {
+                        targetCols.Push(col);
+                        return;
+                    }
+
+                }
+
+
+
                 if (col.isTrigger || col.transform.parent.GetInstanceID() == col.GetInstanceID())
                     return;
+
+                
 
                 if (col.attachedRigidbody.gameObject.name == "missle")
                     return;
@@ -879,20 +897,7 @@ namespace ModernAirCombat
 
         void OnGUI()
         {
-            //GUI.Box(new Rect(100, 200, 200, 50), MissleExploMessageReciver.Instance.GetExploMsg(myGuid, myPlayerID).ToString());
-            if (BlockBehaviour.isSimulating)
-            {
-                //GUI.Box(new Rect(100, 100, 200, 50), myRigidbody.velocity.ToString());
-                //if (targetDetected)
-                //{
-                //iconSize = 32;
-                //GUI.color = Color.green;
-                //Vector3 onScreenPosition = Camera.main.WorldToScreenPoint(predictPosition);
-                //if (onScreenPosition.z >= 0)
-                //    GUI.DrawTexture(new Rect(onScreenPosition.x - iconSize / 2, Camera.main.pixelHeight - onScreenPosition.y - iconSize / 2, iconSize, iconSize), AimIcon);
-                //}
-                
-            }
+
         }
         
 

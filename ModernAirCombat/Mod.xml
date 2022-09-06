@@ -97,6 +97,7 @@
 		<Mesh name="Flare Mesh" path="Flare\Flare.obj"/>
 		<Texture name="Flare Texture" path="Flare\Flare.png"/>
 		<AssetBundle name="Flare Effect" path="flare.ab"/>
+		<AssetBundle name="Chaff Effect" path="chaff.ab"/>
 		<AssetBundle name="Gun Effect" path="gunfire.ab"/>
 		<AudioClip name="RWRBeep Audio" path="RWR\RWRBeep.wav" />
 		<Mesh name="MachineGun Mesh" path="MachineGun\MG.obj"/>
