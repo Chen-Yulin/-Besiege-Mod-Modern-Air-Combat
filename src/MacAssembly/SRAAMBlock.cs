@@ -72,8 +72,8 @@ namespace ModernAirCombat
 
     public class ScanCollisonHit : MonoBehaviour
     {
-        //public MPTeam team = MPTeam.None;
-        //public bool IFF = true;
+        public MPTeam myTeam = MPTeam.None;
+        public bool IFF = false;
         //public ushort PlayerID = 0;
         public Stack<Collider> targetCols = new Stack<Collider>();
 
@@ -102,9 +102,18 @@ namespace ModernAirCombat
 
                 if (col.attachedRigidbody.gameObject.name == "missle")
                     return;
-            
                 BlockBehaviour hitedBlock = col.attachedRigidbody.gameObject.GetComponent<BlockBehaviour>();
-                hitedTeam = hitedBlock.Team;
+                if (!hitedBlock.isSimulating)
+                    return;
+                if (IFF)
+                {
+                    hitedTeam = hitedBlock.Team;
+                    //Debug.Log(hitedTeam.ToString()+" "+myTeam.ToString());
+                    if (myTeam == hitedTeam)
+                    {
+                        return;
+                    }
+                }
                 targetCols.Push(col);
             }
             catch 
@@ -282,6 +291,8 @@ namespace ModernAirCombat
         public bool launchMsgInit = false;
         public int currModelType = 0;
 
+        public bool currSkinStatus = false;
+
 
         public virtual void InitModelType()
         {
@@ -353,8 +364,6 @@ namespace ModernAirCombat
         {
             if (BlockBehaviour.transform.FindChild("ScanCol") == null)
             {
-                //scannerMesh = ModResource.GetMesh("Cone Scan").Mesh;
-
                 ScanCollider = new GameObject("ScanCol");
                 ScanCollider.transform.SetParent(BlockBehaviour.transform);
                 ScanCollider.transform.localPosition = new Vector3(0f, 650f, 0.3f);
@@ -472,12 +481,15 @@ namespace ModernAirCombat
                     hits.GetComponent<Rigidbody>().AddExplosionForce(ExploPower, transform.position, 2*ExploRadius);
                     try
                     {
-                        hits.attachedRigidbody.gameObject.GetComponent<BlockBehaviour>().fireTag.Ignite();
+                        hits.attachedRigidbody.gameObject.GetComponent<FireTag>().Ignite();
                     }
                     catch { }
                     
                 }
             }
+            ScanCollider.SetActive(false);
+            ScanFlare.SetActive(false);
+            PFCollider.SetActive(false);
             
         }
 
@@ -565,13 +577,6 @@ namespace ModernAirCombat
                 //Debug.Log(predictPosition);
             }
             catch { }
-
-
-
-
-
-
-
         }
 
 
@@ -599,18 +604,20 @@ namespace ModernAirCombat
 
         public override void BuildingUpdate()
         {
-            if (currModelType != modelType.Value)
+            if (currModelType != modelType.Value || currSkinStatus != OptionsMaster.skinsEnabled)
             {
                 BlockBehaviour.transform.FindChild("Vis").GetComponent<MeshFilter>().sharedMesh = ModResource.GetMesh(modelType.Selection + " Mesh").Mesh;
                 BlockBehaviour.transform.FindChild("Vis").GetComponent<MeshRenderer>().material.SetTexture("_MainTex", ModResource.GetTexture(modelType.Selection + " Texture").Texture);
                 currModelType = modelType.Value;
+                currSkinStatus = OptionsMaster.skinsEnabled;
             }
         }
 
         public void Start()
         {
+            BlockBehaviour.blockJoint.breakForce = -1;
             
-            myTransform = gameObject.GetComponent<Transform>();        //获取相应对象的引用
+            myTransform = gameObject.GetComponent<Transform>();
             myRigidbody = gameObject.GetComponent<Rigidbody>();
 
             myRigidbody.drag = 0f;
@@ -619,26 +626,22 @@ namespace ModernAirCombat
 
             Vector3 ScanColScale = new Vector3(550,550,550);
             ScanCollider.transform.localScale = ScanColScale;
-            //ScannerDisplay.transform.localScale = ScanColScale;
-            //Debug.Log(ScanColScale);
-            //coneHit.IFF = IFF.IsActive;
-            //coneHit.team = BlockBehaviour.Team;
-            //coneHit.PlayerID = myPlayerID;
-
-            //if (showScanner.IsActive)
-            //{
-            //    ScannerDisplay.SetActive(true);
-            //}
-            //else
-            //{
-            //    ScannerDisplay.SetActive(false);
-            //}
             
             initParticleSystem();
 
             misslePF.radius = PFRang.Value;
 
 
+        }
+        protected void Update()
+        {
+            if (currSkinStatus != OptionsMaster.skinsEnabled)
+            {
+                BlockBehaviour.transform.FindChild("Vis").GetComponent<MeshFilter>().sharedMesh = ModResource.GetMesh(modelType.Selection + " Mesh").Mesh;
+                BlockBehaviour.transform.FindChild("Vis").GetComponent<MeshRenderer>().material.SetTexture("_MainTex", ModResource.GetTexture(modelType.Selection + " Texture").Texture);
+                currModelType = modelType.Value;
+                currSkinStatus = OptionsMaster.skinsEnabled;
+            }
         }
 
         public override void OnSimulateStart()
@@ -888,7 +891,7 @@ namespace ModernAirCombat
                 //if (onScreenPosition.z >= 0)
                 //    GUI.DrawTexture(new Rect(onScreenPosition.x - iconSize / 2, Camera.main.pixelHeight - onScreenPosition.y - iconSize / 2, iconSize, iconSize), AimIcon);
                 //}
-                //GUI.Box(new Rect(100, 300, 400, 50), myPlayerID.ToString() + MissleExploMessageReciver.Instance.GetExploMsg(myGuid, myPlayerID).ToString());
+                
             }
         }
         

@@ -108,7 +108,6 @@ namespace ModernAirCombat
             {
                 
                 targets[i] = new Target();
-                //Debug.Log(targets[i].hasObject);
             }
         }
         
@@ -135,11 +134,9 @@ namespace ModernAirCombat
 
         public void RemoveTarget(int currRegion)
         {
-            //Debug.Log(1);
             if (targets[currRegion].hasObject)
             {
                 targets[currRegion].hasObject = false;
-                //Debug.Log(currRegion.ToString() + " remove a target");
             }
         }
     }
@@ -148,6 +145,7 @@ namespace ModernAirCombat
     
     public class RadarBlock : BlockScript
     {
+        public MToggle IFF;
         public MToggle ShowScan;
         public MToggle DopplerFeature;
 
@@ -155,12 +153,18 @@ namespace ModernAirCombat
         public float scanAngle = 0;
         public float scanPitch = 0;
         public GameObject ScanCollider;
+        public GameObject ScanColliderFar;
         public MeshCollider radarScan;
+        public BoxCollider radarScanFar;
         public MeshFilter radarMF;
         public MeshRenderer radarMR;
+        public MeshFilter radarFarMF;
+        public MeshRenderer radarFarMR;
         public GameObject RadarScanDisplayer;
+        public GameObject RadarScanFarDisplayer;
         public GameObject RadarBase;
         public ScanCollisonHit radarHit;
+        public ScanCollisonHit radarFarHit;
         public GameObject RadarHead;
         public MeshFilter RadarHeadMF;
         public MeshRenderer RadarHeadMR;
@@ -219,13 +223,32 @@ namespace ModernAirCombat
                 ScanCollider.transform.SetParent(RadarBase.transform);
                 ScanCollider.transform.localPosition = new Vector3(0f, 0f, 0f);
                 ScanCollider.transform.localRotation = Quaternion.Euler(270f, 0f, 0f);
-                ScanCollider.transform.localScale = new Vector3(3000, 3000, 3000);
+                ScanCollider.transform.localScale = new Vector3(2000, 2000, 2000);
                 radarScan = ScanCollider.AddComponent<MeshCollider>();
                 radarScan.sharedMesh = scannerMesh;
                 radarScan.convex = true;
                 radarScan.isTrigger = true;
                 radarHit = ScanCollider.AddComponent<ScanCollisonHit>();
                 radarHit.Reset();
+                radarHit.myTeam = BlockBehaviour.Team;
+                radarHit.IFF = !IFF.isDefaultValue;
+                
+            }
+
+            if (ScanCollider.transform.FindChild("RadarScanFarCol") == null)
+            {
+                ScanColliderFar = new GameObject("RadarScanFarCol");
+                ScanColliderFar.transform.SetParent(ScanCollider.transform);
+                ScanColliderFar.transform.localPosition = new Vector3(0f, 4f, 0f);
+                ScanColliderFar.transform.localRotation = Quaternion.Euler(0, 0, 0);
+                ScanColliderFar.transform.localScale = new Vector3(0.1f, 4.1f, 1.3f);
+                radarScanFar = ScanColliderFar.AddComponent<BoxCollider>();
+                radarScanFar.isTrigger = true;
+                radarFarHit = ScanColliderFar.AddComponent<ScanCollisonHit>();
+                radarFarHit.Reset();
+                radarFarHit.myTeam = BlockBehaviour.Team;
+                radarFarHit.IFF = !IFF.isDefaultValue;
+
             }
 
             if (ScanCollider.transform.FindChild("RadarScanDisplay") == null)
@@ -243,6 +266,19 @@ namespace ModernAirCombat
                 displayColor.a = 0.05f;
                 radarMR.material.SetColor("_TintColor", displayColor);
                 RadarScanDisplayer.SetActive(false);
+            }
+
+            if (ScanColliderFar.transform.FindChild("RadarScanFarDisplay") == null)
+            {
+                RadarScanFarDisplayer = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                RadarScanFarDisplayer.name = "RadarScanFarDisplay";
+                RadarScanFarDisplayer.transform.SetParent(ScanColliderFar.transform);
+                Destroy(RadarScanFarDisplayer.GetComponent<Collider>());
+                Destroy(RadarScanFarDisplayer.GetComponent<Rigidbody>());
+                RadarScanFarDisplayer.transform.localPosition = new Vector3(0f, 0f, 0f);
+                RadarScanFarDisplayer.transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
+                RadarScanFarDisplayer.transform.localScale = Vector3.one;
+                RadarScanFarDisplayer.SetActive(false);
             }
 
 
@@ -271,13 +307,22 @@ namespace ModernAirCombat
             int currRegion = (int)Math.Floor((scanAngle+60)/1.2f+0.5f);
             //Debug.Log(currRegion);
             //Debug.Log(radarHit.targetCols.Count);
-            if (radarHit.targetCols.Count == 0)
+            if (radarHit.targetCols.Count == 0 && radarFarHit.targetCols.Count == 0)
             {
                 targetManagerRadar.RemoveTarget(currRegion);
             }
             else
             {
-                Collider targetCol = radarHit.targetCols.Peek();
+                Collider targetCol;
+                if (radarHit.targetCols.Count != 0)
+                {
+                    targetCol = radarHit.targetCols.Peek();
+                }
+                else
+                {
+                    targetCol = radarFarHit.targetCols.Peek();
+                }
+                
                 //Debug.Log(targetCol.name);
                 targetManagerRadar.AddTarget(currRegion, targetCol, BlockBehaviour, DopplerFeature.isDefaultValue);
 
@@ -311,18 +356,19 @@ namespace ModernAirCombat
 
         public override void SafeAwake()
         {
-
+            IFF = AddToggle("IFF (mupliplayer)", "IFF (mupliplayer)", false);
             ShowScan = AddToggle("Display Scanner", "display scanner", false);
             DopplerFeature = AddToggle("Doppler Feature", "Doppler Feature", true);
 
             myTransform = transform;
             myPlayerID = BlockBehaviour.ParentMachine.PlayerID;
-            InitScan();
+            
             targetManagerRadar = new targetManager();
         }
 
         public override void OnSimulateStart()
         {
+            InitScan();
             ScanCollider.SetActive(true);
             if (ShowScan.IsActive && !StatMaster.isMP)
             {
@@ -347,7 +393,11 @@ namespace ModernAirCombat
 
         public override void SimulateFixedUpdateHost()
         {
-            GetTWSAim();
+            try
+            {
+                GetTWSAim();
+            }
+            catch { }
             //RadarBase.transform.position = myTransform.position+0.5f*myTransform.localScale.z*transform.forward;
             RadarBase.transform.rotation = Quaternion.LookRotation((myTransform.rotation * Vector3.back).normalized);
             
@@ -361,6 +411,7 @@ namespace ModernAirCombat
                 ScanCollider.transform.localRotation = Quaternion.Euler(270f+scanPitch, scanAngle, 0);
 
                 radarHit.Reset();
+                radarFarHit.Reset();
                 DataManager.Instance.TargetData[myPlayerID] = targetManagerRadar;
                 DataManager.Instance.RadarTransformForward[myPlayerID] = transform.forward;
 

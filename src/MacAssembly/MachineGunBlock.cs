@@ -57,6 +57,7 @@ namespace ModernAirCombat
         public MSlider InitialSpeed;
         public MSlider AmountOfBullet;
         public MSlider FiringRate;
+        public MColourSlider bulletColor;
 
         public GameObject Bullet;
         public Queue<GameObject> bulletAssembly = new Queue<GameObject> ();
@@ -254,10 +255,10 @@ namespace ModernAirCombat
             trailRenderer.endWidth = 0.0f;
 
             trailRenderer.material = new Material(Shader.Find("Particles/Additive"));
-            trailRenderer.material.SetColor("_TintColor", Color.yellow);
+            trailRenderer.material.SetColor("_TintColor", bulletColor.Value);
 
             trailRenderer.enabled = true;
-            trailRenderer.time = 0.05f;
+            trailRenderer.time = 0.07f;
 
             Rigidbody rig = Bullet.GetComponent<Rigidbody>() ?? Bullet.AddComponent<Rigidbody>();
             rig.mass = 0.01f;
@@ -339,7 +340,8 @@ namespace ModernAirCombat
             Caliber = AddSlider("Caliber (mm)", "Caliber", 20f, 7.7f, 37f);
             InitialSpeed = AddSlider("Initial Speed (m/s)", "Initial Speed", 800f, 400f, 1000f);
             FiringRate = AddSlider("Firing Rate (/s)", "Firing Rate", 80f, 1f, 100f);
-            AmountOfBullet = AddSlider("Amount of Bullets", "Amount of Bullets", 300f, 0f, float.MaxValue);
+            AmountOfBullet = AddSlider("Amount of Bullets", "Amount of Bullets", 300f, 0f, 10000);
+            bulletColor = AddColourSlider("Bullet tracer color", "Bullet tracer color", Color.yellow, false);
             
 
             

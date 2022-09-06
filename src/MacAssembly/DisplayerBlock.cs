@@ -400,7 +400,7 @@ namespace ModernAirCombat
                 }
                 if (RadarTarget[i].hasObject)
                 {
-                    EnemyIconsTWS[i].transform.localPosition = new Vector3(0.0021f * (i - 50), - 0.0025f -0.105f + RadarTarget[i].distance * 0.000035f, 0f);
+                    EnemyIconsTWS[i].transform.localPosition = new Vector3(0.0021f * (i - 50), - 0.0025f -0.105f + RadarTarget[i].distance * 0.0000175f, 0f);
                     EnemyIconsTWS[i].SetActive(true);
                     if (StatMaster.isMP && i==currRegion)
                     {
@@ -431,7 +431,7 @@ namespace ModernAirCombat
                 clientTargetDistance = DisplayerMsgReceiver.Instance.ClientTargetDistance[myPlayerID, i];
                 if (clientTargetDistance != 0)
                 {
-                    EnemyIconsTWS[i].transform.localPosition = new Vector3(0.002f * (i - 50), -0.0025f - 0.105f + clientTargetDistance * 0.000035f, 0f);
+                    EnemyIconsTWS[i].transform.localPosition = new Vector3(0.002f * (i - 50), -0.0025f - 0.105f + clientTargetDistance * 0.0000175f, 0f);
                     EnemyIconsTWS[i].SetActive(true);
                 }
                 else
@@ -660,9 +660,9 @@ namespace ModernAirCombat
                         
 
                         ChooserPosition.x = (lockRegion - 50) * 1.2f;
-                        ChooserPosition.y = (RadarTarget[lockRegion].distance - 3000) * 0.02f;
-                        Chooser.transform.localPosition = new Vector3(ChooserPosition.x * 0.00175f, 0.105f - RadarTarget[lockRegion].distance * 0.000035f, 0.095f);
-                        LockIcon.transform.localPosition = new Vector3(ChooserPosition.x * 0.00175f, 0.105f - RadarTarget[lockRegion].distance * 0.000035f, 0.095f);
+                        ChooserPosition.y = (RadarTarget[lockRegion].distance - 6000) * 0.01f;
+                        Chooser.transform.localPosition = new Vector3(ChooserPosition.x * 0.00175f, 0.105f - RadarTarget[lockRegion].distance * 0.0000175f, 0.095f);
+                        LockIcon.transform.localPosition = new Vector3(ChooserPosition.x * 0.00175f, 0.105f - RadarTarget[lockRegion].distance * 0.0000175f, 0.095f);
 
                         LockIcon.SetActive(true);
                         try
@@ -1149,12 +1149,6 @@ namespace ModernAirCombat
                 if (onScreenPosition.z >= 0)
                     GUI.DrawTexture(new Rect(onScreenPosition.x - iconSize / 2, Camera.main.pixelHeight - onScreenPosition.y - iconSize / 2, iconSize, iconSize), LockIconOnScreen);
             }
-            //if (myPlayerID == PlayerData.localPlayer.networkId)
-            //{
-            //    GUI.Box(new Rect(100, 100, 200, 50), myPlayerID.ToString() + "   " + DisplayerMsgReceiver.Instance.BlackoutData[PlayerData.localPlayer.networkId].ToString());
-            //}
-
-
         }
 
     }
