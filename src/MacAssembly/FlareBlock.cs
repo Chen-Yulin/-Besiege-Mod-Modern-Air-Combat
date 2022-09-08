@@ -79,7 +79,6 @@ namespace ModernAirCombat
         public MKey ReleaseKey;
         public MSlider ReleaseInterval;
 
-        //public GameObject FlareAssembly;
         public GameObject FlareObject;
         public GameObject FlareFlame;
         public GameObject FlareSmoke;

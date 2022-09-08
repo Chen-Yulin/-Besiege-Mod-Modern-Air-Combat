@@ -69,12 +69,13 @@ namespace ModernAirCombat
 
         public override void InitModelType()
         {
-            modelType = AddMenu("Missile Type", 0, new List<string>
+            modelType = AddMenu("Missile Type", 0, new List<string>()
             {
                 "R-27",
                 "R-77",
                 "Aim-54",
-                "Aim-120"
+                "Aim-120",
+                "R-33"
             }, false);
         }
 

@@ -34,6 +34,7 @@ namespace ModernAirCombat
             ModNetworking.Callbacks[RWRBlock.ClientRWRData] += RWRMsgReceiver.Instance.DataReceiver;
             ModNetworking.Callbacks[DisplayerBlock.ClientBlackoutMsg] += DisplayerMsgReceiver.Instance.BlackoutReceiver;
             ModNetworking.Callbacks[HUDBlock.ClientHUDBVRMsg] += HUDMsgReceiver.Instance.DataReceiver;
+            ModNetworking.Callbacks[ModController.ClientRestrictionMsg] += ModControllerMsgReceiver.Instance.RestrictionMsgReceiver;
         }
     }
 }

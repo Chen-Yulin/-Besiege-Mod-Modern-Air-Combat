@@ -9,7 +9,7 @@
 	<Name>ModernAirCombat</Name>
 	<Author>Chen, Yulin</Author> <!-- FIX: Insert your name here. -->
 	<!-- Major.Minor.Build -->
-	<Version>0.3.3</Version>
+	<Version>0.3.4</Version>
 	
 	<Description>
 	A mod for simulating modern air combat in besiege. 
@@ -131,6 +131,8 @@
 		<Texture name="Aim-120 Texture" path="MRAAM\Aim-120.png"/>
 		<Mesh name="R-77 Mesh" path="MRAAM\R-77.obj"/>
 		<Texture name="R-77 Texture" path="MRAAM\R-77.png"/>
+		<Mesh name="R-33 Mesh" path="MRAAM\R-33.obj"/>
+		<Texture name="R-33 Texture" path="MRAAM\R-33.png"/>
 
 	</Resources>
 

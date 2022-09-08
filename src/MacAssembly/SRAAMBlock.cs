@@ -878,6 +878,12 @@ namespace ModernAirCombat
             if (myStatus == status.missed)
             { 
                 targetDetected = false;
+                if (PFCollider.activeSelf)
+                {
+                    ScanCollider.SetActive(false);
+                    ScanFlare.SetActive(false);
+                    PFCollider.SetActive(false);
+                }
             
                 if (myRigidbody.position.y > 20)
                 {
