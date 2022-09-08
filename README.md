@@ -17,4 +17,4 @@ This mod concentrates on simulating modern air combat in Besiege, with a balance
 This mod is my maiden work, so lots of bugs are expected. I would appreciate it a lot if you can contact me through e-mail(chenyulin@sjtu.edu.cn) and report bugs or suggestions.
 
 ## Acknowledgement
-- many generous sharer on sketchfab for providing me with the model of aim-54,aim-9, aim-120, r-77.oviding me with the model of aim-54,aim-9, aim-120, r-77.
+- many generous sharer on sketchfab for providing me with the model of aim-54,aim-9, aim-120, r-77, r-33
