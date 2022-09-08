@@ -251,7 +251,7 @@ namespace ModernAirCombat
         public MMenu modelType;
 
 
-        public enum status { stored, launched, active, missed, exploded };
+        public enum status { stored, launched, active, exploded };
         public status myStatus;
         public GameObject ScanCollider;
         public SphereCollider missleScan;
@@ -498,7 +498,8 @@ namespace ModernAirCombat
                 ModNetworking.SendToAll(missleExplo);
                 //Debug.Log(myGuid.ToString());
             }
-
+            
+            Debug.Log("explo");
             playExploEffect();
             myRigidbody.constraints = RigidbodyConstraints.FreezePosition;
 
@@ -585,17 +586,17 @@ namespace ModernAirCombat
                 Vector3 positionDiff = predictPosition - (transform.position + Rigidbody.velocity * estimatedTime);
                 //Debug.Log(positionDiff);
                 Vector3 modifiedDiff;
-                if (positionDiff.magnitude < 200)
+                if (positionDiff.magnitude < 500)
                 {
-                    modifiedDiff.x = (0.6f * positionDiff.x);
-                    modifiedDiff.y = (0.6f * positionDiff.y);
-                    modifiedDiff.z = (0.6f * positionDiff.z);
+                    modifiedDiff.x = (0.3f * positionDiff.x);
+                    modifiedDiff.y = (0.3f * positionDiff.y);
+                    modifiedDiff.z = (0.3f * positionDiff.z);
                 }
                 else
                 {
-                    modifiedDiff.x = (0.2f * positionDiff.x);
-                    modifiedDiff.y = (0.2f * positionDiff.y);
-                    modifiedDiff.z = (0.2f * positionDiff.z);
+                    modifiedDiff.x = (0.1f * positionDiff.x);
+                    modifiedDiff.y = (0.1f * positionDiff.y);
+                    modifiedDiff.z = (0.1f * positionDiff.z);
                 }
 
                 predictPositionModified = predictPosition + modifiedDiff;
@@ -770,7 +771,6 @@ namespace ModernAirCombat
                             playExploEffect();
                         }
                     }
-                    time += Time.fixedDeltaTime;
                 }
                 else
                 {
@@ -780,16 +780,10 @@ namespace ModernAirCombat
                         TrailFlameParticle.Stop();
                         activeTrail = false;
                     }
-                    myStatus = status.missed;
-
                 }
+                time += Time.fixedDeltaTime;
             }
-            if (myStatus == status.missed)
-            {
-                targetDetected = false;
-
-            }
-            if (myStatus == status.missed || myStatus == status.exploded)
+            if (myStatus == status.exploded)
             {
                 if (!effectDestroyed)
                 {
@@ -818,20 +812,20 @@ namespace ModernAirCombat
             {
                 if (!getlaunchRotation)
                 {
-                    myRigidbody.drag = 0.1f;
+                    myRigidbody.drag = 0.05f;
                     myRigidbody.angularDrag = 4.0f;
                     launchRotation = transform.rotation;
                     getlaunchRotation = true;
-                    //Debug.Log(launchRotation);
                 }
-
-                if (time < 3.5f + launchDelay.Value)
+                
+                // when within work time
+                if (time < 3.5f*4 + launchDelay.Value)
                 {
                     if (time > launchDelay.Value)
                     {
+                        // init launch
                         if(activeTrail == false)
                         {
-                            myRigidbody.drag = 3f;
                             TrailSmokeParticle.Play();
                             TrailFlameParticle.Play();
                             activeTrail = true;
@@ -840,75 +834,82 @@ namespace ModernAirCombat
                             LaunchSoundEffect.SetActive(true);
                             LaunchSoundEffect.GetComponent<AudioSource>().Play();
                             Destroy(LaunchSoundEffect, 3.5f);
+                            myRigidbody.drag = 0.5f;
 
                         }
                         
-
-                        myRigidbody.AddRelativeForce(new Vector3(0, 3000, 0), ForceMode.Force);
+                        // add thrust
+                        myRigidbody.AddRelativeForce(new Vector3(0, 650, 0), ForceMode.Force);
                     }
 
+                    // when within safety time
                     if (time < detectDelay.Value + launchDelay.Value)
                     {
                         myTransform.rotation = Quaternion.Lerp(transform.rotation, launchRotation, 0.1f);
                     }
-                    else
+                    else // after safety unlock
                     {
+                        // thrust over
+                        if (activeTrail == true && time > 3.5f+launchDelay.Value)
+                        {
+                            TrailSmokeParticle.Stop();
+                            TrailFlameParticle.Stop();
+                            activeTrail = false;
+                            myRigidbody.drag = 0.05f;
+                        }
+
+                        // active PF
                         if (!PFCollider.activeSelf)
                         {
                             PFCollider.SetActive(true);
                         }
+                        // judge whether explo
                         if (PFHit.explo == true)
                         {
                             playExplo();
                         }
+                        // find target to track
                         GetAim();
-                        if (!targetDetected)
+                        if (!targetDetected) // keep still if no target found
                         {
                             myTransform.rotation = Quaternion.Lerp(transform.rotation, launchRotation, 0.1f);
                         }
-                        else
-                        {
-                            //myTransform.up = Vector3.Lerp(myTransform.up, predictPositionModified - myTransform.position,0.01f);
-                            AxisLookAt(myTransform, predictPositionModified, Vector3.up, 0.08f);
+                        else // turn the missile if target found
+                        {   
+                            AxisLookAt(myTransform, predictPositionModified, Vector3.up, 0.06f);
                         }
                     }
-                    time += Time.fixedDeltaTime;
                 }
                 else
                 {
-                    if (activeTrail == true)
+                    if (PFCollider.activeSelf)
                     {
-                        TrailSmokeParticle.Stop();
-                        TrailFlameParticle.Stop();
-                        activeTrail = false;
+                        ScanCollider.SetActive(false);
+                        ScanFlare.SetActive(false);
+                        PFCollider.SetActive(false);
+                        gameObject.SetActive(false);
+                        myStatus = status.exploded;
                     }
-                    myStatus = status.missed;
-                    myRigidbody.drag = 0.1f;
-                    myRigidbody.angularDrag = 1.0f;
                 }
+                AddAerodynamics(15, GValue.Value);
+
+
+                time += Time.fixedDeltaTime;
             }
-            if (myStatus == status.missed)
-            { 
-                targetDetected = false;
-                if (PFCollider.activeSelf)
-                {
-                    ScanCollider.SetActive(false);
-                    ScanFlare.SetActive(false);
-                    PFCollider.SetActive(false);
-                }
-            
-                if (myRigidbody.position.y > 20)
-                {
-                    myTransform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(-180, 0, 0), 0.001f);
-                }
-            }
-            if(myStatus == status.missed || myStatus == status.exploded)
+
+            if(myStatus == status.exploded)
             {
                 if (!effectDestroyed)
                 {
                     Destroy(TrailSmoke, 3);
                     Destroy(TrailFlame, 3);
                     effectDestroyed = true;
+                }
+                if (PFCollider.activeSelf)
+                {
+                    ScanCollider.SetActive(false);
+                    ScanFlare.SetActive(false);
+                    PFCollider.SetActive(false);
                 }
             }
         }
