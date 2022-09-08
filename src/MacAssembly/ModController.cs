@@ -172,7 +172,7 @@ namespace ModernAirCombat
 
         private void OnGUI()
         {
-            GUI.Box(new Rect(100, 200, 200, 50), Restriction.ToString());
+            //GUI.Box(new Rect(100, 200, 200, 50), Restriction.ToString());
 
             if (StatMaster.isMP && !StatMaster.isClient && !windowHidden && !StatMaster.hudHidden)
             {

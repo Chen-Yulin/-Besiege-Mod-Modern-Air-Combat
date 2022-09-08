@@ -247,6 +247,7 @@ namespace ModernAirCombat
         public MSlider detectDelay;
         public MSlider launchDelay;
         public MSlider PFRang;
+        public MSlider GValue;
         public MMenu modelType;
 
 
@@ -321,6 +322,16 @@ namespace ModernAirCombat
             }, false);
         }
 
+        protected void AddAerodynamics(float airDrag, float GValue)
+        {
+            Vector3 tmp = Vector3.Cross(Vector3.Cross(myRigidbody.velocity, myTransform.up), myTransform.up);
+            Vector3 force = new Vector3(tmp.x, tmp.y, tmp.z) * 17;
+            if (force.magnitude > GValue)
+            {
+                force = force.normalized * GValue * 10;
+            }
+            myRigidbody.AddForce(force, ForceMode.Force);
+        }
 
         public void AxisLookAt(Transform tr_self, Vector3 lookPos, Vector3 directionAxis, float speed)
         {
@@ -609,6 +620,7 @@ namespace ModernAirCombat
             detectDelay = AddSlider("Safety delay", "detection delay", 0.2f, 0.0f, 1f);
             launchDelay = AddSlider("Launch delay", "launch delay", 0.1f, 0.0f, 0.3f);
             PFRang = AddSlider("Proximity fuse range", "PF range", 5f, 1f, 10f);
+            GValue = AddSlider("Maximum G-value", "Maximum G-value", 10f, 30f, 70f);
 
             initScan();//挂载上导弹前方的圆锥触发器
             initTrail();

@@ -16,11 +16,7 @@ namespace ModernAirCombat
 
         
         protected float thrustTime = 3f;
-        protected void AddAerodynamics()
-        {
-            Vector3 tmp = Vector3.Cross(Vector3.Cross(myRigidbody.velocity, myTransform.up), myTransform.up);
-            myRigidbody.AddForce(new Vector3(tmp.x,tmp.y,tmp.z)*17,ForceMode.Force);
-        }
+
         protected bool PassiveGetAim()
         {
             
@@ -48,17 +44,18 @@ namespace ModernAirCombat
                 Vector3 positionDiff = predictPosition - (transform.position + Rigidbody.velocity * estimatedTime);
                 //Debug.Log(positionDiff);
                 Vector3 modifiedDiff;
+                float overshootMultiplier = 50 / GValue.Value;
                 if (positionDiff.magnitude < 200)
                 {
-                    modifiedDiff.x = (0.6f * positionDiff.x);
-                    modifiedDiff.y = (0.6f * positionDiff.y);
-                    modifiedDiff.z = (0.6f * positionDiff.z);
+                    modifiedDiff.x = (overshootMultiplier * positionDiff.x);
+                    modifiedDiff.y = (overshootMultiplier * positionDiff.y);
+                    modifiedDiff.z = (overshootMultiplier * positionDiff.z);
                 }
                 else
                 {
-                    modifiedDiff.x = (0.2f * positionDiff.x);
-                    modifiedDiff.y = (0.2f * positionDiff.y);
-                    modifiedDiff.z = (0.2f * positionDiff.z);
+                    modifiedDiff.x = (overshootMultiplier*0.3f * positionDiff.x);
+                    modifiedDiff.y = (overshootMultiplier*0.3f * positionDiff.y);
+                    modifiedDiff.z = (overshootMultiplier*0.3f * positionDiff.z);
                 }
 
                 predictPositionModified = predictPosition + modifiedDiff + Vector3.up * (targetPosition - transform.position).magnitude * 0.05f;
@@ -176,7 +173,7 @@ namespace ModernAirCombat
                             Destroy(LaunchSoundEffect, 3.5f);
                         }
                         myRigidbody.AddRelativeForce(new Vector3(0, 4200, 0), ForceMode.Force);
-                        AddAerodynamics();
+                        AddAerodynamics(17,GValue.Value);
                     }
                     if(time > thrustTime+launchDelay.Value)//deactive trail effect and destroy it after sometime
                     {
@@ -194,7 +191,7 @@ namespace ModernAirCombat
                             Destroy(TrailFlame, 3);
                             effectDestroyed = true;
                         }
-                        AddAerodynamics();
+                        AddAerodynamics(17,GValue.Value);
                     }
 
                     //judge whether the missle start to track enemy (passive or active) and active PF
@@ -221,7 +218,7 @@ namespace ModernAirCombat
 
                             if (PassiveGetAim())
                             {
-                                AxisLookAt(myTransform, predictPositionModified, Vector3.up, 0.02f);
+                                AxisLookAt(myTransform, predictPositionModified, Vector3.up, 0.01f);
                             }
                             
 
@@ -247,7 +244,7 @@ namespace ModernAirCombat
                                 GetAim();
                                 if (targetDetected)
                                 {
-                                    AxisLookAt(myTransform, predictPositionModified, Vector3.up, 0.04f);
+                                    AxisLookAt(myTransform, predictPositionModified, Vector3.up, 0.03f);
                                 }
                             }
                             
