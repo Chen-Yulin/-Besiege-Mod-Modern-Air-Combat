@@ -36,8 +36,6 @@ namespace ModernAirCombat
         public bool RestrictionGUI = false;
         public bool Restriction = false;
 
-        public GameObject BoundaryBottom;
-
         public static MessageType ClientRestrictionMsg = ModNetworking.CreateMessageType(DataType.Boolean);
 
         private void Awake()
@@ -166,6 +164,7 @@ namespace ModernAirCombat
         {
             //BoundaryOff = GUILayout.Toggle(BoundaryOff, "Turn Off Boundary");
             RestrictionGUI = GUILayout.Toggle(RestrictionGUI, "Turn On Missile Restriction");
+            GUILayout.Label("Press Ctrl+M to hide");
             GUI.DragWindow();
 
         }

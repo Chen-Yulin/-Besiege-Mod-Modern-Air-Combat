@@ -15,8 +15,7 @@ namespace ModernAirCombat
     {
 
         
-        protected float thrustTime = 3f;
-
+        
         protected bool PassiveGetAim()
         {
             
@@ -76,6 +75,53 @@ namespace ModernAirCombat
             }, false);
         }
 
+
+        public override void SafeAwake()
+        {
+            InitModelType();
+            gameObject.name = "missle";
+            Launch = AddKey("Launch", "launch", KeyCode.X);
+            //IFF = AddToggle("开启友伤", "IFF", true);
+            //showScanner = AddToggle("显示探测范围", "showScanner", false);
+            //detectAngleSlider = AddSlider("探测角度", "detection angle", 90.0f, 60.0f, 120.0f);
+            detectDelay = AddSlider("Safety delay", "detection delay", 0.2f, 0.0f, 1f);
+            launchDelay = AddSlider("Launch delay", "launch delay", 0.1f, 0.0f, 0.3f);
+            PFRang = AddSlider("Proximity fuse range", "PF range", 5f, 1f, 10f);
+            GValue = AddSlider("Maximum G-value", "Maximum G-value", 30f, 10f, 70f);
+            thrust = AddSlider("Thrust", "Thrust", 2000, 1500, 2500);
+            thrustTime = AddSlider("Thrust Duration","Thrust Duration", defaultValue: 5f, min: 3f, max: 20f);
+
+            initScan();//挂载上导弹前方的圆锥触发器
+            initTrail();
+            //initExplo();
+            initPF();
+            InitSoundEffect();
+
+            AimIcon = ModResource.GetTexture("Aim Icon").Texture;
+            myPlayerID = BlockBehaviour.ParentMachine.PlayerID;
+        }
+        protected new void Update()
+        {
+            if (currSkinStatus != OptionsMaster.skinsEnabled)
+            {
+                BlockBehaviour.transform.FindChild("Vis").GetComponent<MeshFilter>().sharedMesh = ModResource.GetMesh(modelType.Selection + " Mesh").Mesh;
+                BlockBehaviour.transform.FindChild("Vis").GetComponent<MeshRenderer>().material.SetTexture("_MainTex", ModResource.GetTexture(modelType.Selection + " Texture").Texture);
+                currModelType = modelType.Value;
+                currSkinStatus = OptionsMaster.skinsEnabled;
+            }
+            if (ModController.Instance.Restriction)
+            {
+                thrustModified = 2000f;
+                thrustTimeModified = 5f;
+                GModified = 30f;
+            }
+            else
+            {
+                thrustModified = thrust.Value;
+                thrustTimeModified = thrustTime.Value;
+                GModified = GValue.Value;
+            }
+        }
         public override void SimulateFixedUpdateClient()
         {
             try
@@ -89,9 +135,9 @@ namespace ModernAirCombat
             
             if (myStatus == status.launched || myStatus == status.active)
             {
-                if (time < thrustTime * 4 + launchDelay.Value)
+                if (time < thrustTimeModified * 4 + launchDelay.Value)
                 {
-                    if (time > launchDelay.Value && time < thrustTime + launchDelay.Value)//play trail partical and add trust after launch delay 
+                    if (time > launchDelay.Value && time < thrustTimeModified + launchDelay.Value)//play trail partical and add trust after launch delay 
                     {
                         if (activeTrail == false)
                         {
@@ -101,10 +147,10 @@ namespace ModernAirCombat
                             GameObject LaunchSoundEffect = (GameObject)Instantiate(LaunchSound, transform, false);
                             LaunchSoundEffect.SetActive(true);
                             LaunchSoundEffect.GetComponent<AudioSource>().Play();
-                            Destroy(LaunchSoundEffect, 3.5f);
+                            Destroy(LaunchSoundEffect, thrustTimeModified);
                         }
                     }
-                    if (time > thrustTime + launchDelay.Value)//deactive trail effect and destroy it after sometime
+                    if (time > thrustTimeModified + launchDelay.Value)//deactive trail effect and destroy it after sometime
                     {
                         if (activeTrail == true)
                         {
@@ -157,29 +203,29 @@ namespace ModernAirCombat
 
 
                 
-                if (time < thrustTime*4 + launchDelay.Value)
+                if (time < thrustTimeModified*4 + launchDelay.Value)
                 {
-                    if (time > launchDelay.Value && time < thrustTime + launchDelay.Value)//play trail partical and add trust after launch delay 
+                    if (time > launchDelay.Value && time < thrustTimeModified + launchDelay.Value)//play trail partical and add trust after launch delay 
                     {
                         if (activeTrail == false)
                         {
-                            myRigidbody.drag = 1f;
+                            myRigidbody.drag = 0.5f;
                             TrailSmokeParticle.Play();
                             TrailFlameParticle.Play();
                             activeTrail = true;
                             GameObject LaunchSoundEffect = (GameObject)Instantiate(LaunchSound, transform, false);
                             LaunchSoundEffect.SetActive(true);
                             LaunchSoundEffect.GetComponent<AudioSource>().Play();
-                            Destroy(LaunchSoundEffect, 3.5f);
+                            Destroy(LaunchSoundEffect, thrustTimeModified);
                         }
-                        myRigidbody.AddRelativeForce(new Vector3(0, 4200, 0), ForceMode.Force);
-                        AddAerodynamics(17,GValue.Value);
+                        myRigidbody.AddRelativeForce(new Vector3(0, thrustModified, 0), ForceMode.Force);
+                        AddAerodynamics(17,GModified);
                     }
-                    if(time > thrustTime+launchDelay.Value)//deactive trail effect and destroy it after sometime
+                    if(time > thrustTimeModified+launchDelay.Value)//deactive trail effect and destroy it after sometime
                     {
                         if (activeTrail == true)
                         {
-                            myRigidbody.drag = 0.05f;
+                            myRigidbody.drag = 0.03f;
                             TrailSmokeParticle.Stop();
                             TrailFlameParticle.Stop();
                             activeTrail = false;
@@ -191,7 +237,7 @@ namespace ModernAirCombat
                             Destroy(TrailFlame, 3);
                             effectDestroyed = true;
                         }
-                        AddAerodynamics(17,GValue.Value);
+                        AddAerodynamics(17,GModified);
                     }
 
                     //judge whether the missle start to track enemy (passive or active) and active PF
@@ -266,11 +312,7 @@ namespace ModernAirCombat
 
         void OnGUI()
         {
-            //if (myStatus == status.launched)
-            //{
-            //GUI.Box(new Rect(100, 300, 200, 50), time.ToString());
-            //GUI.Box(new Rect(100, 200, 400, 50), myPlayerID.ToString() + MissleExploMessageReciver.Instance.GetExploMsg(myGuid, myPlayerID).ToString());
-            //}
+        
         }
     }
 }

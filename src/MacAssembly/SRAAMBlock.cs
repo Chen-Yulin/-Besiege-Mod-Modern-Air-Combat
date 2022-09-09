@@ -249,6 +249,13 @@ namespace ModernAirCombat
         public MSlider PFRang;
         public MSlider GValue;
         public MMenu modelType;
+        public MSlider thrustTime;
+        public MSlider thrust;
+
+        public float GModified = 30f;
+        public float thrustTimeModified = 3.5f;
+        public float thrustModified = 650f;
+
 
 
         public enum status { stored, launched, active, exploded };
@@ -476,7 +483,7 @@ namespace ModernAirCombat
             GameObject ExploSoundEffect = (GameObject)Instantiate(ExploSound, transform, false);
             ExploSoundEffect.SetActive(true);
             ExploSoundEffect.GetComponent<AudioSource>().Play();
-            Destroy(ExploSoundEffect, 3.5f);
+            Destroy(ExploSoundEffect, thrustTimeModified);
 
 
             GameObject ExploParticleEffect = (GameObject)Instantiate(AssetManager.Instance.Explo.Explo, transform.position, transform.rotation);
@@ -621,7 +628,9 @@ namespace ModernAirCombat
             detectDelay = AddSlider("Safety delay", "detection delay", 0.2f, 0.0f, 1f);
             launchDelay = AddSlider("Launch delay", "launch delay", 0.1f, 0.0f, 0.3f);
             PFRang = AddSlider("Proximity fuse range", "PF range", 5f, 1f, 10f);
-            GValue = AddSlider("Maximum G-value", "Maximum G-value", 10f, 30f, 70f);
+            GValue = AddSlider("Maximum G-value", "Maximum G-value", 30f, 10f, 70f);
+            thrust = AddSlider("Thrust", "Thrust", 650, 500, 800);
+            thrustTime = AddSlider("Thrust Duration","Thrust Duration", defaultValue: 3.5f, min: 2f, max: 10f);
 
             initScan();//挂载上导弹前方的圆锥触发器
             initTrail();
@@ -673,6 +682,18 @@ namespace ModernAirCombat
                 currModelType = modelType.Value;
                 currSkinStatus = OptionsMaster.skinsEnabled;
             }
+            if (ModController.Instance.Restriction)
+            {
+                thrustModified = 650f;
+                thrustTimeModified = 3.5f;
+                GModified = 30f;
+            }
+            else
+            {
+                thrustModified = thrust.Value;
+                thrustTimeModified = thrustTime.Value;
+                GModified = GValue.Value;
+            }
         }
 
         public override void OnSimulateStart()
@@ -699,6 +720,7 @@ namespace ModernAirCombat
 
         public override void SimulateUpdateHost()
         {
+            
             
             try
             {
@@ -743,7 +765,7 @@ namespace ModernAirCombat
             if (myStatus == status.launched)
             {
 
-                if (time < 3.5f + launchDelay.Value)
+                if (time < thrustTimeModified *4 + launchDelay.Value)
                 {
                     if (time > launchDelay.Value)
                     {
@@ -755,7 +777,7 @@ namespace ModernAirCombat
                             GameObject LaunchSoundEffect = (GameObject)Instantiate(LaunchSound, transform, false);
                             LaunchSoundEffect.SetActive(true);
                             LaunchSoundEffect.GetComponent<AudioSource>().Play();
-                            Destroy(LaunchSoundEffect, 3.5f);
+                            Destroy(LaunchSoundEffect, thrustTimeModified);
                         }
 
                     }
@@ -770,18 +792,24 @@ namespace ModernAirCombat
                             //Debug.Log("ClientExplo");
                             playExploEffect();
                         }
+                        if (time>thrustTimeModified)
+                        {
+                            if (activeTrail == true)
+                            {
+                                TrailSmokeParticle.Stop();
+                                TrailFlameParticle.Stop();
+                                activeTrail = false;
+                            }
+                        }
                     }
                 }
                 else
                 {
-                    if (activeTrail == true)
-                    {
-                        TrailSmokeParticle.Stop();
-                        TrailFlameParticle.Stop();
-                        activeTrail = false;
-                    }
+                    gameObject.SetActive(false);
+                    myStatus = status.exploded;
+
                 }
-                time += Time.fixedDeltaTime;
+               time += Time.fixedDeltaTime;
             }
             if (myStatus == status.exploded)
             {
@@ -819,9 +847,9 @@ namespace ModernAirCombat
                 }
                 
                 // when within work time
-                if (time < 3.5f*4 + launchDelay.Value)
+                if (time < thrustTimeModified*4 + launchDelay.Value)
                 {
-                    if (time > launchDelay.Value)
+                    if (time > launchDelay.Value && time < launchDelay.Value+thrustTimeModified)
                     {
                         // init launch
                         if(activeTrail == false)
@@ -833,13 +861,13 @@ namespace ModernAirCombat
                             GameObject LaunchSoundEffect = (GameObject)Instantiate(LaunchSound, transform, false);
                             LaunchSoundEffect.SetActive(true);
                             LaunchSoundEffect.GetComponent<AudioSource>().Play();
-                            Destroy(LaunchSoundEffect, 3.5f);
+                            Destroy(LaunchSoundEffect, thrustTimeModified);
                             myRigidbody.drag = 0.5f;
 
                         }
                         
                         // add thrust
-                        myRigidbody.AddRelativeForce(new Vector3(0, 650, 0), ForceMode.Force);
+                        myRigidbody.AddRelativeForce(new Vector3(0, thrustModified, 0), ForceMode.Force);
                     }
 
                     // when within safety time
@@ -850,7 +878,7 @@ namespace ModernAirCombat
                     else // after safety unlock
                     {
                         // thrust over
-                        if (activeTrail == true && time > 3.5f+launchDelay.Value)
+                        if (activeTrail == true && time > thrustTimeModified+launchDelay.Value)
                         {
                             TrailSmokeParticle.Stop();
                             TrailFlameParticle.Stop();
@@ -891,7 +919,10 @@ namespace ModernAirCombat
                         myStatus = status.exploded;
                     }
                 }
-                AddAerodynamics(15, GValue.Value);
+                if (time > launchDelay.Value+detectDelay.Value)
+                {
+                    AddAerodynamics(15, GModified);
+                }
 
 
                 time += Time.fixedDeltaTime;
@@ -916,6 +947,7 @@ namespace ModernAirCombat
 
         void OnGUI()
         {
+            //GUI.Box(new Rect(100, 200, 200, 50), ModController.Instance.Restriction.ToString());
 
         }
         
