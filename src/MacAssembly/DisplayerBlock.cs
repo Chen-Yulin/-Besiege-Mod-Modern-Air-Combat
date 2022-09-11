@@ -811,7 +811,7 @@ namespace ModernAirCombat
                 //modify ScanLineController
                 SLController.angleLeft = leftScanAngle;
                 SLController.angleRight = rightScanAngle;
-
+                
                 //key 
                 {
                     //judge whether the key for adjusting Scan angle is pressed

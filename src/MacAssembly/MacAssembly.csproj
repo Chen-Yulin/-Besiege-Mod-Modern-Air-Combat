@@ -66,6 +66,7 @@
     <Compile Include="RadarBlock.cs" />
     <Compile Include="RWRBlock.cs" />
     <Compile Include="SRAAMBlock.cs" />
+    <Compile Include="StickBlock.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
