@@ -40,6 +40,7 @@ namespace ModernAirCombat
         public MSlider returnSpeed;
         public MSlider deadZone;
         public MToggle DisplayAxis;
+        public MToggle ToggleMode;
 
         public List<SteeringWheel> leftBlock;
         public List<SteeringWheel> rightBlock;
@@ -137,6 +138,7 @@ namespace ModernAirCombat
             rightKey = AddKey("Right Binding Key", "Right Binding Key", KeyCode.D);
             upKey = AddKey("Up Binding Key", "Up Binding Key", KeyCode.W);
             downKey = AddKey("Down Binding Key", "Down Binding Key", KeyCode.S);
+            ToggleMode = AddToggle("Toggle Mode", "Toggle Mode", false);
             DisplayAxis = AddToggle("Display Axises", "Display Axises", true);
             sensitivity = AddSlider("Senitivity", "Sensitivity", 1f, 0.1f, 10f);
             returnSpeed = AddSlider("Return Speed", "Return Speed", 1f, 0f, 3f);
@@ -193,12 +195,25 @@ namespace ModernAirCombat
         {
             if (IsSimulating)
             {
-                if (startKey.IsPressed)
-                {
-                    initialPostion = Input.mousePosition;
-                }
 
-                StickOn = startKey.IsHeld;
+
+                if (ToggleMode.IsActive)
+                {
+                    if (startKey.IsPressed)
+                    {
+                        initialPostion = Input.mousePosition;
+                        StickOn = !StickOn;
+                    }
+                }
+                else
+                {
+                    if (startKey.IsPressed)
+                    {
+                        initialPostion = Input.mousePosition;
+                    }
+                    StickOn = startKey.IsHeld;
+                }
+                
 
 
                 if (StickOn)

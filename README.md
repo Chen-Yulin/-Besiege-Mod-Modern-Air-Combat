@@ -12,7 +12,7 @@ This mod concentrates on simulating modern air combat in Besiege, with a balance
 - Flare launcher, releases flare disruptor, can distract missles coming to attack.
 - Machine gun.
 - HUD, displays some basic flight information and when locking a target, provides a circle to assist aiming the gun.
-
+- Stick, enable mouse control.
 ## More
 This mod is my maiden work, so lots of bugs are expected. I would appreciate it a lot if you can contact me through e-mail(chenyulin@sjtu.edu.cn) and report bugs or suggestions.
 

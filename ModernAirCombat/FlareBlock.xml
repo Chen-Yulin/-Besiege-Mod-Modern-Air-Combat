@@ -27,9 +27,9 @@
 		<!-- TODO: Insert Collider definitions here.
 			 Examples: -->
 		<BoxCollider>
-			<Position x="0.0" y="0.0" z="0.05" />
+			<Position x="0.0" y="0.0" z="0.06" />
 			<Rotation x="0.0" y="0.0" z="0.0" />
-			<Scale x="1" y="0.5" z="0.1" />
+			<Scale x="1" y="0.5" z="0.08" />
 		</BoxCollider>
 	</Colliders>
 	

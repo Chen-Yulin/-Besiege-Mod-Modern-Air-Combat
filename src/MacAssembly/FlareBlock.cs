@@ -78,6 +78,7 @@ namespace ModernAirCombat
         public MMenu launchedType;
         public MKey ReleaseKey;
         public MSlider ReleaseInterval;
+        public MSlider GroupSize;
 
         public GameObject FlareObject;
         public GameObject FlareFlame;
@@ -198,6 +199,7 @@ namespace ModernAirCombat
             }, false);
             ReleaseKey = AddKey("Launch", "Launch Flare", KeyCode.C);
             ReleaseInterval = AddSlider("Release Interval", "release interval", 0.2f, 0.05f, 0.5f);
+            GroupSize = AddSlider("Group Size", "Group Size", 1f, 1f, 8f);
             InitFlare();
             InitChaff();
 
@@ -231,7 +233,11 @@ namespace ModernAirCombat
                 time += Time.deltaTime;
                 if (time > ReleaseInterval.Value)
                 {
-                    Release(BlockBehaviour.Rigidbody.velocity);
+                    for (int i = 0; i < GroupSize.Value; i++)
+                    {
+                        Release(BlockBehaviour.Rigidbody.velocity);
+                    }
+
                     time = 0f;
                 }
             }
@@ -255,7 +261,10 @@ namespace ModernAirCombat
                     time += Time.deltaTime;
                     if (time > ReleaseInterval.Value)
                     {
-                        Release(HostVelocity);
+                        for (int i = 0; i < GroupSize.Value; i++)
+                        {
+                            Release(HostVelocity);
+                        }
                         time = 0f;
                     }
                 }
