@@ -170,9 +170,9 @@ namespace ModernAirCombat
                 {
                     return;
                 }
-                if (col.gameObject.name == "flare(Clone)")
+                if (col.gameObject.name == "flare")
                 {
-                    Debug.Log("find");
+                    //Debug.Log("find");
                     if (UnityEngine.Random.value > 0.5f)
                     {
                         FlareCols.Push(col);
@@ -217,9 +217,9 @@ namespace ModernAirCombat
                 }
                 catch { }
                 
-                if (col.name == "flareCol")
+                if (col.name == "flare")
                 {
-                    if (UnityEngine.Random.value > 0.5f)
+                    if (UnityEngine.Random.value > 0.8f)
                     {
                         explo = true;
                     }
@@ -290,6 +290,8 @@ namespace ModernAirCombat
 
         public float ExploPower = 100000f;
         public float ExploRadius = 15f;
+
+        public Vector3 StarePosition = Vector3.zero;
 
         public static MessageType MissleExplo = ModNetworking.CreateMessageType(DataType.Integer, DataType.Integer, DataType.Boolean);
 
@@ -560,7 +562,7 @@ namespace ModernAirCombat
 
                     //judge whether use flare's collider or real target's collider
                     Collider targetCol;
-                    if (UnityEngine.Random.value < 0.5f && flareHit.FlareCols.Count == 2)
+                    if (UnityEngine.Random.value < 0.2f && flareHit.FlareCols.Count == 2)
                     {
                         targetCol = flareHit.FlareCols.Peek();
                         Debug.Log("distracted");
@@ -589,6 +591,27 @@ namespace ModernAirCombat
                     ScanFlare.SetActive(false);
                     coneHit.Reset();
                     flareHit.Reset();
+
+
+                    // modify StarePosition
+                    if (targetDetected)
+                    {
+                        StarePosition = targetPosition + 0.01f * targetVelocity;
+                        if (Vector3.Angle(StarePosition-transform.position,transform.up) < 75)
+                        {
+                            targetDetected = true;
+                            
+                        }
+                        else
+                        {
+                            targetDetected = false;
+                            StarePosition = Vector3.zero;
+                        }
+                    }
+                    else
+                    {
+                        StarePosition = Vector3.zero;
+                    }
                 }
                 Vector3 positionDiff = predictPosition - (transform.position + Rigidbody.velocity * estimatedTime);
                 //Debug.Log(positionDiff);
@@ -609,9 +632,21 @@ namespace ModernAirCombat
                 predictPositionModified = predictPosition + modifiedDiff;
 
 
+                //modify the positio of ScanCollider
+                if (targetDetected)
+                {
+                    ScanCollider.transform.position = StarePosition;
+                    ScanCollider.transform.localScale = new Vector3(30, 30, 30);
 
-                //PredictionRigid.transform.position = predictPosition;
-                //Debug.Log(predictPosition);
+                    ScanFlare.transform.position = StarePosition;
+                }
+                else
+                {
+                    ScanCollider.transform.localPosition = new Vector3(0f, 650f, 0.3f);
+                    ScanCollider.transform.localScale = new Vector3(550, 550, 550);
+
+                    ScanFlare.transform.localPosition = new Vector3(0f, 25f, 0.3f);
+                }
             }
             catch { }
         }
@@ -662,7 +697,6 @@ namespace ModernAirCombat
 
             myRigidbody.drag = 0f;
             myRigidbody.angularDrag = 0f;
-
 
             Vector3 ScanColScale = new Vector3(550,550,550);
             ScanCollider.transform.localScale = ScanColScale;

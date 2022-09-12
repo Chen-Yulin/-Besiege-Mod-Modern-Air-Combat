@@ -1,10 +1,8 @@
 x kill air wall
 
-+ add motion controller to Hub Block
-
-+ add grouping funciton to flare launcher
-
 + add virtual key
+
++ add smoke block
 
 + RWR radius
 
