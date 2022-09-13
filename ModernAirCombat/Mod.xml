@@ -9,11 +9,11 @@
 	<Name>ModernAirCombat</Name>
 	<Author>Chen, Yulin</Author> <!-- FIX: Insert your name here. -->
 	<!-- Major.Minor.Build -->
-	<Version>0.5.2</Version>
+	<Version>0.6.0</Version>
 	
 	<Description>
 	A mod for simulating modern air combat in besiege. 
-	Version 0.5.2
+	Version 0.6.0
 	</Description>
 	<Icon name="icon"/>
 	<Debug>false</Debug>
@@ -37,6 +37,7 @@
 		<Block path="MachineGun.xml" />
 		<Block path="HUD.xml" />
 		<Block path="Stick.xml" />
+		<Block path="SmokePol.xml" />
 	</Blocks>
 	
 	<!-- Any entities (level objects) your mod adds to the game.
@@ -122,6 +123,9 @@
 		<Texture name="Stick Texture" path="Stick\stick.png"/>
 		<Texture name="Cross Texture" path="Stick\cross.png"/>
 		<Texture name="DeadZone Texture" path="Stick\deadZone.png"/>
+		<AssetBundle name="Perform Effect" path="performsmoke.ab"/>
+		<Mesh name="SmokePol Mesh" path="SmokePol\SmokePol.obj"/>
+		<Texture name="SmokePol Texture" path="SmokePol\SmokePol.png"/>
 
 		<!--  for different appearance options
 		-->

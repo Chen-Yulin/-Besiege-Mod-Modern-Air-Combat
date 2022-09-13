@@ -733,10 +733,15 @@ namespace ModernAirCombat
         public override void OnSimulateStart()
         {
             myGuid = BlockBehaviour.BuildingBlock.Guid.GetHashCode();
-            if (!StatMaster.isClient)
+            try
             {
-                KeymsgController.Instance.keyheld[myPlayerID].Add(myGuid, false);
+                if (StatMaster.isClient)
+                {
+                    KeymsgController.Instance.keyheld[myPlayerID].Add(myGuid, false);
+                }
             }
+            catch { }
+
             
 
 
@@ -749,6 +754,7 @@ namespace ModernAirCombat
 
         public override void OnSimulateStop()
         {
+
             KeymsgController.Instance.keyheld[myPlayerID].Remove(myGuid);
         }
 
@@ -796,6 +802,8 @@ namespace ModernAirCombat
                 }
             }
             catch { }
+
+
             if (myStatus == status.launched)
             {
 

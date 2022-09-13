@@ -1,0 +1,45 @@
+<Block>
+
+	<Debug>false</Debug>
+
+	<ID>10</ID>
+
+	<Name>SmokePol</Name>
+
+	<Mass>0.3</Mass>
+
+	<Script>ModernAirCombat.SmokePolBlock</Script>
+
+	
+	<Mesh name="SmokePol Mesh"> 
+		<Position x="0.0" y="0.0" z="0.0" />
+		<Rotation x="-90" y="0" z="0" />
+		<Scale x="1" y="1" z="1" />
+	</Mesh>
+	
+	<Texture name="SmokePol Texture" /> <!-- Must be defined as a resource in the manifest. -->
+	
+	<Icon>
+		<Position x="0.0" y="0.1" z="-1.0" />
+		<Rotation x="45.0" y="-45.0" z="45.0" />
+		<Scale x="0.5" y="0.5" z="0.5" />
+	</Icon>
+	
+	<Colliders>
+		<BoxCollider>
+			<Position x="0.0" y="0.0" z="0.17" />
+			<Rotation x="0.0" y="0.0" z="0.0" />
+			<Scale x="0.2" y="1.5" z="0.2" />
+		</BoxCollider>
+	</Colliders>
+	
+	<BasePoint hasAddingPoint="false">
+		<Stickiness enabled="true" radius="0.3" />
+		<!-- Can only have motion if sticky -->
+		<Motion x="false" y="false" z="false" /> <!-- Optional -->
+	</BasePoint>
+	
+	<AddingPoints>
+
+	</AddingPoints>
+</Block>

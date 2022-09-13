@@ -89,6 +89,18 @@ namespace ModernAirCombat
         }
     }
 
+    public class Asset_PerformSmoke
+    {
+        public GameObject PerformSmoke;
+        
+        public Asset_PerformSmoke(ModAssetBundle modAssetBundle)
+        {
+            PerformSmoke = modAssetBundle.LoadAsset<GameObject>("PerformSmoke");
+            PerformSmoke.AddComponent<DestroyIfEditMode>();
+            PerformSmoke.SetActive(false);
+        }
+    }
+
     public class AssetManager : SingleInstance<AssetManager>
     {
         public override string Name { get; } = "Asset Manager";
@@ -100,6 +112,8 @@ namespace ModernAirCombat
         public Asset_GunFire GunFire { get; protected set; }
         public Asset_BulletExplo BulletExplo { get; protected set; }
 
+        public Asset_PerformSmoke PerformSmoke { get; protected set; }
+
 
 
         protected void Awake()
@@ -110,7 +124,7 @@ namespace ModernAirCombat
             Chaff = new Asset_Chaff(ModResource.GetAssetBundle("Chaff Effect"));
             GunFire = new Asset_GunFire(ModResource.GetAssetBundle("Gun Effect"));
             BulletExplo = new Asset_BulletExplo(ModResource.GetAssetBundle("Gun Effect"));
-
+            PerformSmoke = new Asset_PerformSmoke(ModResource.GetAssetBundle("Perform Effect"));
         }
     }
 }
