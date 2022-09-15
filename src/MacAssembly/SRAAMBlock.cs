@@ -421,7 +421,7 @@ namespace ModernAirCombat
                 ScanFlare.transform.SetParent(BlockBehaviour.transform);
                 ScanFlare.transform.localPosition = new Vector3(0f, 25f, 0.3f);
                 ScanFlare.transform.localRotation = Quaternion.Euler(90, 0, 0);
-                ScanFlare.transform.localScale = new Vector3(35,35,35);
+                ScanFlare.transform.localScale = new Vector3(25,25,25);
                 SphereCollider ScanFlareCol = ScanFlare.AddComponent<SphereCollider>();
                 ScanFlareCol.radius = 1;
                 ScanFlareCol.isTrigger = true;
@@ -636,9 +636,9 @@ namespace ModernAirCombat
                 if (targetDetected)
                 {
                     ScanCollider.transform.position = StarePosition;
-                    ScanCollider.transform.localScale = new Vector3(30, 30, 30);
+                    ScanCollider.transform.localScale = new Vector3(25, 25, 25);
 
-                    ScanFlare.transform.position = StarePosition;
+                    ScanFlare.transform.position = StarePosition + (transform.position - StarePosition).normalized * 20;
                 }
                 else
                 {
@@ -673,7 +673,7 @@ namespace ModernAirCombat
             initPF();
             InitSoundEffect();
 
-            AimIcon = ModResource.GetTexture("Aim Icon").Texture;
+            //AimIcon = ModResource.GetTexture("Aim Icon").Texture;
             myPlayerID = BlockBehaviour.ParentMachine.PlayerID;
         }
 

@@ -2,7 +2,5 @@ x kill air wall
 
 + add virtual key
 
-+ add smoke block
-
 + RWR radius
 
