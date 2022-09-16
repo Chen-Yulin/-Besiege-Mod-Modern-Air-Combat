@@ -1,5 +1,7 @@
 x kill air wall
 
++ rwr icon optimization
+
 + add virtual key
 
 + RWR radius

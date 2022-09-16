@@ -42,10 +42,10 @@ namespace ModernAirCombat
         public MToggle DisplayAxis;
         public MToggle ToggleMode;
 
-        public List<SteeringWheel> leftBlock;
-        public List<SteeringWheel> rightBlock;
-        public List<SteeringWheel> upBlock;
-        public List<SteeringWheel> downBlock;
+        public List<SteeringWheel> leftBlock = new List<SteeringWheel>();
+        public List<SteeringWheel> rightBlock = new List<SteeringWheel>();
+        public List<SteeringWheel> upBlock = new List<SteeringWheel>();
+        public List<SteeringWheel> downBlock = new List<SteeringWheel>();
 
         public int myPlayerID;
 

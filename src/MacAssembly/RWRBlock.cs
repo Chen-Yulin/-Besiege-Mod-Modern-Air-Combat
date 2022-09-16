@@ -49,6 +49,8 @@ namespace ModernAirCombat
         public AudioSource BeepAS;
         public GameObject[] Icon;
 
+        
+
         IEnumerator sendData;
 
         public int myPlayerID;
@@ -102,119 +104,115 @@ namespace ModernAirCombat
         {
             if (!transform.FindChild("RWR Icon"))
             {
-                TextMesh text;
+                MeshFilter MF;
+                MeshRenderer MR;
+                Mesh PlaneMesh = ModResource.GetMesh("Plane Mesh").Mesh;
+                Texture SignalTexture = ModResource.GetTexture("RWRSignal Texture").Texture;
 
                 Icon = new GameObject[8];
                 Icon[0] = new GameObject("RWR Icon");
                 Icon[0].transform.SetParent(transform);
-                Icon[0].transform.localPosition = new Vector3(0.00f, 0.06f, 0.04f);
-                Icon[0].transform.localRotation = Quaternion.Euler(0, 0, 270);
-                Icon[0].transform.localScale = 0.03f*Vector3.one;
-                text = Icon[0].AddComponent<TextMesh>();
-                text.text = "((";
-                text.color = Color.green;
-                text.characterSize = 0.25f;
-                text.fontSize = 64;
-                text.fontStyle = FontStyle.Bold;
-                text.anchor = TextAnchor.MiddleCenter;
+                Icon[0].transform.localPosition = new Vector3(0, 0, 0.041f);
+                Icon[0].transform.localRotation = Quaternion.Euler(90, 0, 0);
+                Icon[0].transform.localScale = 0.07f*Vector3.one;
+                MF = Icon[0].AddComponent<MeshFilter>();
+                MF.mesh = PlaneMesh;
+                MR = Icon[0].AddComponent<MeshRenderer>();
+                MR.material = new Material(Shader.Find("Particles/Alpha Blended"));
+                MR.material.SetTexture("_MainTex", SignalTexture);
+                MR.material.SetColor("_TintColor", Color.green);
+
                 Icon[0].SetActive(false);
 
                 Icon[1] = new GameObject("RWR Icon");
                 Icon[1].transform.SetParent(transform);
-                Icon[1].transform.localPosition = new Vector3(-0.042f, 0.042f, 0.04f);
-                Icon[1].transform.localRotation = Quaternion.Euler(0, 0, 322);
-                Icon[1].transform.localScale = 0.03f * Vector3.one;
-                text = Icon[1].AddComponent<TextMesh>();
-                text.text = "((";
-                text.color = Color.green;
-                text.characterSize = 0.25f;
-                text.fontSize = 64;
-                text.fontStyle = FontStyle.Bold;
-                text.anchor = TextAnchor.MiddleCenter;
+                Icon[1].transform.localPosition = new Vector3(0, 0, 0.041f);
+                Icon[1].transform.localRotation = Quaternion.Euler(40, 90, 90);
+                Icon[1].transform.localScale = 0.07f * Vector3.one;
+                MF = Icon[1].AddComponent<MeshFilter>();
+                MF.mesh = PlaneMesh;
+                MR = Icon[1].AddComponent<MeshRenderer>();
+                MR.material = new Material(Shader.Find("Particles/Alpha Blended"));
+                MR.material.SetTexture("_MainTex", SignalTexture);
+                MR.material.SetColor("_TintColor", Color.green);
                 Icon[1].SetActive(false);
 
                 Icon[2] = new GameObject("RWR Icon");
                 Icon[2].transform.SetParent(transform);
-                Icon[2].transform.localPosition = new Vector3(-0.06f, 0.0f, 0.04f);
-                Icon[2].transform.localRotation = Quaternion.Euler(0, 0, 0);
-                Icon[2].transform.localScale = 0.03f * Vector3.one;
-                text = Icon[2].AddComponent<TextMesh>();
-                text.text = "((";
-                text.color = Color.green;
-                text.characterSize = 0.25f;
-                text.fontSize = 64;
-                text.fontStyle = FontStyle.Bold;
-                text.anchor = TextAnchor.MiddleCenter;
+                Icon[2].transform.localPosition = new Vector3(0, 0, 0.041f);
+                Icon[2].transform.localRotation = Quaternion.Euler(0, 90, 90);
+                Icon[2].transform.localScale = 0.07f * Vector3.one;
+                MF = Icon[2].AddComponent<MeshFilter>();
+                MF.mesh = PlaneMesh;
+                MR = Icon[2].AddComponent<MeshRenderer>();
+                MR.material = new Material(Shader.Find("Particles/Alpha Blended"));
+                MR.material.SetTexture("_MainTex", SignalTexture);
+                MR.material.SetColor("_TintColor", Color.green);
                 Icon[2].SetActive(false);
 
                 Icon[3] = new GameObject("RWR Icon");
                 Icon[3].transform.SetParent(transform);
-                Icon[3].transform.localPosition = new Vector3(-0.042f, -0.042f, 0.04f);
-                Icon[3].transform.localRotation = Quaternion.Euler(0, 0, 52);
-                Icon[3].transform.localScale = 0.03f * Vector3.one;
-                text = Icon[3].AddComponent<TextMesh>();
-                text.text = "((";
-                text.color = Color.green;
-                text.characterSize = 0.25f;
-                text.fontSize = 64;
-                text.fontStyle = FontStyle.Bold;
-                text.anchor = TextAnchor.MiddleCenter;
+                Icon[3].transform.localPosition = new Vector3(0, 0, 0.041f);
+                Icon[3].transform.localRotation = Quaternion.Euler(317, 90, 90);
+                Icon[3].transform.localScale = 0.07f * Vector3.one;
+                MF = Icon[3].AddComponent<MeshFilter>();
+                MF.mesh = PlaneMesh;
+                MR = Icon[3].AddComponent<MeshRenderer>();
+                MR.material = new Material(Shader.Find("Particles/Alpha Blended"));
+                MR.material.SetTexture("_MainTex", SignalTexture);
+                MR.material.SetColor("_TintColor", Color.green);
                 Icon[3].SetActive(false);
 
                 Icon[4] = new GameObject("RWR Icon");
                 Icon[4].transform.SetParent(transform);
-                Icon[4].transform.localPosition = new Vector3(0.0f, -0.06f, 0.04f);
-                Icon[4].transform.localRotation = Quaternion.Euler(0, 0, 90);
-                Icon[4].transform.localScale = 0.03f * Vector3.one;
-                text = Icon[4].AddComponent<TextMesh>();
-                text.text = "((";
-                text.color = Color.green;
-                text.characterSize = 0.25f;
-                text.fontSize = 64;
-                text.fontStyle = FontStyle.Bold;
-                text.anchor = TextAnchor.MiddleCenter;
+                Icon[4].transform.localPosition = new Vector3(0, 0, 0.041f);
+                Icon[4].transform.localRotation = Quaternion.Euler(270, 0, 0);
+                Icon[4].transform.localScale = 0.07f * Vector3.one;
+                MF = Icon[4].AddComponent<MeshFilter>();
+                MF.mesh = PlaneMesh;
+                MR = Icon[4].AddComponent<MeshRenderer>();
+                MR.material = new Material(Shader.Find("Particles/Alpha Blended"));
+                MR.material.SetTexture("_MainTex", SignalTexture);
+                MR.material.SetColor("_TintColor", Color.green);
                 Icon[4].SetActive(false);
 
                 Icon[5] = new GameObject("RWR Icon");
                 Icon[5].transform.SetParent(transform);
-                Icon[5].transform.localPosition = new Vector3(0.042f, -0.042f, 0.04f);
-                Icon[5].transform.localRotation = Quaternion.Euler(0, 0, 142);
-                Icon[5].transform.localScale = 0.03f * Vector3.one;
-                text = Icon[5].AddComponent<TextMesh>();
-                text.text = "((";
-                text.color = Color.green;
-                text.characterSize = 0.25f;
-                text.fontSize = 64;
-                text.fontStyle = FontStyle.Bold;
-                text.anchor = TextAnchor.MiddleCenter;
+                Icon[5].transform.localPosition = new Vector3(0, 0, 0.041f);
+                Icon[5].transform.localRotation = Quaternion.Euler(320, 270, 270);
+                Icon[5].transform.localScale = 0.07f * Vector3.one;
+                MF = Icon[5].AddComponent<MeshFilter>();
+                MF.mesh = PlaneMesh;
+                MR = Icon[5].AddComponent<MeshRenderer>();
+                MR.material = new Material(Shader.Find("Particles/Alpha Blended"));
+                MR.material.SetTexture("_MainTex", SignalTexture);
+                MR.material.SetColor("_TintColor", Color.green);
                 Icon[5].SetActive(false);
 
                 Icon[6] = new GameObject("RWR Icon");
                 Icon[6].transform.SetParent(transform);
-                Icon[6].transform.localPosition = new Vector3(0.06f, 0.0f, 0.04f);
-                Icon[6].transform.localRotation = Quaternion.Euler(0, 0, 180);
-                Icon[6].transform.localScale = 0.03f * Vector3.one;
-                text = Icon[6].AddComponent<TextMesh>();
-                text.text = "((";
-                text.color = Color.green;
-                text.characterSize = 0.25f;
-                text.fontSize = 64;
-                text.fontStyle = FontStyle.Bold;
-                text.anchor = TextAnchor.MiddleCenter;
+                Icon[6].transform.localPosition = new Vector3(0, 0, 0.041f);
+                Icon[6].transform.localRotation = Quaternion.Euler(0, 270, 270);
+                Icon[6].transform.localScale = 0.07f * Vector3.one;
+                MF = Icon[6].AddComponent<MeshFilter>();
+                MF.mesh = PlaneMesh;
+                MR = Icon[6].AddComponent<MeshRenderer>();
+                MR.material = new Material(Shader.Find("Particles/Alpha Blended"));
+                MR.material.SetTexture("_MainTex", SignalTexture);
+                MR.material.SetColor("_TintColor", Color.green);
                 Icon[6].SetActive(false);
 
                 Icon[7] = new GameObject("RWR Icon");
                 Icon[7].transform.SetParent(transform);
-                Icon[7].transform.localPosition = new Vector3(0.042f, 0.042f, 0.04f);
-                Icon[7].transform.localRotation = Quaternion.Euler(0, 0, 232);
-                Icon[7].transform.localScale = 0.03f * Vector3.one;
-                text = Icon[7].AddComponent<TextMesh>();
-                text.text = "((";
-                text.color = Color.green;
-                text.characterSize = 0.25f;
-                text.fontSize = 64;
-                text.fontStyle = FontStyle.Bold;
-                text.anchor = TextAnchor.MiddleCenter;
+                Icon[7].transform.localPosition = new Vector3(0, 0, 0.041f);
+                Icon[7].transform.localRotation = Quaternion.Euler(40, 270, 270);
+                Icon[7].transform.localScale = 0.07f * Vector3.one;
+                MF = Icon[7].AddComponent<MeshFilter>();
+                MF.mesh = PlaneMesh;
+                MR = Icon[7].AddComponent<MeshRenderer>();
+                MR.material = new Material(Shader.Find("Particles/Alpha Blended"));
+                MR.material.SetTexture("_MainTex", SignalTexture);
+                MR.material.SetColor("_TintColor", Color.green);
                 Icon[7].SetActive(false);
 
             }
