@@ -9,14 +9,14 @@
 	<Name>ModernAirCombat</Name>
 	<Author>Chen, Yulin</Author> <!-- FIX: Insert your name here. -->
 	<!-- Major.Minor.Build -->
-	<Version>0.6.1</Version>
+	<Version>0.7.0</Version>
 	
 	<Description>
 	A mod for simulating modern air combat in besiege. 
-	Version 0.6.1
+	Version 0.7.0
 	</Description>
 	<Icon name="icon"/>
-	<Debug>false</Debug>
+	<Debug>True</Debug>
 
 	<MultiplayerCompatible>true</MultiplayerCompatible>
 	
@@ -29,7 +29,7 @@
 	<Blocks>
 		<!-- <Block path="SomeBlock.xml" /> -->
 		<Block path="SRAAM.xml" />
-		<Block path="Displayer.xml" />
+		<Block path="RadarScreen.xml" />
 		<Block path="Radar.xml" />
 		<Block path="MRAAM.xml" />
 		<Block path="RWR.xml" />
@@ -38,6 +38,8 @@
 		<Block path="HUD.xml" />
 		<Block path="Stick.xml" />
 		<Block path="SmokePol.xml" />
+		<Block path="ElectroOpticalBlock.xml" />
+		<Block path="A2GScreen.xml" />
 	</Blocks>
 	
 	<!-- Any entities (level objects) your mod adds to the game.
@@ -127,6 +129,9 @@
 		<Mesh name="SmokePol Mesh" path="SmokePol\SmokePol.obj"/>
 		<Texture name="SmokePol Texture" path="SmokePol\SmokePol.png"/>
 		<Texture name="RWRSignal Texture" path="RWR\Signal.png"/>
+		<Mesh name="EO Mesh" path="ElectroOpticalBlock\tv.obj"/>
+		<Texture name="EO Texture" path="ElectroOpticalBlock\tv.png"/>
+		<AssetBundle name="Shader" path="shader.ab"/>
 
 		<!--  for different appearance options
 		-->

@@ -14,8 +14,9 @@ namespace ModernAirCombat
     public class MRAAMBlock : SRAAMBlock
     {
 
-        
-        
+        public new float ExploPower = 14000f;
+        public new float ExploRadius = 25f;
+
         protected bool PassiveGetAim()
         {
             

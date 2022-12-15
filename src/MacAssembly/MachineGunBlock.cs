@@ -85,6 +85,7 @@ namespace ModernAirCombat
 
         public int myPlayerID;
         public int myGuid;
+        public Rigidbody myRigidbody;
 
         public bool ClientKey = false;
 
@@ -308,7 +309,7 @@ namespace ModernAirCombat
                 bullet.SetActive(true);
                 if (!StatMaster.isClient)
                 {
-                    bullet.GetComponent<Rigidbody>().velocity = InitialSpeed.Value * transform.forward + this.GetComponent<Rigidbody>().velocity
+                    bullet.GetComponent<Rigidbody>().velocity = InitialSpeed.Value * transform.forward + myRigidbody.velocity
                                                             + 4 * UnityEngine.Random.value * transform.right - 4 * transform.right
                                                             + 4 * UnityEngine.Random.value * transform.up - 4 * transform.up;
                 }
@@ -350,6 +351,7 @@ namespace ModernAirCombat
 
         public void Start()
         {
+            myRigidbody = GetComponent<Rigidbody>();
             BulletsLeft = (int)Math.Floor(AmountOfBullet.Value);
             InitBullet();
             InitGunFire();
@@ -430,7 +432,7 @@ namespace ModernAirCombat
                 return;
             }
             //networking 
-            ModNetworking.SendToAll(ClientFirePara.CreateMessage(myPlayerID, myGuid, GetComponent<Rigidbody>().velocity, transform.forward));
+            ModNetworking.SendToAll(ClientFirePara.CreateMessage(myPlayerID, myGuid, myRigidbody.velocity, transform.forward));
 
             if (FireKey.IsPressed)
             {

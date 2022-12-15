@@ -6,6 +6,21 @@ using Modding;
 
 namespace ModernAirCombat
 {
+    public class Asset_Shader
+    {
+        public Shader GreenShader;
+        public Shader GrayShader;
+        public Shader Thermal1Shader;
+        public Shader Thermal2Shader;
+        public Asset_Shader(ModAssetBundle modAssetBundle)
+        {
+            GreenShader = modAssetBundle.LoadAsset<Shader>("Green");
+            GrayShader = modAssetBundle.LoadAsset<Shader>("Gray");
+            Thermal1Shader = modAssetBundle.LoadAsset<Shader>("Thermal1");
+            Thermal2Shader = modAssetBundle.LoadAsset<Shader>("Thermal2");
+        }
+    }
+
     public class Asset_Flare
     {
         public GameObject FlameFlare;
@@ -111,8 +126,8 @@ namespace ModernAirCombat
         public Asset_Chaff Chaff { get; protected set; }
         public Asset_GunFire GunFire { get; protected set; }
         public Asset_BulletExplo BulletExplo { get; protected set; }
-
         public Asset_PerformSmoke PerformSmoke { get; protected set; }
+        public Asset_Shader Shader { get; protected set; }
 
 
 
@@ -125,6 +140,7 @@ namespace ModernAirCombat
             GunFire = new Asset_GunFire(ModResource.GetAssetBundle("Gun Effect"));
             BulletExplo = new Asset_BulletExplo(ModResource.GetAssetBundle("Gun Effect"));
             PerformSmoke = new Asset_PerformSmoke(ModResource.GetAssetBundle("Perform Effect"));
+            Shader = new Asset_Shader(ModResource.GetAssetBundle("Shader"));
         }
     }
 }

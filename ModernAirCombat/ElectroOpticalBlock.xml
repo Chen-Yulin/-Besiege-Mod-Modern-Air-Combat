@@ -1,0 +1,46 @@
+<Block>
+
+	<Debug>True</Debug>
+
+	<ID>11</ID>
+	
+	<!-- Name of the block, shown in the user interface. -->
+	<Name>ElectroOpticalBlock</Name>
+	
+	<!-- TODO: Change the mass to something appropriate -->
+	<Mass>0.1</Mass>
+
+	<Script>ModernAirCombat.ElectroOpticalBlock</Script>
+	
+	<Mesh name="EO Mesh"> 
+		<Position x="0.0" y="0.0" z="0.0" />
+		<Rotation x="-90" y="0" z="0" />
+		<Scale x="-1" y="1" z="1" />
+	</Mesh>
+	
+	<Texture name="EO Texture" /> <!-- Must be defined as a resource in the manifest. -->
+	
+	<Icon>
+		<Position x="-0.05" y="-0.1" z="-1.0" />
+		<Rotation x="-10.0" y="170.0" z="0.0" />
+		<Scale x="-1.2" y="1.2" z="1.2" />
+	</Icon>
+	
+	<Colliders>
+		<BoxCollider>
+			<Position x="0.0" y="0.2" z="0" />
+			<Rotation x="0.0" y="0.0" z="0.0" />
+			<Scale x="0.2" y="1.5" z="0.2" />
+		</BoxCollider>
+	</Colliders>
+	
+	<BasePoint hasAddingPoint="false">
+		<Stickiness enabled="true" radius="0.3" />
+		<!-- Can only have motion if sticky -->
+		<Motion x="false" y="false" z="false" /> <!-- Optional -->
+	</BasePoint>
+	
+	<AddingPoints>
+
+	</AddingPoints>
+</Block>

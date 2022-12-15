@@ -38,6 +38,16 @@ namespace ModernAirCombat
         public displayerData[] DisplayerData = new displayerData[16];
         public RadarTargetData[] BVRData = new RadarTargetData[16];
         public float[,] RWRData = new float[16,8];
+        public RenderTexture[] highlight = new RenderTexture[16];
+        public RenderTexture[] output = new RenderTexture[16];
+        public float[] TV_FOV = new float[16];
+        public bool[] TV_Lock = new bool[16];
+        public bool[] TV_Trace = new bool[16];
+        public Vector3[] TV_TargetPosition = new Vector3[16];
+        public Vector3[] TV_TargetVelocity = new Vector3[16];
+        public Vector3[] TV_LockPosition = new Vector3[16];
+        public int[] TV_UpDown = new int[16];
+        public int[] TV_LeftRight = new int[16];
 
         public DataManager()
         {
@@ -47,6 +57,12 @@ namespace ModernAirCombat
                 TargetData[i] = new targetManager();
                 DisplayerData[i] = new displayerData(0,0);
                 BVRData[i] = new RadarTargetData();
+                highlight[i] = new RenderTexture(512, 512, 0);
+                output[i] = new RenderTexture(512, 512, 0);
+                TV_TargetPosition[i] = Vector3.zero;
+                TV_TargetVelocity[i] = Vector3.zero;
+                TV_LockPosition[i] = Vector3.zero;
+                TV_FOV[i] = 40f;
             }
         }
         

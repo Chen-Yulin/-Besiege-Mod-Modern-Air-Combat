@@ -1,6 +1,10 @@
 x kill air wall
 
-+ rwr icon optimization
++ missile ignite other missile
+
++ optimize turning rate
+
++ air2ground
 
 + add virtual key
 

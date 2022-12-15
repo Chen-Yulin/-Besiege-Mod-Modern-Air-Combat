@@ -273,18 +273,18 @@ namespace ModernAirCombat
                 RadarScanDisplayer.SetActive(false);
             }
 
-            if (ScanColliderFar.transform.FindChild("RadarScanFarDisplay") == null)
-            {
-                RadarScanFarDisplayer = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                RadarScanFarDisplayer.name = "RadarScanFarDisplay";
-                RadarScanFarDisplayer.transform.SetParent(ScanColliderFar.transform);
-                Destroy(RadarScanFarDisplayer.GetComponent<Collider>());
-                Destroy(RadarScanFarDisplayer.GetComponent<Rigidbody>());
-                RadarScanFarDisplayer.transform.localPosition = new Vector3(0f, 0f, 0f);
-                RadarScanFarDisplayer.transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
-                RadarScanFarDisplayer.transform.localScale = Vector3.one;
-                RadarScanFarDisplayer.SetActive(false);
-            }
+            //if (ScanColliderFar.transform.FindChild("RadarScanFarDisplay") == null)
+            //{
+            //    RadarScanFarDisplayer = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            //    RadarScanFarDisplayer.name = "RadarScanFarDisplay";
+            //    RadarScanFarDisplayer.transform.SetParent(ScanColliderFar.transform);
+            //    Destroy(RadarScanFarDisplayer.GetComponent<Collider>());
+            //    Destroy(RadarScanFarDisplayer.GetComponent<Rigidbody>());
+            //    RadarScanFarDisplayer.transform.localPosition = new Vector3(0f, 0f, 0f);
+            //    RadarScanFarDisplayer.transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
+            //    RadarScanFarDisplayer.transform.localScale = Vector3.one;
+            //    RadarScanFarDisplayer.SetActive(false);
+            //}
 
 
             if (ScanCollider.transform.FindChild("RadarHead") == null)

@@ -1,0 +1,19 @@
+ManifestFileVersion: 0
+CRC: 1301352354
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: fe69167b787ccbc37b042963340b9422
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 80729077cb39806c86b5c10073f074fb
+HashAppended: 0
+ClassTypes:
+- Class: 48
+  Script: {instanceID: 0}
+Assets:
+- Assets/Green.shader
+- Assets/Thermal1.shader
+- Assets/Thermal2.shader
+- Assets/Gray.shader
+Dependencies: []

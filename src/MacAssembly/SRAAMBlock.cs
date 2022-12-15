@@ -288,7 +288,7 @@ namespace ModernAirCombat
         public AudioSource ExploAS;
 
 
-        public float ExploPower = 100000f;
+        public float ExploPower = 7000f;
         public float ExploRadius = 15f;
 
         public Vector3 StarePosition = Vector3.zero;
@@ -515,21 +515,22 @@ namespace ModernAirCombat
             Collider[] ExploCol = Physics.OverlapSphere(transform.position, ExploRadius);
             foreach (Collider hits in ExploCol)
             {
-                if (hits.GetComponent<Rigidbody>())
+                if (hits.attachedRigidbody!= null)
                 {
-                    hits.GetComponent<Rigidbody>().AddExplosionForce(ExploPower, transform.position, 2*ExploRadius);
+                    hits.attachedRigidbody.AddExplosionForce(ExploPower, transform.position, ExploRadius);
                     try
                     {
-                        hits.attachedRigidbody.gameObject.GetComponent<FireTag>().Ignite();
+                        if (UnityEngine.Random.value>0.98)
+                        {
+                            hits.attachedRigidbody.gameObject.GetComponent<FireTag>().Ignite();
+                        }
                     }
                     catch { }
-                    
                 }
             }
             ScanCollider.SetActive(false);
             ScanFlare.SetActive(false);
             PFCollider.SetActive(false);
-            
         }
 
 

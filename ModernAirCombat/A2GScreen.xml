@@ -1,0 +1,45 @@
+<Block>
+
+	<Debug>True</Debug>
+
+	<ID>12</ID>
+
+	<Name>A2G Screen</Name>
+	
+	<Mass>0.3</Mass>
+
+	<Script>ModernAirCombat.A2GScreenBlock</Script>
+	
+	<Mesh name="Displayer Mesh"> <!-- Must be defined as a resource in the manifest. -->
+		<Position x="0.0" y="0.0" z="0.0" />
+		<Rotation x="270" y="0" z="180" />
+		<Scale x="1.0" y="1.0" z="1.0" />
+	</Mesh>
+	
+	<Texture name="Displayer Texture" />
+	
+	<Icon>
+		<Position x="0.1" y="-0.1" z="-0.1" />
+		<Rotation x="45" y="225" z="0" />
+		<Scale x="2" y="2" z="2" />
+	</Icon>
+	
+	<Colliders>
+		<BoxCollider>
+			<Position x="0.0" y="0.0" z="0.075" />
+			<Rotation x="270" y="0.0" z="180" />
+			<Scale x="0.35" y="0.05" z="0.35" />
+		</BoxCollider>
+	</Colliders>
+	
+	<BasePoint hasAddingPoint="false">
+		<Stickiness enabled="true" radius="0.3" />
+		<!-- Can only have motion if sticky -->
+		<Motion x="false" y="false" z="false" /> <!-- Optional -->
+	</BasePoint>
+	
+	<AddingPoints>
+		<!-- TODO: Insert AddingPoint definitions here. Example:-->
+
+	</AddingPoints>
+</Block>

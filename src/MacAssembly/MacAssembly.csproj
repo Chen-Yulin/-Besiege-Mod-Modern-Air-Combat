@@ -51,9 +51,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="A2GScreenBlock.cs" />
     <Compile Include="AssetManager.cs" />
     <Compile Include="DataManager.cs" />
     <Compile Include="DisplayerBlock.cs" />
+    <Compile Include="ElectroOpticalBlock.cs" />
     <Compile Include="FlareBlock.cs" />
     <Compile Include="HUD.cs" />
     <Compile Include="KeyMsgController.cs" />
@@ -68,6 +70,7 @@
     <Compile Include="SmokePolBlock.cs" />
     <Compile Include="SRAAMBlock.cs" />
     <Compile Include="StickBlock.cs" />
+    <Compile Include="ThermalVision.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
