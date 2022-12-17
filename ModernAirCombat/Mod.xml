@@ -40,6 +40,8 @@
 		<Block path="SmokePol.xml" />
 		<Block path="ElectroOpticalBlock.xml" />
 		<Block path="A2GScreen.xml" />
+		<Block path="AGM.xml" />
+		<Block path="GuidedBomb.xml" />
 	</Blocks>
 	
 	<!-- Any entities (level objects) your mod adds to the game.
@@ -132,6 +134,10 @@
 		<Mesh name="EO Mesh" path="ElectroOpticalBlock\tv.obj"/>
 		<Texture name="EO Texture" path="ElectroOpticalBlock\tv.png"/>
 		<AssetBundle name="Shader" path="shader.ab"/>
+		<Mesh name="AGM Mesh" path="AGM\AGM65.obj"/>
+		<Texture name="AGM Texture" path="AGM\AGM65.png"/>
+		<Mesh name="GB Mesh" path="GuidedBomb\GBU-10.obj"/>
+		<Texture name="GB Texture" path="GuidedBomb\GBU-10.png"/>
 
 		<!--  for different appearance options
 		-->

@@ -9,6 +9,16 @@ using UnityEngine;
 
 namespace ModernAirCombat
 {
+    public class A2GTargetData
+    {
+        public Vector3 position;
+        public Vector3 velocity;
+        public A2GTargetData()
+        {
+            position = new Vector3(0, 0, 0);
+            velocity = new Vector3(0, 0, 0);
+        }
+    }
     public class RadarTargetData
     {
         public Vector3 position;
@@ -32,12 +42,16 @@ namespace ModernAirCombat
 
     public class DataManager : SingleInstance<DataManager>
     {
+        // support at most 16 players
+        // For A2A
         public override string Name { get; } = "Data Manager";
         public Vector3[] RadarTransformForward = new Vector3[16];
         public targetManager[] TargetData = new targetManager[16];
         public displayerData[] DisplayerData = new displayerData[16];
         public RadarTargetData[] BVRData = new RadarTargetData[16];
         public float[,] RWRData = new float[16,8];
+
+        // for A2G
         public RenderTexture[] highlight = new RenderTexture[16];
         public RenderTexture[] output = new RenderTexture[16];
         public float[] TV_FOV = new float[16];
@@ -48,6 +62,8 @@ namespace ModernAirCombat
         public Vector3[] TV_LockPosition = new Vector3[16];
         public int[] TV_UpDown = new int[16];
         public int[] TV_LeftRight = new int[16];
+        public A2GTargetData[] A2G_TargetData = new A2GTargetData[16];
+
 
         public DataManager()
         {
@@ -63,9 +79,13 @@ namespace ModernAirCombat
                 TV_TargetVelocity[i] = Vector3.zero;
                 TV_LockPosition[i] = Vector3.zero;
                 TV_FOV[i] = 40f;
+                A2G_TargetData[i] = new A2GTargetData();
             }
         }
-        
-        
+
+
+
+
+
     }
 }

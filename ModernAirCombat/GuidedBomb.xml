@@ -1,0 +1,48 @@
+<Block>
+
+	<Debug>True</Debug>
+	
+	<ID>14</ID>
+	
+	<Name>GuidedBomb</Name>
+	
+	<Mass>3</Mass>
+
+	<Script>ModernAirCombat.GuidedBombBlock</Script>
+	
+	<Mesh name="GB Mesh">
+		<Position x="0.0" y="-0.0" z="0.3"/>
+		<Rotation x="270.0" y="0.0" z="0.0"/>
+		<Scale x="-1" y="1" z="1"/>
+	</Mesh>
+	<Texture name="GB Texture"/>
+
+	<Icon>
+		<Position x="0.05" y="0.05" z="0.0"/>
+		<Rotation x="225" y="-90" z="45"/>
+		<Scale x="0.16" y="0.16" z="0.16"/>
+	</Icon>
+	
+	<Colliders>
+		<BoxCollider>
+			<Position x="0.0" y="-1.3" z="0.3"/>
+			<Rotation x="0" y="0" z="0"/>
+			<Scale x="0.5" y="1.3" z="0.5"/>
+		</BoxCollider>
+		<CapsuleCollider>
+			<Position x="0.0" y="0.0" z="0.3"/>
+			<Rotation x="0.0" y="0.0" z="0.0"/>
+			<Capsule direction="Y" radius="0.24" height="4"/>
+		</CapsuleCollider>
+	</Colliders>
+	<BasePoint hasAddingPoint="false">
+		<Stickiness enabled="true" radius="0.0"/>
+		<!--  Can only have motion if sticky  -->
+		<Motion x="false" y="false" z="false"/>
+	<!--  Optional  -->
+	</BasePoint>
+	<AddingPoints>
+	<!--  TODO: Insert AddingPoint definitions here. Example: -->
+
+	</AddingPoints>
+</Block>

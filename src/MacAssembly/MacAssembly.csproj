@@ -52,11 +52,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="A2GScreenBlock.cs" />
+    <Compile Include="AGMBlock.cs" />
     <Compile Include="AssetManager.cs" />
     <Compile Include="DataManager.cs" />
     <Compile Include="DisplayerBlock.cs" />
     <Compile Include="ElectroOpticalBlock.cs" />
     <Compile Include="FlareBlock.cs" />
+    <Compile Include="GuidedBombBlock.cs" />
     <Compile Include="HUD.cs" />
     <Compile Include="KeyMsgController.cs" />
     <Compile Include="MachineGunBlock.cs" />

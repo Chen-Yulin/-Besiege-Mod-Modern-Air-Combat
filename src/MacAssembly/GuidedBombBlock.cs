@@ -11,20 +11,23 @@ using UnityEngine;
 
 namespace ModernAirCombat
 {
-    public class MRAAMBlock : SRAAMBlock
+    public class GuidedBombBlock : AGMBlock
     {
-
-        public new float ExploPower = 14000f;
-        public new float ExploRadius = 25f;
-        public float ActiveDistance = 1200f;
-
-        public bool PassiveGetAim()
+        public override void InitModelType()
         {
-            
+            modelType = AddMenu("Missile Type", 0, new List<string>
+            {
+                "GB"
+            }, false);
+        }
+
+        public new bool A2GGetAim()
+        {
+            //Debug.Log(DataManager.Instance.A2G_TargetData[myPlayerID].position);
             try
             {
-                Vector3 targetVelocity = DataManager.Instance.BVRData[myPlayerID].velocity;
-                Vector3 targetPosition = DataManager.Instance.BVRData[myPlayerID].position;
+                Vector3 targetVelocity = DataManager.Instance.A2G_TargetData[myPlayerID].velocity;
+                Vector3 targetPosition = DataManager.Instance.A2G_TargetData[myPlayerID].position;
 
                 if (targetPosition == Vector3.zero)
                 {
@@ -45,7 +48,7 @@ namespace ModernAirCombat
                 Vector3 positionDiff = predictPosition - (transform.position + Rigidbody.velocity * estimatedTime);
                 //Debug.Log(positionDiff);
                 Vector3 modifiedDiff;
-                float overshootMultiplier = 50 / GValue.Value;
+                float overshootMultiplier = 100 / GValue.Value;
                 if (positionDiff.magnitude < 200)
                 {
                     modifiedDiff.x = (overshootMultiplier * positionDiff.x);
@@ -54,44 +57,32 @@ namespace ModernAirCombat
                 }
                 else
                 {
-                    modifiedDiff.x = (overshootMultiplier*0.3f * positionDiff.x);
-                    modifiedDiff.y = (overshootMultiplier*0.3f * positionDiff.y);
-                    modifiedDiff.z = (overshootMultiplier*0.3f * positionDiff.z);
+                    modifiedDiff.x = (overshootMultiplier * 0.3f * positionDiff.x);
+                    modifiedDiff.y = (overshootMultiplier * 0.3f * positionDiff.y);
+                    modifiedDiff.z = (overshootMultiplier * 0.3f * positionDiff.z);
                 }
 
-                predictPositionModified = predictPosition + modifiedDiff + Vector3.up * (targetPosition - transform.position).magnitude * 0.05f;
+                predictPositionModified = predictPosition + modifiedDiff + Vector3.up * (new Vector2(predictPositionModified.x,predictPositionModified.z)-new Vector2(transform.position.x,transform.position.z)).magnitude * 0.05f;
+                predictPositionModified.y = (predictPositionModified.y>transform.position.y)? transform.position.y : predictPositionModified.y;
                 return true;
             }
             catch { return false; }
         }
-
-        public override void InitModelType()
-        {
-            modelType = AddMenu("Missile Type", 0, new List<string>()
-            {
-                "R-27",
-                "R-77",
-                "Aim-54",
-                "Aim-120",
-                "R-33"
-            }, false);
-        }
-
-
         public override void SafeAwake()
         {
             InitModelType();
-            gameObject.name = "missle";
+            gameObject.name = "GuidedBomb";
             Launch = AddKey("Launch", "launch", KeyCode.X);
             //IFF = AddToggle("开启友伤", "IFF", true);
             //showScanner = AddToggle("显示探测范围", "showScanner", false);
             //detectAngleSlider = AddSlider("探测角度", "detection angle", 90.0f, 60.0f, 120.0f);
-            detectDelay = AddSlider("Safety delay", "detection delay", 0.2f, 0.0f, 1f);
-            launchDelay = AddSlider("Launch delay", "launch delay", 0.1f, 0.0f, 0.3f);
-            PFRang = AddSlider("Proximity fuse range", "PF range", 5f, 1f, 10f);
-            GValue = AddSlider("Maximum G-value", "Maximum G-value", 30f, 10f, 70f);
-            thrust = AddSlider("Thrust", "Thrust", 2000, 1500, 2500);
-            thrustTime = AddSlider("Thrust Duration","Thrust Duration", defaultValue: 5f, min: 3f, max: 20f);
+            detectDelay = AddSlider("Safety delay", "detection delay", 0.4f, 0.1f, 1f);
+            launchDelay = AddSlider("Launch delay(deprecated)", "launch delay", 0.3f, 0.1f, 0.5f);
+            PFRang = AddSlider("Proximity fuse range", "PF range", 2f, 0.1f, 10f);
+            GValue = AddSlider("Maximum G-value(deprecated)", "Maximum G-value", 10f, 5f, 30f);
+            thrust = AddSlider("Thrust(deprecated)", "Thrust", 400, 0, 600);
+            thrustTime = AddSlider("Thrust Duration(deprecated)", "Thrust Duration", defaultValue: 20f, min: 5f, max: 20f);
+            
 
             initScan();//挂载上导弹前方的圆锥触发器
             initTrail();
@@ -102,6 +93,7 @@ namespace ModernAirCombat
             AimIcon = ModResource.GetTexture("Aim Icon").Texture;
             myPlayerID = BlockBehaviour.ParentMachine.PlayerID;
         }
+
         protected new void Update()
         {
             if (currSkinStatus != OptionsMaster.skinsEnabled)
@@ -113,14 +105,14 @@ namespace ModernAirCombat
             }
             if (ModController.Instance.Restriction)
             {
-                thrustModified = 2000f;
-                thrustTimeModified = 5f;
-                GModified = 30f;
+                thrustModified = 0f;
+                thrustTimeModified = 20f;
+                GModified = 10f;
             }
             else
             {
-                thrustModified = thrust.Value;
-                thrustTimeModified = thrustTime.Value;
+                thrustModified = 0f;
+                thrustTimeModified = 20f;
                 GModified = GValue.Value;
             }
         }
@@ -134,40 +126,11 @@ namespace ModernAirCombat
                 }
             }
             catch { }
-            
+
             if (myStatus == status.launched || myStatus == status.active)
             {
                 if (time < thrustTimeModified * 4 + launchDelay.Value)
                 {
-                    if (time > launchDelay.Value && time < thrustTimeModified + launchDelay.Value)//play trail partical and add trust after launch delay 
-                    {
-                        if (activeTrail == false)
-                        {
-                            TrailSmokeParticle.Play();
-                            TrailFlameParticle.Play();
-                            activeTrail = true;
-                            GameObject LaunchSoundEffect = (GameObject)Instantiate(LaunchSound, transform, false);
-                            LaunchSoundEffect.SetActive(true);
-                            LaunchSoundEffect.GetComponent<AudioSource>().Play();
-                            Destroy(LaunchSoundEffect, thrustTimeModified);
-                        }
-                    }
-                    if (time > thrustTimeModified + launchDelay.Value)//deactive trail effect and destroy it after sometime
-                    {
-                        if (activeTrail == true)
-                        {
-                            TrailSmokeParticle.Stop();
-                            TrailFlameParticle.Stop();
-                            activeTrail = false;
-
-                        }
-                        if (!effectDestroyed)
-                        {
-                            Destroy(TrailSmoke, 3);
-                            Destroy(TrailFlame, 3);
-                            effectDestroyed = true;
-                        }
-                    }
                     if (MissleExploMessageReciver.Instance.GetExploMsg(myGuid, myPlayerID))
                     {
                         playExploEffect();
@@ -182,15 +145,15 @@ namespace ModernAirCombat
             if (Launch.EmulationHeld() && myStatus == status.stored)
             {
                 myStatus = status.launched;
-                //Debug.Log("missle launched");
+                //Debug.Log("AGM launched");
                 //Debug.Log(detectRange);
-                myRigidbody.drag = 0.05f;
+                myRigidbody.drag = 0f;
                 myRigidbody.angularDrag = 4.0f;
             }
 
             if (myStatus == status.launched || myStatus == status.active)
             {
-                if (DataManager.Instance.BVRData[myPlayerID].position == Vector3.zero)
+                if (DataManager.Instance.A2G_TargetData[myPlayerID].position == Vector3.zero)
                 {
                     myStatus = status.active;
                 }
@@ -204,48 +167,21 @@ namespace ModernAirCombat
                 }
 
 
-                
-                if (time < thrustTimeModified*4 + launchDelay.Value)
+
+                if (time < thrustTimeModified * 4 + launchDelay.Value)
                 {
-                    if (time > launchDelay.Value && time < thrustTimeModified + launchDelay.Value)//play trail partical and add trust after launch delay 
+                    
+                    if (time > launchDelay.Value && time < thrustTimeModified*4 + launchDelay.Value)//play trail partical and add trust after launch delay 
                     {
-                        if (activeTrail == false)
-                        {
-                            myRigidbody.drag = 0.5f;
-                            TrailSmokeParticle.Play();
-                            TrailFlameParticle.Play();
-                            activeTrail = true;
-                            GameObject LaunchSoundEffect = (GameObject)Instantiate(LaunchSound, transform, false);
-                            LaunchSoundEffect.SetActive(true);
-                            LaunchSoundEffect.GetComponent<AudioSource>().Play();
-                            Destroy(LaunchSoundEffect, thrustTimeModified);
-                        }
                         myRigidbody.AddRelativeForce(new Vector3(0, thrustModified, 0), ForceMode.Force);
-                        AddAerodynamics(17,GModified);
-                    }
-                    if(time > thrustTimeModified+launchDelay.Value)//deactive trail effect and destroy it after sometime
-                    {
-                        if (activeTrail == true)
-                        {
-                            myRigidbody.drag = 0.03f;
-                            TrailSmokeParticle.Stop();
-                            TrailFlameParticle.Stop();
-                            activeTrail = false;
-                            
-                        }
-                        if (!effectDestroyed)
-                        {
-                            Destroy(TrailSmoke, 3);
-                            Destroy(TrailFlame, 3);
-                            effectDestroyed = true;
-                        }
-                        AddAerodynamics(17,GModified);
+                        AddAerodynamics(1, GModified);
+
                     }
 
                     //judge whether the missle start to track enemy (passive or active) and active PF
                     if (time < detectDelay.Value + launchDelay.Value) //whether is frozen
                     {
-                        myTransform.rotation = Quaternion.Lerp(transform.rotation, launchRotation, 0.1f);
+                        myTransform.rotation = Quaternion.Lerp(transform.rotation, launchRotation, 0.01f);
                     }
                     else //start tracking target
                     {
@@ -264,17 +200,17 @@ namespace ModernAirCombat
 
                             //start passvie track
 
-                            if (PassiveGetAim())
+                            if (A2GGetAim())
                             {
-                                AxisLookAt(myTransform, predictPositionModified, Vector3.up, 0.01f);
+                                AxisLookAt(myTransform, predictPositionModified, Vector3.up, 0.002f);
                             }
-                            
 
-                            if (Vector3.Distance(predictPositionModified,myTransform.position)<= ActiveDistance)
+
+                            if (Vector3.Distance(predictPositionModified, myTransform.position) <= ActiveDistance)
                             {
                                 myStatus = status.active;
                             }
-                            
+
 
                         }
                         else    //start active track
@@ -287,15 +223,7 @@ namespace ModernAirCombat
                             {
                                 playExplo();
                             }
-                            else
-                            {
-                                GetAim();
-                                if (targetDetected)
-                                {
-                                    AxisLookAt(myTransform, predictPositionModified, Vector3.up, 0.03f);
-                                }
-                            }
-                            
+
                         }
                     }
                     time += Time.fixedDeltaTime;
@@ -307,10 +235,15 @@ namespace ModernAirCombat
                         gameObject.SetActive(false);
                         PFCollider.SetActive(false);
                     }
-                    
+
                 }
             }
         }
 
+        void OnGUI()
+        {
+            //GUI.Box(new Rect(100, 200, 200, 50), DataManager.Instance.A2G_TargetData[myPlayerID].position.ToString());
+            //GUI.Box(new Rect(100, 300, 200, 50), myStatus.ToString());
+        }
     }
 }

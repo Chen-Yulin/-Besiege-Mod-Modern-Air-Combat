@@ -11,6 +11,30 @@ using UnityEngine;
 
 namespace ModernAirCombat
 {
+    public class EOMsgReceiver : SingleInstance<EOMsgReceiver>
+    {
+        public override string Name { get; } = "EoMsgReceiver";
+        public Vector3[] LockPointPosition = new Vector3[16];
+        public Vector3[] LockPointVelocity = new Vector3[16];
+        public float[] FOV = new float[16];
+        public bool[] Lock = new bool[16];
+        public void PositionReceiver(Message msg)
+        {
+            LockPointPosition[(int)msg.GetData(0)] = (Vector3)msg.GetData(1);
+        }
+        public void VelocityReceiver(Message msg)
+        {
+            LockPointVelocity[(int)msg.GetData(0)] = (Vector3)msg.GetData(1);
+        }
+        public void FOVReceiver(Message msg)
+        {
+            FOV[(int)msg.GetData(0)] = (float)msg.GetData(1);
+        }
+        public void LockReceiver(Message msg)
+        {
+            Lock[(int)msg.GetData(0)] = (bool)msg.GetData(1);
+        }
+    }
     public class ElectroOpticalBlock:BlockScript
     {
         public GameObject CameraBase;
@@ -24,7 +48,12 @@ namespace ModernAirCombat
         public ThermalVision CameraTV;
         public GameObject LockPoint;
         public Vector3 LockPosition;
-        
+
+        public static MessageType ClientLockPointPositionMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Vector3);
+        public static MessageType ClientLockPointVelocityMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Vector3);
+        public static MessageType ClientFOVMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Single);
+        public static MessageType ClientLockMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Boolean);
+
 
         private int myPlayerID;
 
@@ -228,6 +257,12 @@ namespace ModernAirCombat
             Lock = DataManager.Instance.TV_Lock[myPlayerID];
 
         }
+        public void updateCameraParaClient()
+        {
+            NormalCam.fieldOfView = FOV;
+            ThermalCam.fieldOfView = FOV;
+            CameraBase.transform.rotation = Quaternion.Euler(CameraBase.transform.rotation.eulerAngles.x, CameraBase.transform.rotation.eulerAngles.y, 0);
+        }
 
         public override void SafeAwake()
         {
@@ -254,18 +289,64 @@ namespace ModernAirCombat
 
         protected void Update()
         {
+            
+        }
+
+        public override void SimulateUpdateClient()
+        {
+            // get data
+            LockPosition = EOMsgReceiver.Instance.LockPointPosition[myPlayerID];
+            Lock = EOMsgReceiver.Instance.Lock[myPlayerID];
+            FOV = EOMsgReceiver.Instance.FOV[myPlayerID];
+            // send data to local data manager
+            DataManager.Instance.TV_Lock[myPlayerID] = Lock;
+            DataManager.Instance.TV_LockPosition[myPlayerID] = LockPosition;
+            DataManager.Instance.TV_FOV[myPlayerID] = FOV;
+
+            LockPoint.transform.position = LockPosition;
+            AxisLookAt(CameraBase.transform, LockPosition, Vector3.forward, 1f);
+        }
+
+
+        public override void SimulateUpdateHost()
+        {
             if (!Lock)
             {
                 LockPosition = CameraBase.transform.position + 10 * CameraBase.transform.forward;
             }
 
             LockPoint.transform.position = LockPosition;
-            AxisLookAt(CameraBase.transform, LockPosition, Vector3.forward, 1f);
-        }
 
+            AxisLookAt(CameraBase.transform, LockPosition, Vector3.forward, 1f);
+
+            ModNetworking.SendToAll(ClientLockPointPositionMsg.CreateMessage(myPlayerID, LockPosition));
+            ModNetworking.SendToAll(ClientLockPointVelocityMsg.CreateMessage(myPlayerID, Vector3.zero));
+            ModNetworking.SendToAll(ClientFOVMsg.CreateMessage(myPlayerID, FOV));
+            ModNetworking.SendToAll(ClientLockMsg.CreateMessage(myPlayerID, Lock));
+        }
+        public override void SimulateFixedUpdateClient()
+        {
+            updateCameraParaClient();
+        }
         public override void SimulateFixedUpdateHost()
         {
             updateCameraPara();
+            if (!Lock)
+            {
+                DataManager.Instance.A2G_TargetData[myPlayerID].position = Vector3.zero;
+            }
+            else
+            {
+                DataManager.Instance.A2G_TargetData[myPlayerID].position = LockPosition;
+            }
+            
+        }
+
+        void OnGUI()
+        {
+            //GUI.Box(new Rect(100, 200, 200, 50), LockPosition.ToString());
+            //GUI.Box(new Rect(100, 300, 200, 50), Lock.ToString());
+            //GUI.Box(new Rect(100, 400, 200, 50), FOV.ToString());
         }
 
 

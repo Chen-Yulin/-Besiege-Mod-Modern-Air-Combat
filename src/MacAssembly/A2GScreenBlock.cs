@@ -11,6 +11,7 @@ using UnityEngine;
 
 namespace ModernAirCombat
 {
+
     class A2GScreenBlock:BlockScript
     {
         public MKey Lock;
@@ -90,7 +91,7 @@ namespace ModernAirCombat
 
         }
 
-        public override void SimulateUpdateAlways()
+        public override void SimulateUpdateHost()
         {
             if (Lock.IsPressed)
             {
@@ -98,43 +99,48 @@ namespace ModernAirCombat
             }
         }
 
-        protected void FixedUpdate()
+        public override void SimulateFixedUpdateHost()
         {
-            if (YawLeft.IsHeld)
+            try
             {
-                DataManager.Instance.TV_LeftRight[myPlayerID] = -1;
-            }
-            else if (YawRight.IsHeld)
-            {
-                DataManager.Instance.TV_LeftRight[myPlayerID] = 1;
-            }
-            else
-            {
-                DataManager.Instance.TV_LeftRight[myPlayerID] = 0;
-            }
+                if (YawLeft.IsHeld)
+                {
+                    DataManager.Instance.TV_LeftRight[myPlayerID] = -1;
+                }
+                else if (YawRight.IsHeld)
+                {
+                    DataManager.Instance.TV_LeftRight[myPlayerID] = 1;
+                }
+                else
+                {
+                    DataManager.Instance.TV_LeftRight[myPlayerID] = 0;
+                }
 
-            if (PitchUp.IsHeld)
-            {
-                DataManager.Instance.TV_UpDown[myPlayerID] = 1;
-            }
-            else if (PitchDown.IsHeld)
-            {
-                DataManager.Instance.TV_UpDown[myPlayerID] = -1;
-            }
-            else
-            {
-                DataManager.Instance.TV_UpDown[myPlayerID] = 0;
-            }
+                if (PitchUp.IsHeld)
+                {
+                    DataManager.Instance.TV_UpDown[myPlayerID] = 1;
+                }
+                else if (PitchDown.IsHeld)
+                {
+                    DataManager.Instance.TV_UpDown[myPlayerID] = -1;
+                }
+                else
+                {
+                    DataManager.Instance.TV_UpDown[myPlayerID] = 0;
+                }
 
-            if (ZoomIn.IsHeld)
-            {
-                DataManager.Instance.TV_FOV[myPlayerID] *= 0.98f;
+                if (ZoomIn.IsHeld)
+                {
+                    DataManager.Instance.TV_FOV[myPlayerID] *= 0.98f;
+                }
+                else if (ZoomOut.IsHeld)
+                {
+                    DataManager.Instance.TV_FOV[myPlayerID] /= 0.98f;
+                }
+                DataManager.Instance.TV_FOV[myPlayerID] = Mathf.Clamp(DataManager.Instance.TV_FOV[myPlayerID], 0.5f, 40);
             }
-            else if (ZoomOut.IsHeld)
-            {
-                DataManager.Instance.TV_FOV[myPlayerID] /= 0.98f;
-            }
-            DataManager.Instance.TV_FOV[myPlayerID] = Mathf.Clamp(DataManager.Instance.TV_FOV[myPlayerID], 0.5f, 40);
+            catch { }
+            
         }
 
     }
