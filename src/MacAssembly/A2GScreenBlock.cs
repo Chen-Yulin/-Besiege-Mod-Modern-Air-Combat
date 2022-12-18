@@ -21,13 +21,28 @@ namespace ModernAirCombat
         public MKey PitchDown;
         public MKey YawLeft;
         public MKey YawRight;
-        public MKey Reset;
+        public MKey Track;
 
         public GameObject Screen;
         public MeshFilter ScreenMF;
         public MeshRenderer ScreenMR;
+        public GameObject Cross;
+        public MeshFilter CrossMF;
+        public MeshRenderer CrossMR;
+        public GameObject Aim;
+        public MeshFilter AimMF;
+        public MeshRenderer AimMR;
+        public GameObject Compass;
+        public MeshFilter CompassMF;
+        public MeshRenderer CompassMR;
+        public GameObject Direction;
+        public MeshFilter DirectionMF;
+        public MeshRenderer DirectionMR;
+        public GameObject Dist;
+        public TextMesh DistMesh;
 
         private int myPlayerID;
+
         public void initScreen()
         {
             if (!transform.FindChild("Screen"))
@@ -42,11 +57,67 @@ namespace ModernAirCombat
                 ScreenMR = Screen.AddComponent<MeshRenderer>();
                 ScreenMF.mesh = ModResource.GetMesh("Plane Mesh").Mesh;
                 //ScreenMR.material.shader = Shader.Find("Particles/Alpha Blended");
-                ScreenMR.material.shader = AssetManager.Instance.Shader.GrayShader;
+                //ScreenMR.material.shader = AssetManager.Instance.Shader.GrayShader;
+                ScreenMR.material.shader = AssetManager.Instance.Shader.GreenShader;
                 ScreenMR.material.mainTexture = DataManager.Instance.output[myPlayerID];
                 ScreenMR.sortingOrder = 50;
 
                 Screen.SetActive(false);
+
+                Cross = new GameObject("Cross");
+                Cross.transform.SetParent(Screen.transform);
+                Cross.transform.localPosition = new Vector3(0, 0.01f, 0);
+                Cross.transform.localRotation = Quaternion.Euler(0, 0, 0);
+                Cross.transform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
+
+                CrossMF = Cross.AddComponent<MeshFilter>();
+                CrossMR = Cross.AddComponent<MeshRenderer>();
+                CrossMF.mesh = ModResource.GetMesh("Plane Mesh").Mesh;
+                CrossMR.material = new Material(Shader.Find("Particles/Alpha Blended"));
+                CrossMR.material.SetTexture("_MainTex", ModResource.GetTexture("A2GCross Texture"));
+                CrossMR.material.SetColor("_TintColor", Color.green);
+
+                Aim = new GameObject("Aim");
+                Aim.transform.SetParent(Screen.transform);
+                Aim.transform.localPosition = new Vector3(0, 0.01f, 0);
+                Aim.transform.localRotation = Quaternion.Euler(0, 45, 0);
+                Aim.transform.localScale = new Vector3(0.4f, 0.4f, 0.4f);
+
+                AimMF = Aim.AddComponent<MeshFilter>();
+                AimMR = Aim.AddComponent<MeshRenderer>();
+                AimMF.mesh = ModResource.GetMesh("Plane Mesh").Mesh;
+                AimMR.material = new Material(Shader.Find("Particles/Alpha Blended"));
+                AimMR.material.SetTexture("_MainTex", ModResource.GetTexture("A2GAim Texture"));
+                AimMR.material.SetColor("_TintColor", Color.green);
+
+                Aim.SetActive(false);
+
+                Compass = new GameObject("Compass");
+                Compass.transform.SetParent(Screen.transform);
+                Compass.transform.localPosition = new Vector3(-0.55f, 0.01f, 0.55f);
+                Compass.transform.localRotation = Quaternion.Euler(0, 0, 0);
+                Compass.transform.localScale = new Vector3(0.35f, 0.35f, 0.35f);
+
+                CompassMF = Compass.AddComponent<MeshFilter>();
+                CompassMR = Compass.AddComponent<MeshRenderer>();
+                CompassMF.mesh = ModResource.GetMesh("Plane Mesh").Mesh;
+                CompassMR.material = new Material(Shader.Find("Particles/Alpha Blended"));
+                CompassMR.material.SetTexture("_MainTex", ModResource.GetTexture("A2GCompass Texture"));
+                CompassMR.material.SetColor("_TintColor", Color.green);
+
+                Direction = new GameObject("Direction");
+                Direction.transform.SetParent(Screen.transform);
+                Direction.transform.localPosition = new Vector3(-0.55f, 0.01f, 0.55f);
+                Direction.transform.localRotation = Quaternion.Euler(0, 0, 0);
+                Direction.transform.localScale = new Vector3(0.33f, 0.33f, 0.33f);
+
+                DirectionMF = Direction.AddComponent<MeshFilter>();
+                DirectionMR = Direction.AddComponent<MeshRenderer>();
+                DirectionMF.mesh = ModResource.GetMesh("Plane Mesh").Mesh;
+                DirectionMR.material = new Material(Shader.Find("Particles/Alpha Blended"));
+                DirectionMR.material.SetTexture("_MainTex", ModResource.GetTexture("A2GDirection Texture"));
+                DirectionMR.material.SetColor("_TintColor", Color.green);
+
             }
 
         }
@@ -62,6 +133,7 @@ namespace ModernAirCombat
             myPlayerID = BlockBehaviour.ParentMachine.PlayerID;
 
             Lock = AddKey("Lock", "Lock", KeyCode.X);
+            Track = AddKey("Track", "Track", KeyCode.Z);
 
             ZoomIn = AddKey("ZoomIn", "ZoomIn", KeyCode.N);
             ZoomOut = AddKey("ZoomOut", "ZoomOut", KeyCode.M);
@@ -84,10 +156,26 @@ namespace ModernAirCombat
             ScreenOn();
         }
 
+        public override void OnSimulateStop()
+        {
+            DataManager.Instance.TV_Lock[myPlayerID] = false;
+            DataManager.Instance.TV_Track[myPlayerID] = false;
+        }
+
         protected void Update()
         {
-
-
+            Aim.SetActive(DataManager.Instance.TV_Lock[myPlayerID]);
+            if (DataManager.Instance.TV_Track[myPlayerID])
+            {
+                Aim.transform.localRotation = Quaternion.Lerp(Aim.transform.localRotation, Quaternion.Euler(0, 0, 0), 0.1f);
+            }
+            else
+            {
+                Aim.transform.localRotation = Quaternion.Lerp(Aim.transform.localRotation, Quaternion.Euler(0, 45, 0), 0.1f);
+            }
+            //update direction arrow
+            Direction.transform.localRotation = Quaternion.Euler(0, -DataManager.Instance.A2G_Orientation[myPlayerID], 0);
+            Direction.transform.localScale = new Vector3(0.33f,0.33f,0.33f * Mathf.Clamp((DataManager.Instance.A2G_Pitch[myPlayerID]/90f),0.1f,1f));
 
         }
 
@@ -96,6 +184,14 @@ namespace ModernAirCombat
             if (Lock.IsPressed)
             {
                 DataManager.Instance.TV_Lock[myPlayerID] = !DataManager.Instance.TV_Lock[myPlayerID];
+            }
+            if (Track.IsPressed && DataManager.Instance.TV_Lock[myPlayerID])
+            {
+                DataManager.Instance.TV_Track[myPlayerID] = !DataManager.Instance.TV_Track[myPlayerID];
+            }
+            if (!DataManager.Instance.TV_Lock[myPlayerID])
+            {
+                DataManager.Instance.TV_Track[myPlayerID] = false;
             }
         }
 
@@ -141,6 +237,13 @@ namespace ModernAirCombat
             }
             catch { }
             
+        }
+
+        void OnGUI()
+        {
+            //GUI.Box(new Rect(100, 200, 200, 50), DataManager.Instance.A2G_Orientation[myPlayerID].ToString());
+            //GUI.Box(new Rect(100, 300, 200, 50), Lock.ToString());
+            //GUI.Box(new Rect(100, 400, 200, 50), FOV.ToString());
         }
 
     }

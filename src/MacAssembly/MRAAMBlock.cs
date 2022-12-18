@@ -15,6 +15,7 @@ namespace ModernAirCombat
     {
 
         public new float ExploPower = 14000f;
+
         public new float ExploRadius = 25f;
         public float ActiveDistance = 1200f;
 
@@ -64,7 +65,6 @@ namespace ModernAirCombat
             }
             catch { return false; }
         }
-
         public override void InitModelType()
         {
             modelType = AddMenu("Missile Type", 0, new List<string>()
@@ -76,8 +76,6 @@ namespace ModernAirCombat
                 "R-33"
             }, false);
         }
-
-
         public override void SafeAwake()
         {
             InitModelType();

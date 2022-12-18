@@ -13,6 +13,9 @@ namespace ModernAirCombat
 {
     public class AGMBlock : MRAAMBlock
     {
+        public new float ExploPower = 14000f;
+
+        public new float ExploRadius = 35f;
         public new float ActiveDistance = 10f;
         public override void InitModelType()
         {
@@ -67,7 +70,30 @@ namespace ModernAirCombat
             }
             catch { return false; }
         }
+        protected override void playExploEffect()
+        {
+            try
+            {
+                TrailSmokeParticle.Stop();
+                TrailFlameParticle.Stop();
+            }
+            catch { }
 
+            GameObject ExploSoundEffect = (GameObject)Instantiate(ExploSound, transform, false);
+            ExploSoundEffect.SetActive(true);
+            ExploSoundEffect.GetComponent<AudioSource>().Play();
+            Destroy(ExploSoundEffect, thrustTimeModified);
+
+
+            GameObject ExploParticleEffect = (GameObject)Instantiate(AssetManager.Instance.AGMExplo.AGMExplo, transform.position, Quaternion.identity);
+            ExploParticleEffect.SetActive(true);
+            Destroy(ExploParticleEffect, 3);
+
+
+            BlockBehaviour.MeshRenderer.enabled = false;
+            transform.FindChild("Colliders").gameObject.SetActive(false);
+            myStatus = status.exploded;
+        }
         public override void SafeAwake()
         {
             InitModelType();

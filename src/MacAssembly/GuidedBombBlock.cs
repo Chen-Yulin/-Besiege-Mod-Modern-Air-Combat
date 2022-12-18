@@ -13,6 +13,9 @@ namespace ModernAirCombat
 {
     public class GuidedBombBlock : AGMBlock
     {
+        public new float ExploPower = 35000f;
+
+        public new float ExploRadius = 50f;
         public override void InitModelType()
         {
             modelType = AddMenu("Missile Type", 0, new List<string>
@@ -174,7 +177,7 @@ namespace ModernAirCombat
                     if (time > launchDelay.Value && time < thrustTimeModified*4 + launchDelay.Value)//play trail partical and add trust after launch delay 
                     {
                         myRigidbody.AddRelativeForce(new Vector3(0, thrustModified, 0), ForceMode.Force);
-                        AddAerodynamics(1, GModified);
+                        AddAerodynamics(0.5f, GModified);
 
                     }
 

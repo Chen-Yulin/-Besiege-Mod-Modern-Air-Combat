@@ -47,12 +47,18 @@ namespace ModernAirCombat
 
         public ThermalVision CameraTV;
         public GameObject LockPoint;
+        public ScanCollisonHit TrackHit;
+        public SphereCollider LockScan;
         public Vector3 LockPosition;
+        public Vector3 LockVelocity;
 
         public static MessageType ClientLockPointPositionMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Vector3);
         public static MessageType ClientLockPointVelocityMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Vector3);
         public static MessageType ClientFOVMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Single);
         public static MessageType ClientLockMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Boolean);
+
+        protected float detectFreqTime = 0;
+        protected float destroyDelay = 0;
 
 
         private int myPlayerID;
@@ -76,14 +82,17 @@ namespace ModernAirCombat
         {
             if (!transform.FindChild("LockPoint"))
             {
-                LockPoint = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-
-                Destroy(LockPoint.GetComponent<Collider>());
-                LockPoint.name = "LockPoint";
+                LockPoint = new GameObject("LockPoint");
                 LockPoint.transform.SetParent(CameraBase.transform);
                 LockPoint.transform.localPosition = Vector3.zero;
                 LockPoint.transform.localRotation = Quaternion.identity;
                 LockPoint.transform.localScale = Vector3.one;
+
+                LockScan = LockPoint.AddComponent<SphereCollider>();
+                LockScan.radius = 10;
+                LockScan.isTrigger = true;
+
+                TrackHit = LockPoint.AddComponent<ScanCollisonHit>();
 
                 LockPoint.SetActive(false);
             }
@@ -117,7 +126,6 @@ namespace ModernAirCombat
                 ThermalCam.cullingMask = 1<<25;
                 ThermalCam.targetTexture = DataManager.Instance.highlight[myPlayerID];
 
-
                 NormalCamera = new GameObject("NormalCamera");
                 NormalCamera.transform.SetParent(CameraBase.transform);
                 NormalCamera.transform.localPosition = Vector3.zero;
@@ -148,7 +156,7 @@ namespace ModernAirCombat
             FOV = 40;
             LockPosition = CameraBase.transform.position + 10 * CameraBase.transform.forward;
             CameraBase.SetActive(true);
-            LockPoint.SetActive(true);
+            //LockPoint.SetActive(true);
             LockPoint.transform.position = LockPosition;
         }
 
@@ -173,7 +181,53 @@ namespace ModernAirCombat
             {
                 return false;
             }
+        }
 
+        protected void TrackTarget()
+        {
+            
+            LockPoint.SetActive(true);
+            detectFreqTime += Time.fixedDeltaTime;
+
+            if (detectFreqTime >= 0.03)
+            {
+                detectFreqTime = 0;
+                //judge whether there is a target
+                if (TrackHit.targetCols.Count == 0)
+                {
+                    LockVelocity = Vector3.zero;
+                }
+                else
+                {
+                    try
+                    {
+                        //judge whether use flare's collider or real target's collider
+                        Collider targetCol;
+                        targetCol = TrackHit.targetCols.Peek();
+                        LockPosition = targetCol.transform.position;
+                        LockVelocity = targetCol.attachedRigidbody.velocity;
+                        //Debug.Log(targetVelocity);
+                    }
+                    catch { }
+                }
+                LockPoint.SetActive(false);
+            }
+
+        }
+
+        protected float CalculateOrientation()
+        {
+            Vector3 horizonSelf = new Vector3(transform.up.x,0,transform.up.z);
+            Vector3 horizonCamera = new Vector3(CameraBase.transform.forward.x, 0, CameraBase.transform.forward.z);
+            float angle = Vector3.Angle(horizonSelf, horizonCamera); //求出两向量之间的夹角
+            Vector3 normal = Vector3.Cross(horizonSelf, horizonCamera);//叉乘求出法线向量
+            angle *= Mathf.Sign(Vector3.Dot(normal, -transform.forward));  //求法线向量与物体上方向向量点乘，结果为1或-1，修正旋转方向
+            return angle;
+        }
+        protected float CalculatePitch()
+        {
+            float angle = Vector3.Angle(Vector3.down, CameraBase.transform.forward);
+            return angle;
         }
 
         public void updateCameraPara()
@@ -285,26 +339,29 @@ namespace ModernAirCombat
             CameraOff();
             Lock = false;
             DataManager.Instance.TV_Lock[myPlayerID] = false;
-        }
-
-        protected void Update()
-        {
-            
+            ModNetworking.SendToAll(ClientLockMsg.CreateMessage(myPlayerID, false));
         }
 
         public override void SimulateUpdateClient()
         {
             // get data
             LockPosition = EOMsgReceiver.Instance.LockPointPosition[myPlayerID];
+            LockVelocity = EOMsgReceiver.Instance.LockPointVelocity[myPlayerID];
             Lock = EOMsgReceiver.Instance.Lock[myPlayerID];
             FOV = EOMsgReceiver.Instance.FOV[myPlayerID];
             // send data to local data manager
             DataManager.Instance.TV_Lock[myPlayerID] = Lock;
             DataManager.Instance.TV_LockPosition[myPlayerID] = LockPosition;
             DataManager.Instance.TV_FOV[myPlayerID] = FOV;
+            DataManager.Instance.A2G_TargetData[myPlayerID].velocity = LockVelocity;
 
             LockPoint.transform.position = LockPosition;
             AxisLookAt(CameraBase.transform, LockPosition, Vector3.forward, 1f);
+
+            // send orentation data to A2GScreen
+            // no need to send to network
+            DataManager.Instance.A2G_Orientation[myPlayerID] = CalculateOrientation();
+            DataManager.Instance.A2G_Pitch[myPlayerID] = CalculatePitch();
         }
 
 
@@ -319,8 +376,13 @@ namespace ModernAirCombat
 
             AxisLookAt(CameraBase.transform, LockPosition, Vector3.forward, 1f);
 
+            // send orentation data to A2GScreen
+            DataManager.Instance.A2G_Orientation[myPlayerID] = CalculateOrientation();
+            DataManager.Instance.A2G_Pitch[myPlayerID] = CalculatePitch();
+
+            // send to network
             ModNetworking.SendToAll(ClientLockPointPositionMsg.CreateMessage(myPlayerID, LockPosition));
-            ModNetworking.SendToAll(ClientLockPointVelocityMsg.CreateMessage(myPlayerID, Vector3.zero));
+            ModNetworking.SendToAll(ClientLockPointVelocityMsg.CreateMessage(myPlayerID, LockVelocity));
             ModNetworking.SendToAll(ClientFOVMsg.CreateMessage(myPlayerID, FOV));
             ModNetworking.SendToAll(ClientLockMsg.CreateMessage(myPlayerID, Lock));
         }
@@ -330,21 +392,53 @@ namespace ModernAirCombat
         }
         public override void SimulateFixedUpdateHost()
         {
+            
+            if (DataManager.Instance.TV_Track[myPlayerID])
+            {
+                if (DataManager.Instance.A2G_TargetDestroyed[myPlayerID])
+                {
+                    DataManager.Instance.TV_Track[myPlayerID] = false;
+                    TrackHit.targetCols.Clear();
+                    LockPoint.SetActive(false);
+                }
+                else
+                {
+                    TrackTarget();
+                }
+            }
+            else
+            {
+                detectFreqTime = 0;
+                TrackHit.targetCols.Clear();
+                LockPoint.SetActive(false);
+            }
+            if (DataManager.Instance.A2G_TargetDestroyed[myPlayerID])
+            {
+                destroyDelay += Time.fixedDeltaTime;
+                if (destroyDelay >= 0.06f)
+                {
+                    DataManager.Instance.A2G_TargetDestroyed[myPlayerID] = false;
+                    destroyDelay = 0f;
+                }
+                return;
+            }
             updateCameraPara();
             if (!Lock)
             {
                 DataManager.Instance.A2G_TargetData[myPlayerID].position = Vector3.zero;
+                DataManager.Instance.A2G_TargetData[myPlayerID].velocity = Vector3.zero;
             }
             else
             {
                 DataManager.Instance.A2G_TargetData[myPlayerID].position = LockPosition;
+                DataManager.Instance.A2G_TargetData[myPlayerID].velocity = LockVelocity;
             }
             
         }
 
         void OnGUI()
         {
-            //GUI.Box(new Rect(100, 200, 200, 50), LockPosition.ToString());
+            //GUI.Box(new Rect(100, 200, 200, 50), LockPoint.activeSelf.ToString());
             //GUI.Box(new Rect(100, 300, 200, 50), Lock.ToString());
             //GUI.Box(new Rect(100, 400, 200, 50), FOV.ToString());
         }

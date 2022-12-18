@@ -9,11 +9,11 @@
 	<Name>ModernAirCombat</Name>
 	<Author>Chen, Yulin</Author> <!-- FIX: Insert your name here. -->
 	<!-- Major.Minor.Build -->
-	<Version>0.7.0</Version>
+	<Version>0.8.0</Version>
 	
 	<Description>
 	A mod for simulating modern air combat in besiege. 
-	Version 0.7.0
+	Version 0.8.0
 	</Description>
 	<Icon name="icon"/>
 	<Debug>True</Debug>
@@ -138,6 +138,11 @@
 		<Texture name="AGM Texture" path="AGM\AGM65.png"/>
 		<Mesh name="GB Mesh" path="GuidedBomb\GBU-10.obj"/>
 		<Texture name="GB Texture" path="GuidedBomb\GBU-10.png"/>
+		<Texture name="A2GCross Texture" path="A2GScreen\cross.png"/>
+		<Texture name="A2GAim Texture" path="A2GScreen\aim.png"/>
+		<Texture name="A2GCompass Texture" path="A2GScreen\compass.png"/>
+		<Texture name="A2GDirection Texture" path="A2GScreen\direction.png"/>
+		<AssetBundle name="AGMExplo Effect" path="agmexplo.ab"/>
 
 		<!--  for different appearance options
 		-->

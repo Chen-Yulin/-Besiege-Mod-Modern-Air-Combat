@@ -334,7 +334,7 @@ namespace ModernAirCombat
         protected void AddAerodynamics(float airDrag, float GValue)
         {
             Vector3 tmp = Vector3.Cross(Vector3.Cross(myRigidbody.velocity, myTransform.up), myTransform.up);
-            Vector3 force = new Vector3(tmp.x, tmp.y, tmp.z) * 17;
+            Vector3 force = new Vector3(tmp.x, tmp.y, tmp.z) * airDrag;
             if (force.magnitude > GValue)
             {
                 force = force.normalized * GValue * 10;
@@ -473,7 +473,7 @@ namespace ModernAirCombat
             TrailFlameParticle = TrailFlame.GetComponent<ParticleSystem>();
         }
 
-        protected void playExploEffect()
+        protected virtual void playExploEffect()
         {
             try
             {
@@ -515,6 +515,14 @@ namespace ModernAirCombat
             Collider[] ExploCol = Physics.OverlapSphere(transform.position, ExploRadius);
             foreach (Collider hits in ExploCol)
             {
+                if (hits.isTrigger)
+                {
+                    if (hits.name == "LockPoint")
+                    {
+                        DataManager.Instance.A2G_TargetDestroyed[myPlayerID] = true;
+                    }
+                    continue;
+                }
                 if (hits.attachedRigidbody!= null)
                 {
                     hits.attachedRigidbody.AddExplosionForce(ExploPower, transform.position, ExploRadius);

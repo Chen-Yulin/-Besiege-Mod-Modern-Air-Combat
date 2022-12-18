@@ -56,13 +56,14 @@ namespace ModernAirCombat
         public RenderTexture[] output = new RenderTexture[16];
         public float[] TV_FOV = new float[16];
         public bool[] TV_Lock = new bool[16];
-        public bool[] TV_Trace = new bool[16];
-        public Vector3[] TV_TargetPosition = new Vector3[16];
-        public Vector3[] TV_TargetVelocity = new Vector3[16];
+        public bool[] TV_Track = new bool[16];
         public Vector3[] TV_LockPosition = new Vector3[16];
         public int[] TV_UpDown = new int[16];
         public int[] TV_LeftRight = new int[16];
         public A2GTargetData[] A2G_TargetData = new A2GTargetData[16];
+        public bool[] A2G_TargetDestroyed = new bool[16];
+        public float[] A2G_Orientation = new float[16];
+        public float[] A2G_Pitch = new float[16];
 
 
         public DataManager()
@@ -75,8 +76,6 @@ namespace ModernAirCombat
                 BVRData[i] = new RadarTargetData();
                 highlight[i] = new RenderTexture(512, 512, 0);
                 output[i] = new RenderTexture(512, 512, 0);
-                TV_TargetPosition[i] = Vector3.zero;
-                TV_TargetVelocity[i] = Vector3.zero;
                 TV_LockPosition[i] = Vector3.zero;
                 TV_FOV[i] = 40f;
                 A2G_TargetData[i] = new A2GTargetData();
