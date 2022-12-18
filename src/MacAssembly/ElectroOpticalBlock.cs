@@ -18,6 +18,7 @@ namespace ModernAirCombat
         public Vector3[] LockPointVelocity = new Vector3[16];
         public float[] FOV = new float[16];
         public bool[] Lock = new bool[16];
+        public bool[] Track = new bool[16];
         public void PositionReceiver(Message msg)
         {
             LockPointPosition[(int)msg.GetData(0)] = (Vector3)msg.GetData(1);
@@ -33,6 +34,10 @@ namespace ModernAirCombat
         public void LockReceiver(Message msg)
         {
             Lock[(int)msg.GetData(0)] = (bool)msg.GetData(1);
+        }
+        public void TrackReveiver(Message msg)
+        {
+            Track[(int)msg.GetData(0)] = (bool)msg.GetData(1);
         }
     }
     public class ElectroOpticalBlock:BlockScript
@@ -56,6 +61,7 @@ namespace ModernAirCombat
         public static MessageType ClientLockPointVelocityMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Vector3);
         public static MessageType ClientFOVMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Single);
         public static MessageType ClientLockMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Boolean);
+        public static MessageType ClientTrackMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Boolean);
 
         protected float detectFreqTime = 0;
         protected float destroyDelay = 0;
@@ -398,6 +404,7 @@ namespace ModernAirCombat
                 if (DataManager.Instance.A2G_TargetDestroyed[myPlayerID])
                 {
                     DataManager.Instance.TV_Track[myPlayerID] = false;
+                    ModNetworking.SendToAll(ClientTrackMsg.CreateMessage(myPlayerID, DataManager.Instance.TV_Track[myPlayerID]));
                     TrackHit.targetCols.Clear();
                     LockPoint.SetActive(false);
                 }

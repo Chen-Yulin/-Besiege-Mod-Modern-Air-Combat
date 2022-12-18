@@ -39,6 +39,8 @@ namespace ModernAirCombat
             ModNetworking.Callbacks[ElectroOpticalBlock.ClientLockPointPositionMsg] += EOMsgReceiver.Instance.PositionReceiver;
             ModNetworking.Callbacks[ElectroOpticalBlock.ClientLockMsg] += EOMsgReceiver.Instance.LockReceiver;
             ModNetworking.Callbacks[ElectroOpticalBlock.ClientFOVMsg] += EOMsgReceiver.Instance.FOVReceiver;
+            ModNetworking.Callbacks[A2GScreenBlock.ClientTrackMsg] += EOMsgReceiver.Instance.TrackReveiver;
+            ModNetworking.Callbacks[ElectroOpticalBlock.ClientTrackMsg] += EOMsgReceiver.Instance.TrackReveiver;
         }
     }
 }

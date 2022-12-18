@@ -43,6 +43,8 @@ namespace ModernAirCombat
 
         private int myPlayerID;
 
+        public static MessageType ClientTrackMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Boolean);
+
         public void initScreen()
         {
             if (!transform.FindChild("Screen"))
@@ -179,6 +181,11 @@ namespace ModernAirCombat
 
         }
 
+        public override void SimulateUpdateClient()
+        {
+            DataManager.Instance.TV_Track[myPlayerID] = EOMsgReceiver.Instance.Track[myPlayerID];
+        }
+
         public override void SimulateUpdateHost()
         {
             if (Lock.IsPressed)
@@ -188,10 +195,12 @@ namespace ModernAirCombat
             if (Track.IsPressed && DataManager.Instance.TV_Lock[myPlayerID])
             {
                 DataManager.Instance.TV_Track[myPlayerID] = !DataManager.Instance.TV_Track[myPlayerID];
+                ModNetworking.SendToAll(ClientTrackMsg.CreateMessage(myPlayerID, DataManager.Instance.TV_Track[myPlayerID]));
             }
             if (!DataManager.Instance.TV_Lock[myPlayerID])
             {
                 DataManager.Instance.TV_Track[myPlayerID] = false;
+                ModNetworking.SendToAll(ClientTrackMsg.CreateMessage(myPlayerID, DataManager.Instance.TV_Track[myPlayerID]));
             }
         }
 
