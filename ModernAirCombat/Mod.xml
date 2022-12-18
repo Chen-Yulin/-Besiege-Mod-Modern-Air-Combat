@@ -16,7 +16,7 @@
 	Version 0.8.0
 	</Description>
 	<Icon name="icon"/>
-	<Debug>True</Debug>
+	<Debug>false</Debug>
 
 	<MultiplayerCompatible>true</MultiplayerCompatible>
 	

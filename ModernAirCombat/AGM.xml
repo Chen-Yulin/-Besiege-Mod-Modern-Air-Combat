@@ -1,6 +1,6 @@
 <Block>
 
-	<Debug>True</Debug>
+	<Debug>false</Debug>
 	
 	<!-- ID of your block. See "Note on IDs" in Mod.xml.
 		 The ID must be unique among blocks in your mod.
