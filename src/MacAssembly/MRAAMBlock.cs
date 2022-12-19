@@ -84,8 +84,8 @@ namespace ModernAirCombat
             //IFF = AddToggle("开启友伤", "IFF", true);
             //showScanner = AddToggle("显示探测范围", "showScanner", false);
             //detectAngleSlider = AddSlider("探测角度", "detection angle", 90.0f, 60.0f, 120.0f);
-            detectDelay = AddSlider("Safety delay", "detection delay", 0.2f, 0.0f, 1f);
-            launchDelay = AddSlider("Launch delay", "launch delay", 0.1f, 0.0f, 0.3f);
+            detectDelay = AddSlider("Safety delay", "detection delay", 0.2f, 0.2f, 1f);
+            launchDelay = AddSlider("Launch delay", "launch delay", 0.1f, 0.1f, 0.3f);
             PFRang = AddSlider("Proximity fuse range", "PF range", 5f, 1f, 10f);
             GValue = AddSlider("Maximum G-value", "Maximum G-value", 30f, 10f, 70f);
             thrust = AddSlider("Thrust", "Thrust", 2000, 1500, 2500);

@@ -22,6 +22,7 @@ namespace ModernAirCombat
         public MKey YawLeft;
         public MKey YawRight;
         public MKey Track;
+        public MMenu TVColor;
 
         public GameObject Screen;
         public MeshFilter ScreenMF;
@@ -38,8 +39,15 @@ namespace ModernAirCombat
         public GameObject Direction;
         public MeshFilter DirectionMF;
         public MeshRenderer DirectionMR;
-        public GameObject Dist;
+        public GameObject DistText;
         public TextMesh DistMesh;
+        public GameObject VelocityText;
+        public TextMesh VelocityMesh;
+        public GameObject ThermalOnText;
+        public TextMesh ThermalOnMesh;
+        public GameObject InverseText;
+        public TextMesh InverseMesh;
+
 
         private int myPlayerID;
 
@@ -120,6 +128,63 @@ namespace ModernAirCombat
                 DirectionMR.material.SetTexture("_MainTex", ModResource.GetTexture("A2GDirection Texture"));
                 DirectionMR.material.SetColor("_TintColor", Color.green);
 
+                //information Text
+
+                ThermalOnText = new GameObject("ThermalOnText");
+                ThermalOnText.transform.SetParent(Screen.transform);
+                ThermalOnText.transform.localPosition = new Vector3(0.7f, 0.02f, 0.8f);
+                ThermalOnText.transform.localRotation = Quaternion.Euler(270, 0, 0);
+                ThermalOnText.transform.localScale = new Vector3(0.022f, 0.022f, 0.1f);
+                ThermalOnMesh = ThermalOnText.AddComponent<TextMesh>();
+                ThermalOnMesh.text = "□ Thermal";
+                ThermalOnMesh.color = Color.green;
+                ThermalOnMesh.characterSize = 0.7f;
+                ThermalOnMesh.fontSize = 64;
+                ThermalOnMesh.fontStyle = FontStyle.Normal;
+                ThermalOnMesh.anchor = TextAnchor.MiddleCenter;
+
+                InverseText = new GameObject("InverseText");
+                InverseText.transform.SetParent(Screen.transform);
+                InverseText.transform.localPosition = new Vector3(0.7f, 0.02f, 0.9f);
+                InverseText.transform.localRotation = Quaternion.Euler(270, 0, 0);
+                InverseText.transform.localScale = new Vector3(0.022f, 0.022f, 0.1f);
+                InverseMesh = InverseText.AddComponent<TextMesh>();
+                InverseMesh.text = " ╰□ Inverse";
+                InverseMesh.color = Color.green;
+                InverseMesh.characterSize = 0.7f;
+                InverseMesh.fontSize = 64;
+                InverseMesh.fontStyle = FontStyle.Normal;
+                InverseMesh.anchor = TextAnchor.MiddleCenter;
+                InverseText.SetActive(false);
+
+                VelocityText = new GameObject("VelocityText");
+                VelocityText.transform.SetParent(Screen.transform);
+                VelocityText.transform.localPosition = new Vector3(0.3f, 0.02f, 0);
+                VelocityText.transform.localRotation = Quaternion.Euler(270, 0, 0);
+                VelocityText.transform.localScale = new Vector3(0.022f, 0.022f, 0.1f);
+                VelocityMesh = VelocityText.AddComponent<TextMesh>();
+                VelocityMesh.text = "0";
+                VelocityMesh.color = Color.green;
+                VelocityMesh.characterSize = 0.7f;
+                VelocityMesh.fontSize = 64;
+                VelocityMesh.fontStyle = FontStyle.Normal;
+                VelocityMesh.anchor = TextAnchor.MiddleLeft;
+                VelocityText.SetActive(false);
+
+                DistText = new GameObject("DistText");
+                DistText.transform.SetParent(Screen.transform);
+                DistText.transform.localPosition = new Vector3(-0.3f, 0.02f, 0);
+                DistText.transform.localRotation = Quaternion.Euler(270, 0, 0);
+                DistText.transform.localScale = new Vector3(0.022f, 0.022f, 0.1f);
+                DistMesh = DistText.AddComponent<TextMesh>();
+                DistMesh.text = "0";
+                DistMesh.color = Color.green;
+                DistMesh.characterSize = 0.7f;
+                DistMesh.fontSize = 64;
+                DistMesh.fontStyle = FontStyle.Normal;
+                DistMesh.anchor = TextAnchor.MiddleRight;
+                DistText.SetActive(false);
+
             }
 
         }
@@ -132,6 +197,11 @@ namespace ModernAirCombat
 
         public override void SafeAwake()
         {
+            TVColor = AddMenu("Missile Type", 0, new List<string>
+            {
+                "Green",
+                "Gray"
+            }, false);
             myPlayerID = BlockBehaviour.ParentMachine.PlayerID;
 
             Lock = AddKey("Lock", "Lock", KeyCode.X);
@@ -151,7 +221,30 @@ namespace ModernAirCombat
 
         public void Start()
         {
-
+            if (TVColor.Selection == "Green")
+            {
+                ScreenMR.material.shader = AssetManager.Instance.Shader.GreenShader;
+                CrossMR.material.SetColor("_TintColor", Color.green);
+                AimMR.material.SetColor("_TintColor", Color.green);
+                CompassMR.material.SetColor("_TintColor", Color.green);
+                DirectionMR.material.SetColor("_TintColor", Color.green);
+                ThermalOnMesh.color = Color.green;
+                InverseMesh.color = Color.green;
+                VelocityMesh.color = Color.green;
+                DistMesh.color = Color.green;
+            }
+            else
+            {
+                ScreenMR.material.shader = AssetManager.Instance.Shader.GrayShader;
+                CrossMR.material.SetColor("_TintColor", Color.white);
+                AimMR.material.SetColor("_TintColor", Color.white);
+                CompassMR.material.SetColor("_TintColor", Color.white);
+                DirectionMR.material.SetColor("_TintColor", Color.white);
+                ThermalOnMesh.color = Color.white;
+                InverseMesh.color = Color.white;
+                VelocityMesh.color = Color.white;
+                DistMesh.color = Color.white;
+            }
         }
         public override void OnSimulateStart()
         {
@@ -162,22 +255,62 @@ namespace ModernAirCombat
         {
             DataManager.Instance.TV_Lock[myPlayerID] = false;
             DataManager.Instance.TV_Track[myPlayerID] = false;
+
+            ThermalOnMesh.text = "□ Thermal";
+            InverseMesh.text = " ╰□ Inverse";
+
+            InverseText.SetActive(false);
+            VelocityMesh.text = "0";
+            VelocityText.SetActive(false);
+            DistText.SetActive(false);
         }
 
         protected void Update()
         {
             Aim.SetActive(DataManager.Instance.TV_Lock[myPlayerID]);
+            if (DataManager.Instance.TV_Lock[myPlayerID])
+            {
+                DistText.SetActive(true);
+                DistMesh.text = Math.Round(DataManager.Instance.EO_Distance[myPlayerID] / 1000,1).ToString()+" km";
+            }
+            else
+            {
+                DistText.SetActive(false);
+            }
             if (DataManager.Instance.TV_Track[myPlayerID])
             {
                 Aim.transform.localRotation = Quaternion.Lerp(Aim.transform.localRotation, Quaternion.Euler(0, 0, 0), 0.1f);
+                VelocityText.SetActive(true);
+                VelocityMesh.text = Math.Round(DataManager.Instance.A2G_TargetData[myPlayerID].velocity.magnitude * 3.6f, 1).ToString()+" kph";
             }
             else
             {
                 Aim.transform.localRotation = Quaternion.Lerp(Aim.transform.localRotation, Quaternion.Euler(0, 45, 0), 0.1f);
+                VelocityMesh.text = "0";
+                VelocityText.SetActive(false);
             }
             //update direction arrow
             Direction.transform.localRotation = Quaternion.Euler(0, -DataManager.Instance.A2G_Orientation[myPlayerID], 0);
             Direction.transform.localScale = new Vector3(0.33f,0.33f,0.33f * Mathf.Clamp((DataManager.Instance.A2G_Pitch[myPlayerID]/90f),0.1f,1f));
+            if (DataManager.Instance.EO_ThermalOn[myPlayerID])
+            {
+                ThermalOnMesh.text = "■ Thermal";
+
+                InverseText.SetActive(true);
+                if (DataManager.Instance.EO_InverseThermal[myPlayerID])
+                {
+                    InverseMesh.text = " ╰■ Inverse";
+                }
+                else
+                {
+                    InverseMesh.text = " ╰□ Inverse";
+                }
+            }
+            else
+            {
+                ThermalOnMesh.text = "□ Thermal";
+                InverseText.SetActive(false);
+            }
 
         }
 
@@ -250,8 +383,8 @@ namespace ModernAirCombat
 
         void OnGUI()
         {
-            //GUI.Box(new Rect(100, 200, 200, 50), DataManager.Instance.A2G_Orientation[myPlayerID].ToString());
-            //GUI.Box(new Rect(100, 300, 200, 50), Lock.ToString());
+            //GUI.Box(new Rect(100, 200, 200, 50), DataManager.Instance.EO_ThermalOn[myPlayerID].ToString());
+            //GUI.Box(new Rect(100, 300, 200, 50), DataManager.Instance.EO_InverseThermal[myPlayerID].ToString());
             //GUI.Box(new Rect(100, 400, 200, 50), FOV.ToString());
         }
 

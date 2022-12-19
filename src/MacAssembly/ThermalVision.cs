@@ -4,8 +4,8 @@ namespace ModernAirCombat
 {
     public class ThermalVision:MonoBehaviour
     {
-		public bool ThermalOn = true;
-		public bool IsInverse = true;
+		public bool ThermalOn = false;
+		public bool IsInverse = false;
 
 		public RenderTexture OtherTex;
 		private Material material0;

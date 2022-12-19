@@ -11,6 +11,7 @@ using UnityEngine;
 
 namespace ModernAirCombat
 {
+    
     public class EOMsgReceiver : SingleInstance<EOMsgReceiver>
     {
         public override string Name { get; } = "EoMsgReceiver";
@@ -19,6 +20,8 @@ namespace ModernAirCombat
         public float[] FOV = new float[16];
         public bool[] Lock = new bool[16];
         public bool[] Track = new bool[16];
+        public bool[] ThermalOn = new bool[16];
+        public bool[] InverseThermal = new bool[16];
         public void PositionReceiver(Message msg)
         {
             LockPointPosition[(int)msg.GetData(0)] = (Vector3)msg.GetData(1);
@@ -39,9 +42,19 @@ namespace ModernAirCombat
         {
             Track[(int)msg.GetData(0)] = (bool)msg.GetData(1);
         }
+        public void ThermalOnReceiver(Message msg)
+        {
+            ThermalOn[(int)msg.GetData(0)] = (bool)msg.GetData(1);
+        }
+        public void ThermalInverseReceiver(Message msg)
+        {
+            InverseThermal[(int)msg.GetData(0)] = (bool)msg.GetData(1);
+        }
     }
     public class ElectroOpticalBlock:BlockScript
     {
+        public MKey ToggleThermal;
+        public MKey InverseThermal;
         public GameObject CameraBase;
         public GameObject ThermalCamera;
         public GameObject NormalCamera;
@@ -62,6 +75,8 @@ namespace ModernAirCombat
         public static MessageType ClientFOVMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Single);
         public static MessageType ClientLockMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Boolean);
         public static MessageType ClientTrackMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Boolean);
+        public static MessageType ClientThermalOnMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Boolean);
+        public static MessageType ClientInverseThermalMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Boolean);
 
         protected float detectFreqTime = 0;
         protected float destroyDelay = 0;
@@ -149,7 +164,8 @@ namespace ModernAirCombat
 
                 CameraTV = NormalCamera.AddComponent<ThermalVision>();
                 CameraTV.OtherTex = DataManager.Instance.highlight[myPlayerID];
-                CameraTV.ThermalOn = true;
+                CameraTV.ThermalOn = false;
+                CameraTV.IsInverse = false;
 
                 CameraBase.SetActive(false);
             }
@@ -327,13 +343,15 @@ namespace ModernAirCombat
         public override void SafeAwake()
         {
             myPlayerID = BlockBehaviour.ParentMachine.PlayerID;
+            ToggleThermal = AddKey("Toggle Thermal", "ToggleThermal", KeyCode.T);
+            InverseThermal = AddKey("Toggle Thermal Inverse", "InverseThermal", KeyCode.I);
             initCamera();
             initLockPoint();
         }
 
         public void Start()
         {
-
+            
         }
         public override void OnSimulateStart()
         {
@@ -345,7 +363,11 @@ namespace ModernAirCombat
             CameraOff();
             Lock = false;
             DataManager.Instance.TV_Lock[myPlayerID] = false;
+            DataManager.Instance.EO_ThermalOn[myPlayerID] = false;
+            DataManager.Instance.EO_InverseThermal[myPlayerID] = false;
             ModNetworking.SendToAll(ClientLockMsg.CreateMessage(myPlayerID, false));
+            ModNetworking.SendToAll(ClientThermalOnMsg.CreateMessage(myPlayerID, false));
+            ModNetworking.SendToAll(ClientInverseThermalMsg.CreateMessage(myPlayerID, false));
         }
 
         public override void SimulateUpdateClient()
@@ -355,11 +377,16 @@ namespace ModernAirCombat
             LockVelocity = EOMsgReceiver.Instance.LockPointVelocity[myPlayerID];
             Lock = EOMsgReceiver.Instance.Lock[myPlayerID];
             FOV = EOMsgReceiver.Instance.FOV[myPlayerID];
+            CameraTV.ThermalOn = EOMsgReceiver.Instance.ThermalOn[myPlayerID];
+            CameraTV.IsInverse = EOMsgReceiver.Instance.InverseThermal[myPlayerID];
             // send data to local data manager
             DataManager.Instance.TV_Lock[myPlayerID] = Lock;
             DataManager.Instance.TV_LockPosition[myPlayerID] = LockPosition;
             DataManager.Instance.TV_FOV[myPlayerID] = FOV;
             DataManager.Instance.A2G_TargetData[myPlayerID].velocity = LockVelocity;
+            DataManager.Instance.EO_InverseThermal[myPlayerID] = CameraTV.IsInverse;
+            DataManager.Instance.EO_ThermalOn[myPlayerID] = CameraTV.ThermalOn;
+
 
             LockPoint.transform.position = LockPosition;
             AxisLookAt(CameraBase.transform, LockPosition, Vector3.forward, 1f);
@@ -373,6 +400,22 @@ namespace ModernAirCombat
 
         public override void SimulateUpdateHost()
         {
+            if (ToggleThermal.IsPressed)
+            {
+                CameraTV.ThermalOn = !CameraTV.ThermalOn;
+                DataManager.Instance.EO_ThermalOn[myPlayerID] = CameraTV.ThermalOn;
+                ModNetworking.SendToAll(ClientThermalOnMsg.CreateMessage(myPlayerID, CameraTV.ThermalOn));
+            }
+            if (CameraTV.ThermalOn)
+            {
+                if (InverseThermal.IsPressed)
+                {
+                    CameraTV.IsInverse = !CameraTV.IsInverse;
+                    DataManager.Instance.EO_InverseThermal[myPlayerID] = CameraTV.IsInverse;
+                    ModNetworking.SendToAll(ClientInverseThermalMsg.CreateMessage(myPlayerID, CameraTV.IsInverse));
+                }
+            }
+
             if (!Lock)
             {
                 LockPosition = CameraBase.transform.position + 10 * CameraBase.transform.forward;
@@ -394,11 +437,14 @@ namespace ModernAirCombat
         }
         public override void SimulateFixedUpdateClient()
         {
+            DataManager.Instance.EO_Distance[myPlayerID] = (LockPosition - transform.position).magnitude;
             updateCameraParaClient();
+
         }
         public override void SimulateFixedUpdateHost()
         {
-            
+            DataManager.Instance.EO_Distance[myPlayerID] = (LockPosition - transform.position).magnitude;
+
             if (DataManager.Instance.TV_Track[myPlayerID])
             {
                 if (DataManager.Instance.A2G_TargetDestroyed[myPlayerID])
@@ -440,7 +486,8 @@ namespace ModernAirCombat
                 DataManager.Instance.A2G_TargetData[myPlayerID].position = LockPosition;
                 DataManager.Instance.A2G_TargetData[myPlayerID].velocity = LockVelocity;
             }
-            
+
+
         }
 
         void OnGUI()

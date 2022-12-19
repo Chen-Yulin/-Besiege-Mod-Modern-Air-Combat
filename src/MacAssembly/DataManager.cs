@@ -64,6 +64,9 @@ namespace ModernAirCombat
         public bool[] A2G_TargetDestroyed = new bool[16];
         public float[] A2G_Orientation = new float[16];
         public float[] A2G_Pitch = new float[16];
+        public bool[] EO_ThermalOn = new bool[16];
+        public bool[] EO_InverseThermal = new bool[16];
+        public float[] EO_Distance = new float[16];
 
 
         public DataManager()
