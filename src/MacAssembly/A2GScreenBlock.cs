@@ -47,8 +47,9 @@ namespace ModernAirCombat
         public TextMesh ThermalOnMesh;
         public GameObject InverseText;
         public TextMesh InverseMesh;
+        public Texture LockIcon;
 
-
+        public float iconSize = 16;
         private int myPlayerID;
 
         public static MessageType ClientTrackMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Boolean);
@@ -197,6 +198,7 @@ namespace ModernAirCombat
 
         public override void SafeAwake()
         {
+            LockIcon = ModResource.GetTexture("HUDA2GAim Texture").Texture;
             TVColor = AddMenu("Missile Type", 0, new List<string>
             {
                 "Green",
@@ -386,6 +388,20 @@ namespace ModernAirCombat
             //GUI.Box(new Rect(100, 200, 200, 50), DataManager.Instance.EO_ThermalOn[myPlayerID].ToString());
             //GUI.Box(new Rect(100, 300, 200, 50), DataManager.Instance.EO_InverseThermal[myPlayerID].ToString());
             //GUI.Box(new Rect(100, 400, 200, 50), FOV.ToString());
+            if (DataManager.Instance.TV_Lock[myPlayerID] && IsSimulating)
+            {
+                if (StatMaster.isMP)
+                {
+                    if (PlayerData.localPlayer.networkId != myPlayerID)
+                    {
+                        return;
+                    }
+                }
+                GUI.color = Color.green;
+                Vector3 onScreenPosition = Camera.main.WorldToScreenPoint(DataManager.Instance.A2G_TargetData[myPlayerID].position);
+                if (onScreenPosition.z >= 0)
+                    GUI.DrawTexture(new Rect(onScreenPosition.x - iconSize / 2, Camera.main.pixelHeight - onScreenPosition.y - iconSize / 2, iconSize, iconSize), LockIcon);
+            }
         }
 
     }

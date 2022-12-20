@@ -55,6 +55,7 @@ namespace ModernAirCombat
     {
         public MKey ToggleThermal;
         public MKey InverseThermal;
+        public MKey Reset;
         public GameObject CameraBase;
         public GameObject ThermalCamera;
         public GameObject NormalCamera;
@@ -62,6 +63,7 @@ namespace ModernAirCombat
         public Camera NormalCam;
         public float FOV = 40f;
         public bool Lock = false;
+        public IEnumerator ResettingCameraIE;
 
         public ThermalVision CameraTV;
         public GameObject LockPoint;
@@ -80,6 +82,7 @@ namespace ModernAirCombat
 
         protected float detectFreqTime = 0;
         protected float destroyDelay = 0;
+        protected bool Resetting = false;
 
 
         private int myPlayerID;
@@ -343,6 +346,7 @@ namespace ModernAirCombat
         public override void SafeAwake()
         {
             myPlayerID = BlockBehaviour.ParentMachine.PlayerID;
+            Reset = AddKey("Reset", "Reset", KeyCode.R);
             ToggleThermal = AddKey("Toggle Thermal", "ToggleThermal", KeyCode.T);
             InverseThermal = AddKey("Toggle Thermal Inverse", "InverseThermal", KeyCode.I);
             initCamera();
@@ -400,6 +404,17 @@ namespace ModernAirCombat
 
         public override void SimulateUpdateHost()
         {
+            if (Reset.IsPressed)
+            {
+                Debug.Log("Resetting Camera~");
+                CameraBase.transform.localRotation = Quaternion.Euler(270, 0, 0);
+                Lock = false;
+                TrackHit.targetCols.Clear();
+                LockPoint.SetActive(false);
+                DataManager.Instance.TV_Lock[myPlayerID] = false;
+                DataManager.Instance.TV_FOV[myPlayerID] = 40f;
+                Resetting = false;
+            }
             if (ToggleThermal.IsPressed)
             {
                 CameraTV.ThermalOn = !CameraTV.ThermalOn;
@@ -424,6 +439,8 @@ namespace ModernAirCombat
             LockPoint.transform.position = LockPosition;
 
             AxisLookAt(CameraBase.transform, LockPosition, Vector3.forward, 1f);
+
+
 
             // send orentation data to A2GScreen
             DataManager.Instance.A2G_Orientation[myPlayerID] = CalculateOrientation();

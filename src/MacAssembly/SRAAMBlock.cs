@@ -515,6 +515,13 @@ namespace ModernAirCombat
             Collider[] ExploCol = Physics.OverlapSphere(transform.position, ExploRadius);
             foreach (Collider hits in ExploCol)
             {
+                try
+                {
+                    hits.gameObject.transform.parent.parent.gameObject.GetComponent<BreakOnForce>().Break();
+                }
+                catch
+                {
+                }
                 if (hits.isTrigger)
                 {
                     if (hits.name == "LockPoint")

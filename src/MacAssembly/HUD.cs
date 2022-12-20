@@ -42,6 +42,8 @@ namespace ModernAirCombat
         public MeshRenderer PitchIconMR;
         public GameObject SpeedBox;
         public GameObject GunAim;
+        public GameObject A2GAim;
+        public MeshRenderer A2GAimMR;
 
         //on panel unfixed
         public GameObject PitchInfo;
@@ -49,6 +51,7 @@ namespace ModernAirCombat
         public GameObject SpeedInfo;
         public GameObject HeightBox;
         public GameObject HeightInfo;
+
 
         public Vector3 overload = Vector3.zero;
         public Vector3 preVelocity;
@@ -177,6 +180,23 @@ namespace ModernAirCombat
                 GunAimMR.material.SetColor("_TintColor", Color.green);
 
                 GunAim.SetActive(false);
+            }
+            if (!Panel.transform.Find("A2GAim"))
+            {
+                A2GAim = new GameObject("A2GAim");
+                A2GAim.transform.SetParent(Panel.transform);
+                A2GAim.transform.localPosition = new Vector3(0f, 0, -0f);
+                A2GAim.transform.localRotation = Quaternion.Euler(0, 0, 0);
+                A2GAim.transform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
+
+                MeshFilter A2GAimMF = A2GAim.AddComponent<MeshFilter>();
+                A2GAimMF.mesh = ModResource.GetMesh("Plane Mesh").Mesh;
+                A2GAimMR = A2GAim.AddComponent<MeshRenderer>();
+                A2GAimMR.material = new Material(Shader.Find("Particles/Alpha Blended"));
+                A2GAimMR.material.SetTexture("_MainTex", ModResource.GetTexture("HUDA2GAim Texture"));
+                A2GAimMR.material.SetColor("_TintColor", Color.green);
+
+                A2GAim.SetActive(false);
             }
 
         }
@@ -408,6 +428,33 @@ namespace ModernAirCombat
             
         }
 
+        public void updateA2GIcon()
+        {
+            if (DataManager.Instance.TV_Lock[myPlayerID])
+            {
+                A2GAim.SetActive(true);
+            }
+            else
+            {
+                A2GAim.SetActive(false);
+            }
+            A2GAim.transform.position = calculateA2GIcon();
+
+            if (Mathf.Abs(A2GAim.transform.localPosition.x) > 0.1f || Mathf.Abs(A2GAim.transform.localPosition.z) > 0.1f)
+            {
+                Vector3 localpositiontmp = Vector3.zero;
+                localpositiontmp.x = Mathf.Min(Mathf.Max(A2GAim.transform.localPosition.x, -0.1f), 0.1f);
+                localpositiontmp.z = Mathf.Min(Mathf.Max(A2GAim.transform.localPosition.z, -0.1f), 0.1f);
+                A2GAimMR.material.SetTexture("_MainTex", ModResource.GetTexture("HUDA2GAim2 Texture"));
+                A2GAim.transform.localPosition = localpositiontmp;
+            }
+            else
+            {
+                A2GAimMR.material.SetTexture("_MainTex", ModResource.GetTexture("HUDA2GAim Texture"));
+
+            }
+        }
+
         public static Vector3 GetIntersectWithLineAndPlane(Vector3 point, Vector3 direct, Vector3 planeNormal, Vector3 planePoint)
         {
             float d = Vector3.Dot(planePoint - point, planeNormal) / Vector3.Dot(direct.normalized, planeNormal);
@@ -438,6 +485,14 @@ namespace ModernAirCombat
             res = Panel.transform.position + (targetOnScreen - PredictionOnScreen);
             return res;
         }
+        public Vector3 calculateA2GIcon()
+        {
+            Vector3 A2GtargetPosition = DataManager.Instance.A2G_TargetData[myPlayerID].position;
+            return GetIntersectWithLineAndPlane( A2GtargetPosition,
+                                                Camera.main.transform.position - A2GtargetPosition,
+                                                transform.up, transform.position);
+        }
+
         public override void SafeAwake()
         {
             BulletSpeed = AddSlider("Bullet Initial Speed", "Bullet Initial Speed", 800, 400f, 1000f);
@@ -455,6 +510,7 @@ namespace ModernAirCombat
             {
                 PitchBase.transform.rotation = Quaternion.LookRotation((Panel.transform.rotation * Vector3.up).normalized);
                 UpdateNumber();
+
             }
         }
         public override void OnSimulateStart()
@@ -481,17 +537,18 @@ namespace ModernAirCombat
             calculateOverload();
 
             UpdateGunPrediction();
-            
+            //updateA2GIcon();
         }
 
         public override void SimulateFixedUpdateClient()
         {
             UpdateGunPrediction();
+            //updateA2GIcon();
         }
 
         void OnGUI()
         {
-
+            //GUI.Box(new Rect(100, 200, 200, 50), DataManager.Instance.A2G_TargetData[myPlayerID].position.ToString());
         }
 
 

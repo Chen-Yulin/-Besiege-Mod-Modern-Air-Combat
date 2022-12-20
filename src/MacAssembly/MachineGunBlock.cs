@@ -169,7 +169,14 @@ namespace ModernAirCombat
                     RaycastHit hit;
                     if (Physics.Raycast(bulletRay, out hit, 10))
                     {
-                        if(hit.collider.isTrigger){
+                        try
+                        {
+                            hit.collider.gameObject.transform.parent.parent.gameObject.GetComponent<BreakOnForce>().Break();
+                        }
+                        catch
+                        {
+                        }
+                        if (hit.collider.isTrigger){
                             return;
                         }
                         //send explo position
