@@ -51,6 +51,7 @@ namespace ModernAirCombat
 
     public class MachineGunBlock : BlockScript
     {
+        public MMenu modelType;
         public MKey FireKey;
         public MToggle EnableSmoke;
         public MSlider Caliber;
@@ -94,6 +95,9 @@ namespace ModernAirCombat
         public int BulletToBeFired = 0;
 
         public float TimeSinceStartUp = 0;
+
+        public int currModelType = 0;
+        public bool currSkinStatus = false;
 
         public void InitHitSound()
         {
@@ -276,7 +280,6 @@ namespace ModernAirCombat
 
         }
 
-        
         IEnumerator Fire(float delTime)
         {
             
@@ -337,7 +340,6 @@ namespace ModernAirCombat
             }
         }
 
-
         public override void SafeAwake()
         {
             myPlayerID = BlockBehaviour.ParentMachine.PlayerID;
@@ -350,10 +352,17 @@ namespace ModernAirCombat
             FiringRate = AddSlider("Firing Rate (/s)", "Firing Rate", 80f, 1f, 100f);
             AmountOfBullet = AddSlider("Amount of Bullets", "Amount of Bullets", 300f, 0f, 10000);
             bulletColor = AddColourSlider("Bullet tracer color", "Bullet tracer color", Color.yellow, false);
-            
+            modelType = AddMenu("Machine Gun Type", 0, new List<string>
+            {
+                "M61",
+                "MK103",
+                "GSH301",
+                "ADEN 30mm"
+            }, false);
 
-            
-            
+
+
+
         }
 
         public void Start()
@@ -366,7 +375,14 @@ namespace ModernAirCombat
             InitFlyingSound();
             InitHitSound();
         }
-        
+
+        public override void BuildingUpdate()
+        {
+            BlockBehaviour.transform.FindChild("Vis").GetComponent<MeshFilter>().sharedMesh = ModResource.GetMesh(modelType.Selection + " Mesh").Mesh;
+            BlockBehaviour.transform.FindChild("Vis").GetComponent<MeshRenderer>().material.SetTexture("_MainTex", ModResource.GetTexture(modelType.Selection + " Texture").Texture);
+            currModelType = modelType.Value;
+            currSkinStatus = OptionsMaster.skinsEnabled;
+        }
 
         public override void OnSimulateStart()
         {
@@ -415,6 +431,17 @@ namespace ModernAirCombat
             while (bulletAssembly.Count > 0)
             {
                 Destroy(bulletAssembly.Dequeue());
+            }
+        }
+
+        protected void Update()
+        {
+            if (currSkinStatus != OptionsMaster.skinsEnabled)
+            {
+                BlockBehaviour.transform.FindChild("Vis").GetComponent<MeshFilter>().sharedMesh = ModResource.GetMesh(modelType.Selection + " Mesh").Mesh;
+                BlockBehaviour.transform.FindChild("Vis").GetComponent<MeshRenderer>().material.SetTexture("_MainTex", ModResource.GetTexture(modelType.Selection + " Texture").Texture);
+                currModelType = modelType.Value;
+                currSkinStatus = OptionsMaster.skinsEnabled;
             }
         }
         public override void SimulateUpdateHost()

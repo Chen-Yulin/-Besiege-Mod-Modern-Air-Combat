@@ -9,11 +9,11 @@
 	<Name>ModernAirCombat</Name>
 	<Author>Chen, Yulin</Author> <!-- FIX: Insert your name here. -->
 	<!-- Major.Minor.Build -->
-	<Version>0.8.1</Version>
+	<Version>0.8.2</Version>
 	
 	<Description>
 	A mod for simulating modern air combat in besiege. 
-	Version 0.8.1
+	Version 0.8.2
 	</Description>
 	<Icon name="icon"/>
 	<Debug>false</Debug>
@@ -162,6 +162,16 @@
 		<Texture name="R-77 Texture" path="MRAAM\R-77.png"/>
 		<Mesh name="R-33 Mesh" path="MRAAM\R-33.obj"/>
 		<Texture name="R-33 Texture" path="MRAAM\R-33.png"/>
+
+		<Mesh name="M61 Mesh" path="MachineGun\MG.obj"/>
+		<Texture name="M61 Texture" path="MachineGun\MG.png"/>
+		<Mesh name="MK103 Mesh" path="MachineGun\MG2.obj"/>
+		<Texture name="MK103 Texture" path="MachineGun\MG2.png"/>
+		<Mesh name="GSH301 Mesh" path="MachineGun\MG3.obj"/>
+		<Texture name="GSH301 Texture" path="MachineGun\MG3.png"/>
+		<Mesh name="ADEN 30mm Mesh" path="MachineGun\MG4.obj"/>
+		<Texture name="ADEN 30mm Texture" path="MachineGun\MG4.png"/>
+		
 
 	</Resources>
 

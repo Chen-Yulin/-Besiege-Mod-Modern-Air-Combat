@@ -695,13 +695,10 @@ namespace ModernAirCombat
 
         public override void BuildingUpdate()
         {
-            if (currModelType != modelType.Value || currSkinStatus != OptionsMaster.skinsEnabled)
-            {
-                BlockBehaviour.transform.FindChild("Vis").GetComponent<MeshFilter>().sharedMesh = ModResource.GetMesh(modelType.Selection + " Mesh").Mesh;
-                BlockBehaviour.transform.FindChild("Vis").GetComponent<MeshRenderer>().material.SetTexture("_MainTex", ModResource.GetTexture(modelType.Selection + " Texture").Texture);
-                currModelType = modelType.Value;
-                currSkinStatus = OptionsMaster.skinsEnabled;
-            }
+            BlockBehaviour.transform.FindChild("Vis").GetComponent<MeshFilter>().sharedMesh = ModResource.GetMesh(modelType.Selection + " Mesh").Mesh;
+            BlockBehaviour.transform.FindChild("Vis").GetComponent<MeshRenderer>().material.SetTexture("_MainTex", ModResource.GetTexture(modelType.Selection + " Texture").Texture);
+            currModelType = modelType.Value;
+            currSkinStatus = OptionsMaster.skinsEnabled;
         }
 
         public void Start()
