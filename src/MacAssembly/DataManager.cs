@@ -84,10 +84,5 @@ namespace ModernAirCombat
                 A2G_TargetData[i] = new A2GTargetData();
             }
         }
-
-
-
-
-
     }
 }

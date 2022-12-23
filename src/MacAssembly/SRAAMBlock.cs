@@ -667,6 +667,11 @@ namespace ModernAirCombat
             catch { }
         }
 
+        public virtual void UpdateLoadInfo()// call in SimulateStart
+        {
+            LoadDataManager.Instance.AddLoad(myPlayerID, myGuid, LoadDataManager.WeaponType.SRAAM, transform);
+        }
+
 
         public override void SafeAwake()
         {
@@ -718,7 +723,6 @@ namespace ModernAirCombat
 
             misslePF.radius = PFRang.Value;
 
-
         }
         protected void Update()
         {
@@ -763,11 +767,12 @@ namespace ModernAirCombat
                 Message missleExplo = MissleExplo.CreateMessage(BlockBehaviour.BuildingBlock.Guid.GetHashCode(), (int)BlockBehaviour.ParentMachine.PlayerID, false);
                 ModNetworking.SendToAll(missleExplo);
             }
+            UpdateLoadInfo();
         }
 
         public override void OnSimulateStop()
         {
-
+            LoadDataManager.Instance.ClearPlayerLoad(myPlayerID);
             KeymsgController.Instance.keyheld[myPlayerID].Remove(myGuid);
         }
 
@@ -883,12 +888,16 @@ namespace ModernAirCombat
             
             if (Launch.EmulationHeld() && myStatus == status.stored)
             {
+                if (StatMaster.isMP)
+                {
+                    ModNetworking.SendToAll(KeymsgController.SendHeld.CreateMessage((int)myPlayerID, (int)myGuid, true));
+                }
+                
                 myStatus = status.launched;
                 //Debug.Log("missle launched");
                 //Debug.Log(detectRange);
                 myRigidbody.drag = 0.1f;
                 myRigidbody.angularDrag = 4.0f;
-
             }
 
             if (myStatus == status.launched)

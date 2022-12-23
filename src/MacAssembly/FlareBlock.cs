@@ -217,6 +217,15 @@ namespace ModernAirCombat
 
         public override void SimulateUpdateHost()
         {
+            if (launchedType.Value == 0)
+            {
+                LoadDataManager.Instance.AddFlareNum(myPlayerID, 8 - FlareAssembly.Count);
+            }
+            else
+            {
+                LoadDataManager.Instance.AddChaffNum(myPlayerID, 8 - ChaffAssembly.Count);
+            }
+
             if (BlockBehaviour.BuildingBlock.Guid.GetHashCode() != 0 && BlockBehaviour.BuildingBlock.Guid.GetHashCode() != myGuid)
                 myGuid = BlockBehaviour.BuildingBlock.Guid.GetHashCode();
 
@@ -250,6 +259,14 @@ namespace ModernAirCombat
 
         public override void SimulateUpdateClient()
         {
+            if (launchedType.Value == 0)
+            {
+                LoadDataManager.Instance.AddFlareNum(myPlayerID, 8 - FlareAssembly.Count);
+            }
+            else
+            {
+                LoadDataManager.Instance.AddChaffNum(myPlayerID, 8 - ChaffAssembly.Count);
+            }
             if (BlockBehaviour.BuildingBlock.Guid.GetHashCode() != 0 && BlockBehaviour.BuildingBlock.Guid.GetHashCode() != myGuid)
                 myGuid = BlockBehaviour.BuildingBlock.Guid.GetHashCode();
 

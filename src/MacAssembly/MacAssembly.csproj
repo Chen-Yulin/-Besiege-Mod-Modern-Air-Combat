@@ -61,6 +61,7 @@
     <Compile Include="GuidedBombBlock.cs" />
     <Compile Include="HUD.cs" />
     <Compile Include="KeyMsgController.cs" />
+    <Compile Include="LoadDisplayer.cs" />
     <Compile Include="MachineGunBlock.cs" />
     <Compile Include="MessageController.cs" />
     <Compile Include="ModController.cs" />

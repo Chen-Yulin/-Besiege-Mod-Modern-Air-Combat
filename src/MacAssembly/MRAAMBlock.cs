@@ -19,6 +19,10 @@ namespace ModernAirCombat
         public new float ExploRadius = 25f;
         public float ActiveDistance = 1200f;
 
+        public override void UpdateLoadInfo()// call in SimulateStart
+        {
+            LoadDataManager.Instance.AddLoad(myPlayerID, myGuid, LoadDataManager.WeaponType.MRAAM, transform);
+        }
         public bool PassiveGetAim()
         {
             
@@ -100,6 +104,8 @@ namespace ModernAirCombat
             AimIcon = ModResource.GetTexture("Aim Icon").Texture;
             myPlayerID = BlockBehaviour.ParentMachine.PlayerID;
         }
+
+
         protected new void Update()
         {
             if (currSkinStatus != OptionsMaster.skinsEnabled)
@@ -179,6 +185,10 @@ namespace ModernAirCombat
 
             if (Launch.EmulationHeld() && myStatus == status.stored)
             {
+                if (StatMaster.isMP)
+                {
+                    ModNetworking.SendToAll(KeymsgController.SendHeld.CreateMessage((int)myPlayerID, (int)myGuid, true));
+                }
                 myStatus = status.launched;
                 //Debug.Log("missle launched");
                 //Debug.Log(detectRange);

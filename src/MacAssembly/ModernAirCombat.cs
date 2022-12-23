@@ -29,6 +29,10 @@ namespace ModernAirCombat
 			Mod.AddComponent<ModController>();
 			Mod.AddComponent<StickMsgReceiver>();
 			Mod.AddComponent<HUDMsgReceiver>();
+			Mod.AddComponent<EOMsgReceiver>();
+			Mod.AddComponent<ModControllerMsgReceiver>();
+			Mod.AddComponent<StickMsgReceiver>();
+			Mod.AddComponent<LoadDataManager>();
 
 			AssetManager.Instance.transform.SetParent(Mod.transform);
 			MessageController.Instance.transform.SetParent(Mod.transform);

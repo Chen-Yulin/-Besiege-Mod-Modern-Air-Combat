@@ -23,7 +23,10 @@ namespace ModernAirCombat
                 "GB"
             }, false);
         }
-
+        public override void UpdateLoadInfo()// call in SimulateStart
+        {
+            LoadDataManager.Instance.AddLoad(myPlayerID, myGuid, LoadDataManager.WeaponType.GBU, transform);
+        }
         public new bool A2GGetAim()
         {
             //Debug.Log(DataManager.Instance.A2G_TargetData[myPlayerID].position);
@@ -147,6 +150,10 @@ namespace ModernAirCombat
 
             if (Launch.EmulationHeld() && myStatus == status.stored)
             {
+                if (StatMaster.isMP)
+                {
+                    ModNetworking.SendToAll(KeymsgController.SendHeld.CreateMessage((int)myPlayerID, (int)myGuid, true));
+                }
                 myStatus = status.launched;
                 //Debug.Log("AGM launched");
                 //Debug.Log(detectRange);
