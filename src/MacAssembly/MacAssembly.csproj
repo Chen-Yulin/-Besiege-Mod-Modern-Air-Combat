@@ -52,6 +52,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="A2GScreenBlock.cs" />
+    <Compile Include="AddBottomBound.cs" />
     <Compile Include="AGMBlock.cs" />
     <Compile Include="AssetManager.cs" />
     <Compile Include="DataManager.cs" />

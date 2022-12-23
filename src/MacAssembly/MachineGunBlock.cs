@@ -171,7 +171,7 @@ namespace ModernAirCombat
                 {
                     Ray bulletRay = new Ray(bullet.transform.position + bullet.transform.forward * 15, bullet.transform.forward * 13);
                     RaycastHit hit;
-                    if (Physics.Raycast(bulletRay, out hit, InitialSpeed.Value/100))
+                    if (Physics.Raycast(bulletRay, out hit, 10))
                     {
                         try
                         {
@@ -255,33 +255,29 @@ namespace ModernAirCombat
 
         public void InitBullet()
         {
-            if (!transform.FindChild("bulletPrefab"))
-            {
-                Bullet = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                Bullet.name = "bulletPrefab";
-                Bullet.transform.SetParent(transform);
-                Destroy(Bullet.GetComponent<MeshFilter>());
-                Destroy(Bullet.GetComponent<BoxCollider>());
-                TrailRenderer trailRenderer = Bullet.GetComponent<TrailRenderer>() ?? Bullet.AddComponent<TrailRenderer>();
-                trailRenderer.autodestruct = false;
-                trailRenderer.receiveShadows = false;
-                trailRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            Bullet = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            Destroy(Bullet.GetComponent<MeshFilter>());
+            Destroy(Bullet.GetComponent<BoxCollider>());
+            TrailRenderer trailRenderer = Bullet.GetComponent<TrailRenderer>() ?? Bullet.AddComponent<TrailRenderer>();
+            trailRenderer.autodestruct = false;
+            trailRenderer.receiveShadows = false;
+            trailRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
 
-                trailRenderer.startWidth = 0.01f * Caliber.Value;
-                trailRenderer.endWidth = 0.0f;
+            trailRenderer.startWidth = 0.01f*Caliber.Value;
+            trailRenderer.endWidth = 0.0f;
 
-                trailRenderer.material = new Material(Shader.Find("Particles/Additive"));
-                trailRenderer.material.SetColor("_TintColor", bulletColor.Value);
+            trailRenderer.material = new Material(Shader.Find("Particles/Additive"));
+            trailRenderer.material.SetColor("_TintColor", bulletColor.Value);
 
-                trailRenderer.enabled = true;
-                trailRenderer.time = 0.07f;
+            trailRenderer.enabled = true;
+            trailRenderer.time = 0.07f;
 
-                Rigidbody rig = Bullet.GetComponent<Rigidbody>() ?? Bullet.AddComponent<Rigidbody>();
-                rig.mass = 0.01f;
-                rig.drag = 0.02f;
+            Rigidbody rig = Bullet.GetComponent<Rigidbody>() ?? Bullet.AddComponent<Rigidbody>();
+            rig.mass = 0.01f;
+            rig.drag = 0.02f;
 
-                Bullet.SetActive(false);
-            }
+            Bullet.SetActive(false);
+
         }
 
         IEnumerator Fire(float delTime)
@@ -352,7 +348,7 @@ namespace ModernAirCombat
             FireKey = AddKey("Fire", "Fire", KeyCode.C);
             EnableSmoke = AddToggle("Smoke Toggle", "Smoke Toggle", true);
             Caliber = AddSlider("Caliber (mm)", "Caliber", 20f, 7.7f, 37f);
-            InitialSpeed = AddSlider("Initial Speed (m/s)", "Initial Speed", 800f, 400f, 1600f);
+            InitialSpeed = AddSlider("Initial Speed (m/s)", "Initial Speed", 800f, 400f, 1000f);
             FiringRate = AddSlider("Firing Rate (/s)", "Firing Rate", 80f, 1f, 100f);
             AmountOfBullet = AddSlider("Amount of Bullets", "Amount of Bullets", 300f, 0f, 10000);
             bulletColor = AddColourSlider("Bullet tracer color", "Bullet tracer color", Color.yellow, false);
@@ -402,7 +398,6 @@ namespace ModernAirCombat
                 }
             }
             catch { }
-
         }
 
         public override void OnSimulateStop()
@@ -451,7 +446,11 @@ namespace ModernAirCombat
         }
         public override void SimulateUpdateHost()
         {
-            LoadDataManager.Instance.AddMachineGunBullet(myPlayerID, BulletsLeft);
+            try
+            {
+                LoadDataManager.Instance.AddMachineGunBullet(myPlayerID, BulletsLeft);
+            }
+            catch { }
             if (BulletsLeft<=0)
             {
                 if (GunFireEffect.transform.GetChild(1).GetComponent<ParticleSystem>().isPlaying)
@@ -506,12 +505,15 @@ namespace ModernAirCombat
                     ModNetworking.SendToAll(KeymsgController.SendHeld.CreateMessage((int)myPlayerID, (int)myGuid, false));
                 }
             }
-
         }
 
         public override void SimulateUpdateClient()
         {
-            LoadDataManager.Instance.AddMachineGunBullet(myPlayerID, BulletsLeft);
+            try
+            {
+                LoadDataManager.Instance.AddMachineGunBullet(myPlayerID, BulletsLeft);
+            }
+            catch { }
             if (BulletsLeft == -11)
             {
                 BulletsLeft = (int)Math.Floor(AmountOfBullet.Value);
@@ -559,7 +561,6 @@ namespace ModernAirCombat
                 GunFireEffect.transform.GetChild(1).GetComponent<ParticleSystem>().Stop();
                 GunFireEffect.transform.GetChild(2).GetComponent<ParticleSystem>().Stop();
             }
-
         }
 
         public override void SimulateFixedUpdateHost()
@@ -585,7 +586,6 @@ namespace ModernAirCombat
             BulletToBeFired = 0;
 
             BulletExplo();
-            
         }
 
         public override void SimulateFixedUpdateClient()
