@@ -256,6 +256,7 @@ namespace ModernAirCombat
         public void InitBullet()
         {
             Bullet = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            Bullet.name = "BulletPrefab";
             Destroy(Bullet.GetComponent<MeshFilter>());
             Destroy(Bullet.GetComponent<BoxCollider>());
             TrailRenderer trailRenderer = Bullet.GetComponent<TrailRenderer>() ?? Bullet.AddComponent<TrailRenderer>();
@@ -316,6 +317,7 @@ namespace ModernAirCombat
             else
             {
                 GameObject bullet = (GameObject)Instantiate(Bullet, transform.position - 3 * transform.forward, transform.rotation);
+                bullet.name = "Bullet";
                 bullet.SetActive(true);
                 if (!StatMaster.isClient)
                 {
@@ -432,6 +434,7 @@ namespace ModernAirCombat
             {
                 Destroy(bulletAssembly.Dequeue());
             }
+            Destroy(Bullet);
         }
 
         protected void Update()

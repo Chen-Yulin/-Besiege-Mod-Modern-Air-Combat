@@ -110,11 +110,6 @@ namespace ModernAirCombat
 
         public void InitFlare()
         {
-            try
-            {
-                Destroy(GameObject.Find("flare"));
-            }
-            catch { }
             FlareObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
             FlareObject.name = "flare";
             Destroy(FlareObject.GetComponent<MeshFilter>());
@@ -310,6 +305,8 @@ namespace ModernAirCombat
                     Destroy(ChaffAssembly[i]);
                 }
             }
+            Destroy(Chaff);
+            Destroy(FlareObject);
 
             KeymsgController.Instance.keyheld[myPlayerID].Remove(myGuid);
         }
