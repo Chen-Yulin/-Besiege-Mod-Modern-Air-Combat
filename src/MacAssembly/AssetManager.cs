@@ -6,6 +6,14 @@ using Modding;
 
 namespace ModernAirCombat
 {
+    public class Asset_HUD
+    {
+        public GameObject HUD;
+        public Asset_HUD(ModAssetBundle modAssetBundle)
+        {
+            HUD = modAssetBundle.LoadAsset<GameObject>("HUD");
+        }
+    }
     public class Asset_Shader
     {
         public Shader GreenShader;
@@ -145,6 +153,8 @@ namespace ModernAirCombat
         public Asset_PerformSmoke PerformSmoke { get; protected set; }
         public Asset_Shader Shader { get; protected set; }
 
+        public Asset_HUD HUD { get; protected set; }
+
 
 
         protected void Awake()
@@ -158,6 +168,7 @@ namespace ModernAirCombat
             BulletExplo = new Asset_BulletExplo(ModResource.GetAssetBundle("Gun Effect"));
             PerformSmoke = new Asset_PerformSmoke(ModResource.GetAssetBundle("Perform Effect"));
             Shader = new Asset_Shader(ModResource.GetAssetBundle("Shader"));
+            HUD = new Asset_HUD(ModResource.GetAssetBundle("HUD AB"));
         }
     }
 }

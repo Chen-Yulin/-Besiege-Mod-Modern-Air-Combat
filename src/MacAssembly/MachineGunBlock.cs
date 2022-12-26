@@ -275,7 +275,7 @@ namespace ModernAirCombat
 
             Rigidbody rig = Bullet.GetComponent<Rigidbody>() ?? Bullet.AddComponent<Rigidbody>();
             rig.mass = 0.01f;
-            rig.drag = 0.02f;
+            rig.drag = 0.005f;
 
             Bullet.SetActive(false);
 
@@ -350,7 +350,7 @@ namespace ModernAirCombat
             FireKey = AddKey("Fire", "Fire", KeyCode.C);
             EnableSmoke = AddToggle("Smoke Toggle", "Smoke Toggle", true);
             Caliber = AddSlider("Caliber (mm)", "Caliber", 20f, 7.7f, 37f);
-            InitialSpeed = AddSlider("Initial Speed (m/s)", "Initial Speed", 800f, 400f, 1000f);
+            InitialSpeed = AddSlider("Initial Speed (m/s)", "Initial Speed", 800f, 400f, 1600f);
             FiringRate = AddSlider("Firing Rate (/s)", "Firing Rate", 80f, 1f, 100f);
             AmountOfBullet = AddSlider("Amount of Bullets", "Amount of Bullets", 300f, 0f, 10000);
             bulletColor = AddColourSlider("Bullet tracer color", "Bullet tracer color", Color.yellow, false);

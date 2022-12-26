@@ -245,7 +245,7 @@ namespace ModernAirCombat
                 ScanColliderFar.transform.SetParent(ScanCollider.transform);
                 ScanColliderFar.transform.localPosition = new Vector3(0f, 4f, 0f);
                 ScanColliderFar.transform.localRotation = Quaternion.Euler(0, 0, 0);
-                ScanColliderFar.transform.localScale = new Vector3(0.1f, 4.1f, 1.3f);
+                ScanColliderFar.transform.localScale = new Vector3(0.11f, 4.1f, 1.3f);
                 radarScanFar = ScanColliderFar.AddComponent<BoxCollider>();
                 radarScanFar.isTrigger = true;
                 radarFarHit = ScanColliderFar.AddComponent<ScanCollisonHit>();

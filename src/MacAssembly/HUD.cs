@@ -8,6 +8,7 @@ using Modding.Modules;
 using Modding;
 using Modding.Blocks;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace ModernAirCombat
 {
@@ -30,12 +31,276 @@ namespace ModernAirCombat
         }
 
     }
+
+    public class HUDPanelFollowCamera : MonoBehaviour
+    {
+        Camera myCamera;
+        Transform HUDTransform;
+        Transform BlockTransform;
+        public Vector3 myInitialScale;
+        // Use this for initialization
+        void Start()
+        {
+            myInitialScale = transform.localScale;
+            BlockTransform = transform.parent.parent.parent;
+            myCamera = Camera.main;
+            HUDTransform = transform.parent.parent.transform;
+        }
+
+        // Update is called once per frame
+        void LateUpdate()
+        {
+            Vector3 Blocklossy = BlockTransform.lossyScale;
+            transform.localScale = new Vector3(myInitialScale.x / Blocklossy.x, myInitialScale.y / Blocklossy.z, myInitialScale.z / Blocklossy.y);
+            transform.position = myCamera.transform.position + 0.7f * HUDTransform.forward;
+        }
+    }
+    public class HUDPitchFollowCamera : MonoBehaviour
+    {
+        Camera myCamera;
+        Transform HUDTransform;
+        Transform BlockTransform;
+        public Vector3 myInitialScale;
+        // Use this for initialization
+        void Start()
+        {
+            myInitialScale = transform.localScale;
+            BlockTransform = transform.parent.parent.parent;
+            myCamera = Camera.main;
+            HUDTransform = transform.parent.parent.transform;
+        }
+
+        // Update is called once per frame
+        void LateUpdate()
+        {
+            Vector3 Blocklossy = BlockTransform.lossyScale;
+            transform.localScale = new Vector3(myInitialScale.x / Blocklossy.x, myInitialScale.y / Blocklossy.z, myInitialScale.z / Blocklossy.y);
+            transform.position = myCamera.transform.position;
+            transform.rotation = Quaternion.LookRotation(BlockTransform.up);
+            transform.rotation = Quaternion.Euler(new Vector3(0, transform.rotation.eulerAngles.y, 0));
+        }
+    }
+    class MeterText
+    {
+        bool useComma, hasDynamicTexts;
+        int scaleDigits, scale;
+        Text m, t0, t1, t2, t3, t4;
+        public MeterText(Transform stationary, Transform scroller, bool useComma, int scaleDigits)
+        {
+            // stationary text, like "1,234"
+            this.m = stationary.GetComponent<Text>();
+            // dynamic text
+            t0 = scroller.Find("T0").GetComponent<Text>(); // "1,0"
+            t1 = scroller.Find("T1").GetComponent<Text>(); // "1,1"
+            t2 = scroller.Find("T2").GetComponent<Text>(); // "1,2"
+            t3 = scroller.Find("T3").GetComponent<Text>(); // "1,3"
+            t4 = scroller.Find("T4").GetComponent<Text>(); // "1,4"
+            this.useComma = useComma; // false: "1234", true: "1,234"; use it for altitude text
+            this.scaleDigits = scaleDigits;
+            // scale=10^scaleDigits
+            scale = 1;
+            for (int i = 0; i < scaleDigits; i++)
+            {
+                scale *= 10;
+            }
+            hasDynamicTexts = true;
+        }
+
+        // initializer for stationary text only
+        public MeterText(Transform m, int scaleDigits)
+        {
+            this.m = m.GetComponent<Text>();
+            this.scaleDigits = scaleDigits;
+            scale = 1;
+            for (int i = 0; i < scaleDigits; i++)
+            {
+                scale *= 10;
+            }
+            hasDynamicTexts = false;
+        }
+
+        // format value into string
+
+
+        // Update text in meter, return offset in (-0.5, 0.5)
+        public float Update(float v)
+        {
+            m.text = v.ToString(); // stationary text, "1234.5" -> "1234"
+            int mid = Mathf.RoundToInt(v / scale); // dynamic text, "1234.5" -> "12"
+            if (hasDynamicTexts)
+            {
+                t0.text = ((mid - 2) * scale).ToString(); // "1,0"
+                t1.text = ((mid - 1) * scale).ToString();
+                t2.text = (mid * scale).ToString();
+                t3.text = ((mid + 1) * scale).ToString();
+                t4.text = ((mid + 2) * scale).ToString();
+            }
+            // (1234.5 - 1200) / 100 = 0.34; (1267.8 - 1300) / 100 = -0.32
+            return (v - mid * scale) / scale;
+        }
+    }
+
+    public class MeterController : MonoBehaviour
+    {
+        public float speed, alt, g, mach, gMax;
+        float yAir, yAlt, vertScale = 0.12f;
+
+        Transform airSpeed, altimeter;
+        MeterText tSpeed, tAlt;
+        void Awake()
+        {
+            Transform mask = transform;
+            airSpeed = mask.Find("Airspeed");
+            altimeter = mask.Find("Altimeter");
+
+            Transform staticText = mask.parent.Find("StaticText");
+            tSpeed = new MeterText(staticText.Find("VelocityText"), airSpeed, false, 2);
+            tAlt = new MeterText(staticText.Find("HeightText"), altimeter, true, 2);
+        }
+
+        // update text in static regions
+
+
+        // update position/text of dynamic components
+        void UpdateUI()
+        {
+            Vector3 pos;
+            pos = airSpeed.localPosition;
+            // texture offset(yAir) + scroll offset
+            pos.y = yAir + tSpeed.Update(speed) * vertScale;
+            airSpeed.localPosition = pos;
+
+            pos = altimeter.localPosition;
+            pos.y = yAlt + tAlt.Update(alt) * vertScale;
+            altimeter.localPosition = pos;
+        }
+
+
+
+        // editor scene support
+        void OnValidate()
+        {
+            if (tSpeed == null)
+            {
+                Awake();
+            }
+            // default scale of HUD image/draw plane in scene
+            FixedUpdate();
+        }
+
+        void FixedUpdate()
+        {
+            UpdateUI();
+        }
+    }
+    public class PredictionAimBehavior : MonoBehaviour
+    {
+        public bool AimOn;
+        private GameObject Solid;
+        private GameObject Imaginary;
+        private GameObject Line;
+        public float maxIconDist = 0.4f;
+        private float distFromCenter;
+        // Use this for initialization
+        void Start()
+        {
+            Solid = transform.Find("Solid").gameObject;
+            Imaginary = transform.Find("Imaginary").gameObject;
+            Line = transform.Find("Line").gameObject;
+        }
+        private float SignedAngle(Vector2 v1, Vector2 v2)
+        {
+            if (v1.x * v2.y - v1.y * v2.x < 0)
+            {
+                return -Vector2.Angle(v1, v2);
+            }
+            else
+            {
+                return Vector2.Angle(v1, v2);
+            }
+        }
+        private void UpdateLine()
+        {
+            Vector3 origin = Vector3.zero;
+            Vector3 end = transform.localPosition;
+            Line.transform.localPosition = (origin + end) / 2 - transform.localPosition;
+            float Angle = SignedAngle(Vector2.right,
+                new Vector2((origin - end).x, (origin - end).y));
+            Line.transform.localRotation = Quaternion.Euler(0, 0, Angle);
+            Line.transform.localScale = new Vector3(distFromCenter, 0.01f, 0.01f);
+            //Debug.Log (Angle);
+        }
+        // Update is called once per frame
+        void LateUpdate()
+        {
+            if (AimOn)
+            {
+                distFromCenter = transform.localPosition.magnitude;
+                if (distFromCenter >= maxIconDist)
+                {
+                    transform.localPosition = (maxIconDist+0.01f) * transform.localPosition.normalized;
+                    distFromCenter = maxIconDist;
+                    Solid.SetActive(false);
+                    Imaginary.SetActive(true);
+                }
+                else
+                {
+                    Solid.SetActive(true);
+                    Imaginary.SetActive(false);
+                }
+                Line.SetActive(true);
+                UpdateLine();
+            }
+            else
+            {
+                Solid.SetActive(false);
+                Imaginary.SetActive(false);
+                Line.SetActive(false);
+            }
+
+        }
+    }
+
+
+
+    public class HUDController : MonoBehaviour
+    {
+        public float velocity = 0;
+        public float height = 0;
+        public float overload = 0;
+        public Text VelocityText;
+        public Text HeightText;
+        public Text OverloadText;
+        // Use this for initialization
+        void Start()
+        {
+            VelocityText = transform.FindChild("Mask").FindChild("Base").FindChild("StaticText").FindChild("VelocityText").GetComponent<Text>();
+            HeightText = transform.FindChild("Mask").FindChild("Base").FindChild("StaticText").FindChild("HeightText").GetComponent<Text>();
+            OverloadText = transform.FindChild("Mask").FindChild("Base").FindChild("StaticText").FindChild("OverLoad").GetComponent<Text>();
+        }
+
+        // Update is called once per frame
+        void LateUpdate()
+        {
+            VelocityText.text = Mathf.Clamp(Mathf.Round(velocity * 0.36f) * 10f, 0, 9999).ToString();
+            HeightText.text = Mathf.Clamp(Mathf.Round(height * 0.1f) * 10f, 0, 99999).ToString();
+            OverloadText.text = "G  " + Mathf.Clamp(Mathf.Round(overload * 1.02f) / 10, 0, 99).ToString();
+
+            transform.FindChild("Mask").FindChild("Base").FindChild("Mask").gameObject.GetComponent<MeterController>().speed = velocity;
+            transform.FindChild("Mask").FindChild("Base").FindChild("Mask").gameObject.GetComponent<MeterController>().alt = height;
+        }
+    }
+
     public class HUDBlock:BlockScript
     {
         public MSlider BulletSpeed;
+        public MSlider maxIconDist;
+        public MColourSlider HUDColor;
+        public MSlider HUDTransparency;
 
         //On panel fixed
         public GameObject Panel;
+        public GameObject Panelbase;
         public GameObject Aimer;
         public GameObject PitchBase;
         public GameObject PitchIcon;
@@ -46,12 +311,13 @@ namespace ModernAirCombat
         public MeshRenderer A2GAimMR;
 
         //on panel unfixed
-        public GameObject PitchInfo;
-        public GameObject OverloadInfo;
-        public GameObject SpeedInfo;
-        public GameObject HeightBox;
-        public GameObject HeightInfo;
+        public Text OverloadInfo;
+        public Text SpeedInfo;
+        public Text HeightInfo;
 
+        public HUDController hudController;
+        public PredictionAimBehavior GunAimController;
+        
 
         public Vector3 overload = Vector3.zero;
         public Vector3 preVelocity;
@@ -64,281 +330,75 @@ namespace ModernAirCombat
                                                                                     , DataType.Single, DataType.Single);
                                                                                     //playerID, targetPosition, targetVelocity, myVelocity, myG
 
-        public IEnumerator refreshData;
-
         public Vector3 GunPredictPosition;
         public bool showPrediction;
-
-        protected bool RefreshNeeded = false;
         protected bool GunAimStatus = false;
-        protected bool PitchIconStatus = false;
 
         public void InitPanel()
         {
-            if (!transform.FindChild("Panel"))
+            if (!transform.FindChild("HUD(Clone)"))
             {
-                Panel = new GameObject("Panel");
+                Panel = Instantiate(AssetManager.Instance.HUD.HUD);
                 Panel.transform.SetParent(transform);
                 Panel.transform.localPosition = new Vector3(0, 0f, 0.35f);
-                Panel.transform.localRotation = Quaternion.Euler(180, 0, 0);
+                Panel.transform.localRotation = Quaternion.Euler(-90, 0, 180);
                 Panel.transform.localScale = new Vector3(1f, 1f, 1f);
                 Panel.SetActive(true);
-            }
-            if (!Panel.transform.FindChild("Aimer"))
-            {
-                Aimer = new GameObject("Aimer");
-                Aimer.transform.SetParent(Panel.transform);
-                Aimer.transform.localPosition = new Vector3(0, 0, 0f);
-                Aimer.transform.localRotation = Quaternion.Euler(0, 0, 0);
-                Aimer.transform.localScale = new Vector3(0.015f, 0.015f, 0.015f);
 
-                MeshFilter AimerMF = Aimer.AddComponent<MeshFilter>();
-                AimerMF.mesh = ModResource.GetMesh("Plane Mesh").Mesh;
-                MeshRenderer AimerMR = Aimer.AddComponent<MeshRenderer>();
-                AimerMR.material = new Material(Shader.Find("Particles/Alpha Blended"));
-                AimerMR.material.SetTexture("_MainTex", ModResource.GetTexture("HUDAimer Texture"));
-                AimerMR.material.SetColor("_TintColor", Color.green);
+                hudController = Panel.AddComponent<HUDController>();
+                hudController.velocity = 0;
+                hudController.height = 0;
 
-                Aimer.SetActive(true);
-            }
-            if (!Panel.transform.FindChild("PitchBase"))
-            {
+                GunAim = Panel.transform.FindChild("Mask").FindChild("Base").FindChild("PredictionAim").gameObject;
+                GunAimController = GunAim.AddComponent<PredictionAimBehavior>();
+                GunAimController.AimOn = false;
 
-
-                PitchBase = new GameObject("PitchBase");
-                PitchBase.transform.SetParent(Panel.transform);
-                PitchBase.transform.localPosition = new Vector3(0, 0, 0f);
-                PitchBase.transform.localRotation = Quaternion.Euler(0, 0, 0);
-                PitchBase.transform.localScale = new Vector3(1f, 1f, 1f);
-
+                Panelbase = Panel.transform.FindChild("Mask").FindChild("Base").gameObject;
+                Panelbase.AddComponent<HUDPanelFollowCamera>();
+                Panel.transform.FindChild("Mask").FindChild("PitchIconBase").gameObject.AddComponent<HUDPitchFollowCamera>();
+                Panel.transform.FindChild("Mask").FindChild("Base").FindChild("Mask").gameObject.AddComponent<MeterController>();
                 
-            }
-            if (!PitchBase.transform.Find("PitchIcon"))
-            {
-                PitchIcon = new GameObject("PitchIcon");
-                PitchIcon.transform.SetParent(PitchBase.transform);
-                PitchIcon.transform.localPosition = new Vector3(0, 0, 0f);
-                PitchIcon.transform.localRotation = Quaternion.Euler(90, 0, 0);
-                PitchIcon.transform.localScale = new Vector3(0.04f, 0.006f, 0.005f);
 
-                MeshFilter PitchIconMF = PitchIcon.AddComponent<MeshFilter>();
-                PitchIconMF.mesh = ModResource.GetMesh("Plane Mesh").Mesh;
-                PitchIconMR = PitchIcon.AddComponent<MeshRenderer>();
-                PitchIconMR.material = new Material(Shader.Find("Particles/Alpha Blended"));
-                PitchIconMR.material.SetTexture("_MainTex", ModResource.GetTexture("HUDPitchUp Texture"));
-                PitchIconMR.material.SetColor("_TintColor", Color.green);
-
-                PitchIcon.SetActive(true);
-            }
-            if (!Panel.transform.Find("SpeedBox"))
-            {
-                SpeedBox = new GameObject("SpeedBox");
-                SpeedBox.transform.SetParent(Panel.transform);
-                SpeedBox.transform.localPosition = new Vector3(0.097f, 0, -0.1f);
-                SpeedBox.transform.localRotation = Quaternion.Euler(0, 0, 0);
-                SpeedBox.transform.localScale = new Vector3(0.032f, 0.006f, 0.015f);
-
-                MeshFilter SpeedBoxMF = SpeedBox.AddComponent<MeshFilter>();
-                SpeedBoxMF.mesh = ModResource.GetMesh("Plane Mesh").Mesh;
-                MeshRenderer SpeedBoxMR = SpeedBox.AddComponent<MeshRenderer>();
-                SpeedBoxMR.material = new Material(Shader.Find("Particles/Alpha Blended"));
-                SpeedBoxMR.material.SetTexture("_MainTex", ModResource.GetTexture("DataBox Texture"));
-                SpeedBoxMR.material.SetColor("_TintColor", Color.green);
-
-                SpeedBox.SetActive(true);
-            }
-            if (!Panel.transform.Find("HeightBox"))
-            {
-                HeightBox = new GameObject("HeightBox");
-                HeightBox.transform.SetParent(Panel.transform);
-                HeightBox.transform.localPosition = new Vector3(-0.097f, 0, -0.1f);
-                HeightBox.transform.localRotation = Quaternion.Euler(0, 0, 0);
-                HeightBox.transform.localScale = new Vector3(0.032f, 0.006f, 0.015f);
-
-                MeshFilter HeightBoxMF = HeightBox.AddComponent<MeshFilter>();
-                HeightBoxMF.mesh = ModResource.GetMesh("Plane Mesh").Mesh;
-                MeshRenderer HeightBoxMR = HeightBox.AddComponent<MeshRenderer>();
-                HeightBoxMR.material = new Material(Shader.Find("Particles/Alpha Blended"));
-                HeightBoxMR.material.SetTexture("_MainTex", ModResource.GetTexture("DataBox Texture"));
-                HeightBoxMR.material.SetColor("_TintColor", Color.green);
-
-                HeightBox.SetActive(true);
-            }
-            if (!Panel.transform.Find("GunAim"))
-            {
-                GunAim = new GameObject("GunAim");
-                GunAim.transform.SetParent(Panel.transform);
-                GunAim.transform.localPosition = new Vector3(0f, 0, -0f);
-                GunAim.transform.localRotation = Quaternion.Euler(0, 0, 0);
-                GunAim.transform.localScale = new Vector3(0.035f, 0.035f, 0.035f);
-
-                MeshFilter GunAimMF = GunAim.AddComponent<MeshFilter>();
-                GunAimMF.mesh = ModResource.GetMesh("Plane Mesh").Mesh;
-                MeshRenderer GunAimMR = GunAim.AddComponent<MeshRenderer>();
-                GunAimMR.material = new Material(Shader.Find("Particles/Alpha Blended"));
-                GunAimMR.material.SetTexture("_MainTex", ModResource.GetTexture("GunAim Texture"));
-                GunAimMR.material.SetColor("_TintColor", Color.green);
-
-                GunAim.SetActive(false);
-            }
-            if (!Panel.transform.Find("A2GAim"))
-            {
-                A2GAim = new GameObject("A2GAim");
-                A2GAim.transform.SetParent(Panel.transform);
-                A2GAim.transform.localPosition = new Vector3(0f, 0, -0f);
-                A2GAim.transform.localRotation = Quaternion.Euler(0, 0, 0);
-                A2GAim.transform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
-
-                MeshFilter A2GAimMF = A2GAim.AddComponent<MeshFilter>();
-                A2GAimMF.mesh = ModResource.GetMesh("Plane Mesh").Mesh;
-                A2GAimMR = A2GAim.AddComponent<MeshRenderer>();
-                A2GAimMR.material = new Material(Shader.Find("Particles/Alpha Blended"));
-                A2GAimMR.material.SetTexture("_MainTex", ModResource.GetTexture("HUDA2GAim Texture"));
-                A2GAimMR.material.SetColor("_TintColor", Color.green);
-
-                A2GAim.SetActive(false);
             }
 
-        }
-
-        IEnumerator RefreshData()
-        {
-            while (true)
-            {
-                yield return new WaitForSeconds(0.2f);
-                RefreshNeeded = true;
-            }
         }
         public void UpdateNumber()
         {
-            //control the updating rate
-            if (!RefreshNeeded)
-            {
-                return;
-            }
-            else
-            {
-                RefreshNeeded = false;
-            }
-
-            //pitchInfo
-            try
-            {
-                Destroy(PitchBase.transform.FindChild("PitchInfo").gameObject);
-            }
-            catch { }
-            PitchInfo = new GameObject("PitchInfo");
-            PitchInfo.transform.SetParent(PitchBase.transform);
-            PitchInfo.transform.localPosition = new Vector3(0.05f, 0f, 0f);
-            PitchInfo.transform.localRotation = Quaternion.Euler(0, 180, 0);
-            PitchInfo.transform.localScale = new Vector3(1f, 1f, 1f);
-            TextMesh PitchInfoText = PitchInfo.AddComponent<TextMesh>();
-            PitchInfoText.text = Math.Round(-Vector3.Angle(Vector3.up, transform.up) + 90).ToString();
-            PitchInfoText.fontSize = 16;
-            PitchInfoText.fontStyle = FontStyle.Normal;
-            PitchInfoText.anchor = TextAnchor.MiddleRight;
-            PitchInfoText.characterSize = 0.015f;
-            PitchInfoText.color = Color.green;
-            PitchInfo.SetActive(true);
-            if (Math.Round(-Vector3.Angle(Vector3.up, transform.up) + 90)<0 && PitchIconStatus == false)
-            {
-                PitchIconMR.material.SetTexture("_MainTex", ModResource.GetTexture("HUDPitchDown Texture"));
-                PitchIconStatus = true;
-            }
-            else if(Math.Round(-Vector3.Angle(Vector3.up, transform.up) + 90) >= 0 && PitchIconStatus == true)
-            {
-                PitchIconMR.material.SetTexture("_MainTex", ModResource.GetTexture("HUDPitchUp Texture"));
-                PitchIconStatus = false;
-            }
 
             //overload info
-            try
-            {
-                Destroy(Panel.transform.FindChild("OverloadInfo").gameObject);
-            }
-            catch { }
-            OverloadInfo = new GameObject("OverloadInfo");
-            OverloadInfo.transform.SetParent(Panel.transform);
-            OverloadInfo.transform.localPosition = new Vector3(0.12f, -0.0f, 0.1f);
-            OverloadInfo.transform.localRotation = Quaternion.Euler(90, 180, 0);
-            OverloadInfo.transform.localScale = new Vector3(1f, 1f, 1f);
-            TextMesh OverloadInfoText = OverloadInfo.AddComponent<TextMesh>();
             if (!StatMaster.isClient)
             {
-                OverloadInfoText.text = "G  " + Math.Round(overload.magnitude / 9.8f, 1).ToString();
+                hudController.overload = overload.magnitude;
             }
             else
             {
-                OverloadInfoText.text = "G  " + Math.Round(HUDMsgReceiver.Instance.Gvalue[myPlayerID] / 9.8f, 1).ToString();
+                hudController.overload = HUDMsgReceiver.Instance.Gvalue[myPlayerID];
             }
-            OverloadInfoText.fontSize = 16;
-            OverloadInfoText.fontStyle = FontStyle.Normal;
-            OverloadInfoText.anchor = TextAnchor.MiddleLeft;
-            OverloadInfoText.characterSize = 0.015f;
-            OverloadInfoText.color = Color.green;
-            OverloadInfo.SetActive(true);
 
-            try
-            {
-                Destroy(Panel.transform.FindChild("SpeedInfo").gameObject);
-            }
-            catch { }
-            SpeedInfo = new GameObject("SpeedInfo");
-            SpeedInfo.transform.SetParent(Panel.transform);
-            SpeedInfo.transform.localPosition = new Vector3(0.07f, -0.0f, -0.1f);
-            SpeedInfo.transform.localRotation = Quaternion.Euler(90, 180, 0);
-            SpeedInfo.transform.localScale = new Vector3(1f, 1f, 1f);
-            TextMesh SpeedInfoText = SpeedInfo.AddComponent<TextMesh>();
+            // speed info
             if (!StatMaster.isClient)
             {
-                SpeedInfoText.text = Math.Min((Math.Round(myRigid.velocity.magnitude * 0.36f) * 10f), 9999).ToString();
+                hudController.velocity = myRigid.velocity.magnitude;
             }
             else
             {
-                SpeedInfoText.text = Math.Min((Math.Round(HUDMsgReceiver.Instance.myVelocity[myPlayerID] * 0.36f) * 10f), 9999).ToString();
+                hudController.velocity = HUDMsgReceiver.Instance.myVelocity[myPlayerID];
             }
-            SpeedInfoText.fontSize = 16;
-            SpeedInfoText.fontStyle = FontStyle.Normal;
-            SpeedInfoText.anchor = TextAnchor.MiddleRight;
-            SpeedInfoText.characterSize = 0.015f;
-            SpeedInfoText.color = Color.green;
-            SpeedInfo.SetActive(true);
 
-            try
-            {
-                Destroy(Panel.transform.FindChild("HeightInfo").gameObject);
-            }
-            catch { }
-            HeightInfo = new GameObject("HeightInfo");
-            HeightInfo.transform.SetParent(Panel.transform);
-            HeightInfo.transform.localPosition = new Vector3(-0.123f, -0.0f, -0.1f);
-            HeightInfo.transform.localRotation = Quaternion.Euler(90, 180, 0);
-            HeightInfo.transform.localScale = new Vector3(1f, 1f, 1f);
-            TextMesh HeightInfoText = HeightInfo.AddComponent<TextMesh>();
-            HeightInfoText.text = Math.Min((Math.Round(transform.position.y * 0.1f) * 10f), 9999).ToString();
-            HeightInfoText.fontSize = 16;
-            HeightInfoText.fontStyle = FontStyle.Normal;
-            HeightInfoText.anchor = TextAnchor.MiddleRight;
-            HeightInfoText.characterSize = 0.015f;
-            HeightInfoText.color = Color.green;
-            HeightInfo.SetActive(true);
+            //height info
+            hudController.height = transform.position.y;
         }
-
         public void UpdateGunPrediction()
         {
             if (!StatMaster.isClient)
             {
                 if (DataManager.Instance.BVRData[myPlayerID].position == Vector3.zero)
                 {
-                    showPrediction = false;
-                    if (GunAim.activeSelf)
-                    {
-                        GunAim.SetActive(false);
-                    }
+                    GunAimController.AimOn = false;
                 }
                 else
                 {
-                    showPrediction = true;
+                    GunAimController.AimOn = true;
                     calculatePredictPosition(   DataManager.Instance.BVRData[myPlayerID].position, 
                                                 DataManager.Instance.BVRData[myPlayerID].velocity, 
                                                 myTransform.position, 
@@ -346,48 +406,18 @@ namespace ModernAirCombat
 
                     Vector3 originLocal = GunAim.transform.localPosition;
                     GunAim.transform.position = calculatePredictedIcon(DataManager.Instance.BVRData[myPlayerID].position);
-                    if (Mathf.Abs(GunAim.transform.localPosition.x) > 0.1f || Mathf.Abs(GunAim.transform.localPosition.z) > 0.1f)
-                    {
-                        Vector3 localpositiontmp = Vector3.zero;
-                        localpositiontmp.x = Mathf.Min(Mathf.Max(GunAim.transform.localPosition.x, -0.1f), 0.1f);
-                        localpositiontmp.z = Mathf.Min(Mathf.Max(GunAim.transform.localPosition.z, -0.1f), 0.1f);
-                        if (!GunAimStatus)
-                        {
-                            GunAim.GetComponent<MeshRenderer>().material.SetTexture("_MainTex", ModResource.GetTexture("GunAim2 Texture"));
-                            GunAimStatus = true;
-                        }
-                        GunAim.transform.localPosition = Vector3.Lerp(originLocal, localpositiontmp, 0.1f);
-                    }
-                    else
-                    {
-                        if (GunAimStatus)
-                        {
-                            GunAim.GetComponent<MeshRenderer>().material.SetTexture("_MainTex", ModResource.GetTexture("GunAim Texture"));
-                            GunAimStatus = false;
-                        }
-                        GunAim.transform.localPosition = Vector3.Lerp(originLocal, GunAim.transform.localPosition, 0.1f);
-
-                    }
-
-                    if (!GunAim.activeSelf)
-                    {
-                        GunAim.SetActive(true);
-                    }
+                    GunAim.transform.localPosition = Vector3.Lerp(originLocal, GunAim.transform.localPosition, 0.2f);
                 }
             }
             else // is Client
             {
                 if (HUDMsgReceiver.Instance.TargetPosition[myPlayerID] == Vector3.zero)
                 {
-                    showPrediction = false;
-                    if (GunAim.activeSelf)
-                    {
-                        GunAim.SetActive(false);
-                    }
+                    GunAimController.AimOn = false;
                 }
                 else
                 {
-                    showPrediction = true;
+                    GunAimController.AimOn = true;
                     calculatePredictPosition(HUDMsgReceiver.Instance.TargetPosition[myPlayerID], 
                                             HUDMsgReceiver.Instance.TargetVelocity[myPlayerID], 
                                             myTransform.position,
@@ -395,39 +425,12 @@ namespace ModernAirCombat
 
                     Vector3 originLocal = GunAim.transform.localPosition;
                     GunAim.transform.position = calculatePredictedIcon(HUDMsgReceiver.Instance.TargetPosition[myPlayerID]);
-                    if (Mathf.Abs(GunAim.transform.localPosition.x) > 0.1f || Mathf.Abs(GunAim.transform.localPosition.z) > 0.1f)
-                    {
-                        Vector3 localpositiontmp = Vector3.zero;
-                        localpositiontmp.x = Mathf.Min(Mathf.Max(GunAim.transform.localPosition.x, -0.1f), 0.1f);
-                        localpositiontmp.z = Mathf.Min(Mathf.Max(GunAim.transform.localPosition.z, -0.1f), 0.1f);
-                        if (!GunAimStatus)
-                        {
-                            GunAim.GetComponent<MeshRenderer>().material.SetTexture("_MainTex", ModResource.GetTexture("GunAim2 Texture"));
-                            GunAimStatus = true;
-                        }
-                        GunAim.transform.localPosition = Vector3.Lerp(originLocal, localpositiontmp, 0.1f);
-                    }
-                    else
-                    {
-                        if (GunAimStatus)
-                        {
-                            GunAim.GetComponent<MeshRenderer>().material.SetTexture("_MainTex", ModResource.GetTexture("GunAim Texture"));
-                            GunAimStatus = false;
-                        }
-                        GunAim.transform.localPosition = Vector3.Lerp(originLocal, GunAim.transform.localPosition, 0.1f);
-
-                    }
-
-                    if (!GunAim.activeSelf)
-                    {
-                        GunAim.SetActive(true);
-                    }
+                    GunAim.transform.localPosition = Vector3.Lerp(originLocal, GunAim.transform.localPosition, 0.2f);
                 }
             }
             
             
         }
-
         public void updateA2GIcon()
         {
             if (DataManager.Instance.TV_Lock[myPlayerID])
@@ -466,7 +469,6 @@ namespace ModernAirCombat
             overload += new Vector3(0, 9.8f, 0);
             preVelocity = myRigid.velocity;
         }
-
         public void calculatePredictPosition(Vector3 targetPosition, Vector3 targetVelocity, Vector3 myPosition, float BulletSpeed)
         {
             float estimatedTime;
@@ -474,15 +476,18 @@ namespace ModernAirCombat
             GunPredictPosition = targetPosition + targetVelocity * estimatedTime;
             estimatedTime = (GunPredictPosition - transform.position).magnitude / BulletSpeed;
             GunPredictPosition = targetPosition + targetVelocity * estimatedTime;
+            estimatedTime = (GunPredictPosition - transform.position).magnitude / BulletSpeed;
+            GunPredictPosition = targetPosition + targetVelocity * estimatedTime;
+            //gravity modification
+            GunPredictPosition += estimatedTime * estimatedTime * 0.5f * 32 * Vector3.up;
         }
-
         public Vector3 calculatePredictedIcon(Vector3 targetPosition)
         {
             Vector3 res = Vector3.zero;
 
-            Vector3 targetOnScreen = GetIntersectWithLineAndPlane(targetPosition, Camera.main.transform.position - targetPosition, transform.up, transform.position);
-            Vector3 PredictionOnScreen = GetIntersectWithLineAndPlane(GunPredictPosition, Camera.main.transform.position - GunPredictPosition, transform.up, transform.position);
-            res = Panel.transform.position + (targetOnScreen - PredictionOnScreen);
+            Vector3 targetOnScreen = GetIntersectWithLineAndPlane(targetPosition, Camera.main.transform.position - targetPosition, transform.up, Camera.main.transform.position + 0.7f * transform.up);
+            Vector3 PredictionOnScreen = GetIntersectWithLineAndPlane(GunPredictPosition, Camera.main.transform.position - GunPredictPosition, transform.up, Camera.main.transform.position + 0.7f * transform.up);
+            res = Panelbase.transform.position + (targetOnScreen - PredictionOnScreen);
             return res;
         }
         public Vector3 calculateA2GIcon()
@@ -492,15 +497,30 @@ namespace ModernAirCombat
                                                 Camera.main.transform.position - A2GtargetPosition,
                                                 transform.up, transform.position);
         }
+        public void resetHUDOnSimulate()
+        {
+            Transform Base = Panel.transform.FindChild("Mask").FindChild("Base");
+            Transform PitchIconBase = Panel.transform.FindChild("Mask").FindChild("PitchIconBase");
+            Base.localScale = Base.gameObject.GetComponent<HUDPanelFollowCamera>().myInitialScale;
+            PitchIconBase.localScale = PitchIconBase.gameObject.GetComponent<HUDPitchFollowCamera>().myInitialScale;
+            DestroyImmediate(Base.gameObject.GetComponent<HUDPanelFollowCamera>());
+            DestroyImmediate(PitchIconBase.gameObject.GetComponent<HUDPitchFollowCamera>());
+            Base.gameObject.AddComponent<HUDPanelFollowCamera>();
+            PitchIconBase.gameObject.AddComponent<HUDPitchFollowCamera>();
+            hudController = Panel.GetComponent<HUDController>();
+            GunAimController.maxIconDist = maxIconDist.Value;
+        }
 
         public override void SafeAwake()
         {
-            BulletSpeed = AddSlider("Bullet Initial Speed", "Bullet Initial Speed", 800, 400f, 1000f);
+            maxIconDist = AddSlider("Float Icon Range", "maxIconDist", 0.4f, 0.3f, 1f);
+            BulletSpeed = AddSlider("Bullet Initial Speed", "Bullet Initial Speed", 800, 400f, 1600f);
+            HUDColor = AddColourSlider("HUD Color", "HUDColor", Color.black, false);
+            HUDTransparency = AddSlider("HUD Transparency", "HUDTransparency", 0.8f, 0f, 1f);
 
             myTransform = transform;
             myRigid = GetComponent<Rigidbody>();
             myPlayerID = BlockBehaviour.ParentMachine.PlayerID;
-            refreshData = RefreshData();
 
             InitPanel();
         }
@@ -508,19 +528,27 @@ namespace ModernAirCombat
         {
             if (IsSimulating)
             {
-                PitchBase.transform.rotation = Quaternion.LookRotation((Panel.transform.rotation * Vector3.up).normalized);
                 UpdateNumber();
-
             }
+        }
+        public override void BuildingUpdate()
+        {
+            RawImage glass = Panel.transform.FindChild("Mask").GetComponent<RawImage>();
+            Color tmpColor = HUDColor.Value;
+            tmpColor.a = 1 - HUDTransparency.Value;
+            glass.color = tmpColor;
         }
         public override void OnSimulateStart()
         {
-            StartCoroutine(refreshData);
+            resetHUDOnSimulate();
+            RawImage glass = Panel.transform.FindChild("Mask").GetComponent<RawImage>();
+            Color tmpColor = HUDColor.Value;
+            tmpColor.a = 1 - HUDTransparency.Value;
+            glass.color = tmpColor;
         }
 
         public override void OnSimulateStop()
         {
-            StopCoroutine(refreshData);
         }
 
         public override void SimulateFixedUpdateHost()
@@ -535,20 +563,17 @@ namespace ModernAirCombat
 
             }
             calculateOverload();
-
             UpdateGunPrediction();
-            //updateA2GIcon();
         }
 
         public override void SimulateFixedUpdateClient()
         {
             UpdateGunPrediction();
-            //updateA2GIcon();
         }
 
         void OnGUI()
         {
-            //GUI.Box(new Rect(100, 200, 200, 50), DataManager.Instance.A2G_TargetData[myPlayerID].position.ToString());
+            //GUI.Box(new Rect(100, 200, 200, 50), transform.up.ToString());
         }
 
 

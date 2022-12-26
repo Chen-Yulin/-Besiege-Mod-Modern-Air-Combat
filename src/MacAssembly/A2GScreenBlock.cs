@@ -49,7 +49,7 @@ namespace ModernAirCombat
         public TextMesh InverseMesh;
         public Texture LockIcon;
 
-        public float iconSize = 16;
+        public float iconSize = 32;
         private int myPlayerID;
 
         public static MessageType ClientTrackMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Boolean);

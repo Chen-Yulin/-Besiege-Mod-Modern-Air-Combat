@@ -9,11 +9,11 @@
 	<Name>ModernAirCombat</Name>
 	<Author>Chen, Yulin</Author> <!-- FIX: Insert your name here. -->
 	<!-- Major.Minor.Build -->
-	<Version>0.8.4</Version>
+	<Version>0.9.0</Version>
 	
 	<Description>
 	A mod for simulating modern air combat in besiege. 
-	Version 0.8.4
+	Version 0.9.0
 	</Description>
 	<Icon name="icon"/>
 	<Debug>false</Debug>
@@ -126,6 +126,10 @@
 		<Texture name="GunAim2 Texture" path="HUD\GunAim2.png"/>
 		<Texture name="HUDA2GAim Texture" path="HUD\A2GAim.png"/>
 		<Texture name="HUDA2GAim2 Texture" path="HUD\A2GAim2.png"/>
+
+		<Texture name="HUDPanelBase Texture" path="HUD\PanelBase.png"/>
+		<AssetBundle name="HUD AB" path="hud.ab"/>
+
 		<Mesh name="Stick Mesh" path="Stick\stick.obj"/>
 		<Texture name="Stick Texture" path="Stick\stick.png"/>
 		<Texture name="Cross Texture" path="Stick\cross.png"/>
