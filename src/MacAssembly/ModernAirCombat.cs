@@ -34,6 +34,10 @@ namespace ModernAirCombat
 			Mod.AddComponent<StickMsgReceiver>();
 			Mod.AddComponent<LoadDataManager>();
 			Mod.AddComponent<AddBottomBound>();
+			//new 
+			Mod.AddComponent<Radar2CCData>();
+			Mod.AddComponent<CC2RadarDisplayerData>();
+
 
 			AssetManager.Instance.transform.SetParent(Mod.transform);
 			MessageController.Instance.transform.SetParent(Mod.transform);

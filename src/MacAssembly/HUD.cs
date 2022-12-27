@@ -38,6 +38,7 @@ namespace ModernAirCombat
         Transform HUDTransform;
         Transform BlockTransform;
         public Vector3 myInitialScale;
+        public float BaseScale = 1;
         // Use this for initialization
         void Start()
         {
@@ -51,7 +52,7 @@ namespace ModernAirCombat
         void LateUpdate()
         {
             Vector3 Blocklossy = BlockTransform.lossyScale;
-            transform.localScale = new Vector3(myInitialScale.x / Blocklossy.x, myInitialScale.y / Blocklossy.z, myInitialScale.z / Blocklossy.y);
+            transform.localScale = BaseScale * new Vector3(myInitialScale.x / Blocklossy.x, myInitialScale.y / Blocklossy.z, myInitialScale.z / Blocklossy.y);
             transform.position = myCamera.transform.position + 0.7f * HUDTransform.forward;
         }
     }
@@ -167,7 +168,7 @@ namespace ModernAirCombat
             Vector3 pos;
             pos = airSpeed.localPosition;
             // texture offset(yAir) + scroll offset
-            pos.y = yAir + tSpeed.Update(speed) * vertScale;
+            pos.y = yAir + tSpeed.Update(speed*3.6f) * vertScale;
             airSpeed.localPosition = pos;
 
             pos = altimeter.localPosition;
@@ -297,6 +298,7 @@ namespace ModernAirCombat
         public MSlider maxIconDist;
         public MColourSlider HUDColor;
         public MSlider HUDTransparency;
+        public MSlider PanelBaseScale;
 
         //On panel fixed
         public GameObject Panel;
@@ -513,6 +515,7 @@ namespace ModernAirCombat
 
         public override void SafeAwake()
         {
+            PanelBaseScale = AddSlider("Panel Scale", "PanelScale", 1f, 0.5f, 2f);
             maxIconDist = AddSlider("Float Icon Range", "maxIconDist", 0.4f, 0.3f, 1f);
             BulletSpeed = AddSlider("Bullet Initial Speed", "Bullet Initial Speed", 800, 400f, 1600f);
             HUDColor = AddColourSlider("HUD Color", "HUDColor", Color.black, false);
@@ -537,6 +540,7 @@ namespace ModernAirCombat
             Color tmpColor = HUDColor.Value;
             tmpColor.a = 1 - HUDTransparency.Value;
             glass.color = tmpColor;
+            Panelbase.GetComponent<HUDPanelFollowCamera>().BaseScale = PanelBaseScale.Value;
         }
         public override void OnSimulateStart()
         {
@@ -545,6 +549,7 @@ namespace ModernAirCombat
             Color tmpColor = HUDColor.Value;
             tmpColor.a = 1 - HUDTransparency.Value;
             glass.color = tmpColor;
+            Panelbase.GetComponent<HUDPanelFollowCamera>().BaseScale = PanelBaseScale.Value;
         }
 
         public override void OnSimulateStop()

@@ -1,0 +1,66 @@
+<Block>
+	<!-- Block definition file.
+		 Optional elements are mostly out-commented.
+		 Remember to insert appropriate values where specified,
+		 the mod will not load correctly until you do.
+		 Restart the game to load the block once this file is completed.
+		 
+		 Values that should always be changed are marked with "TODO".
+		 
+		 See the documentation for further information on any of these elements.
+	-->
+	
+	<!-- Optional. Enables debug mode.
+		 In debug mode, colliders and adding points are shown visually
+		 to assist in positioning them correctly.
+		 (Capsule colliders are shown as cubes, imagine their edges were rounded off.) -->
+	<Debug>false</Debug>
+	
+	<!-- ID of your block. See "Note on IDs" in Mod.xml.
+		 The ID must be unique among blocks in your mod.
+		 It may conflict with blocks of other mods, the mod loader handles this.
+		 The easiest way of assigning IDs is to use 1, 2, 3, etc.-->
+	<ID>17</ID>
+	
+	<!-- Name of the block, shown in the user interface. -->
+	<Name>CentralController</Name>
+	
+	<!-- TODO: Change the mass to something appropriate -->
+	<Mass>0.3</Mass>
+	
+	<Script>ModernAirCombat.CentralController</Script>
+	
+	<Mesh name="Displayer Mesh"> <!-- Must be defined as a resource in the manifest. -->
+		<Position x="0.0" y="0.0" z="0.0" />
+		<Rotation x="270" y="0" z="180" />
+		<Scale x="1.0" y="1.0" z="1.0" />
+	</Mesh>
+	
+	<Texture name="Displayer Texture" /> <!-- Must be defined as a resource in the manifest. -->
+	
+	<Icon>
+		<Position x="0.1" y="-0.1" z="-0.1" />
+		<Rotation x="45" y="225" z="0" />
+		<Scale x="2" y="2" z="2" />
+	</Icon>
+
+	
+	<Colliders>
+		<BoxCollider>
+			<Position x="0.0" y="0.0" z="0.075" />
+			<Rotation x="270" y="0.0" z="180" />
+			<Scale x="0.35" y="0.05" z="0.35" />
+		</BoxCollider>
+	</Colliders>
+	
+	<BasePoint hasAddingPoint="false">
+		<Stickiness enabled="true" radius="0.3" />
+		<!-- Can only have motion if sticky -->
+		<Motion x="false" y="false" z="false" /> <!-- Optional -->
+	</BasePoint>
+	
+	<AddingPoints>
+		<!-- TODO: Insert AddingPoint definitions here. Example:-->
+
+	</AddingPoints>
+</Block>

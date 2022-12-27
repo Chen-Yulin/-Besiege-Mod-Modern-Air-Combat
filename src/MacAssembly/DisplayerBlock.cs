@@ -84,43 +84,41 @@ namespace ModernAirCombat
 
     }
 
+    //public class ScanLineController : MonoBehaviour
+    //{
+    //    public float frequency = 1;
+    //    public float angleLeft = -60;
+    //    public float angleRight = 60;
+    //    public float currAngle = 0;
+    //    public bool direction = false;
 
+    //    protected void Start()
+    //    {
+    //        currAngle = angleLeft;
+    //    }
 
-    public class ScanLineController : MonoBehaviour
-    {
-        public float frequency = 1;
-        public float angleLeft = -60;
-        public float angleRight = 60;
-        public float currAngle = 0;
-        public bool direction = false;
+    //    protected void FixedUpdate()
+    //    {
+    //        if (direction == false)
+    //        {
+    //            currAngle += 1.2f * frequency;
+    //            if (currAngle >= angleRight)
+    //            {
+    //                direction = true;
+    //            }
+    //        }
+    //        else
+    //        {
+    //            currAngle -= 1.2f * frequency;
+    //            if (currAngle <= angleLeft)
+    //            {
+    //                direction = false;
+    //            }
+    //        }
+    //        //Debug.Log(currAngle);
+    //    }
 
-        protected void Start()
-        {
-            currAngle = angleLeft;
-        }
-
-        protected void FixedUpdate()
-        {
-            if (direction == false)
-            {
-                currAngle += 1.2f * frequency;
-                if (currAngle >= angleRight)
-                {
-                    direction = true;
-                }
-            }
-            else
-            {
-                currAngle -= 1.2f * frequency;
-                if (currAngle <= angleLeft)
-                {
-                    direction = false;
-                }
-            }
-            //Debug.Log(currAngle);
-        }
-
-    }
+    //}
 
     class DisplayerBlock : BlockScript
     {

@@ -258,6 +258,7 @@ namespace ModernAirCombat
             Bullet = GameObject.CreatePrimitive(PrimitiveType.Cube);
             Bullet.name = "BulletPrefab";
             Destroy(Bullet.GetComponent<MeshFilter>());
+            Destroy(Bullet.GetComponent<MeshRenderer>());
             Destroy(Bullet.GetComponent<BoxCollider>());
             TrailRenderer trailRenderer = Bullet.GetComponent<TrailRenderer>() ?? Bullet.AddComponent<TrailRenderer>();
             trailRenderer.autodestruct = false;
