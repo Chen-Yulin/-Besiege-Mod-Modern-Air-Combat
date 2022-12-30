@@ -157,6 +157,9 @@
 		<Texture name="MRAAMLoad Texture" path="LoadDisplayer\MRAAM.png"/>
 		<Texture name="AGMLoad Texture" path="LoadDisplayer\AGM.png"/>
 		<Texture name="GBULoad Texture" path="LoadDisplayer\GBU.png"/>
+		<Mesh name="pilot Mesh" path="CentralController\pilot.obj"/>
+		<Texture name="pilot Texture" path="CentralController\pilot.png"/>
+		<AssetBundle name="RadarScreen AB" path="radarscreen.ab"/>
 
 		<!--  for different appearance options
 		-->

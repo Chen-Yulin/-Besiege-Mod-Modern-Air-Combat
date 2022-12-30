@@ -28,7 +28,7 @@
 	<!-- TODO: Change the mass to something appropriate -->
 	<Mass>0.3</Mass>
 	
-	<Script>ModernAirCombat.DisplayerBlock</Script>
+	<Script>ModernAirCombat.MFD</Script>
 	
 	<Mesh name="Displayer Mesh"> <!-- Must be defined as a resource in the manifest. -->
 		<Position x="0.0" y="0.0" z="0.0" />

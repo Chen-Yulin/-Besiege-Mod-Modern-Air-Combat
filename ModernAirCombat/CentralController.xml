@@ -30,26 +30,26 @@
 	
 	<Script>ModernAirCombat.CentralController</Script>
 	
-	<Mesh name="Displayer Mesh"> <!-- Must be defined as a resource in the manifest. -->
-		<Position x="0.0" y="0.0" z="0.0" />
-		<Rotation x="270" y="0" z="180" />
-		<Scale x="1.0" y="1.0" z="1.0" />
+	<Mesh name="pilot Mesh"> <!-- Must be defined as a resource in the manifest. -->
+		<Position x="0.0" y="0.0" z="0.35" />
+		<Rotation x="90" y="0" z="0" />
+		<Scale x="0.23" y="0.23" z="0.23" />
 	</Mesh>
 	
-	<Texture name="Displayer Texture" /> <!-- Must be defined as a resource in the manifest. -->
+	<Texture name="pilot Texture" /> <!-- Must be defined as a resource in the manifest. -->
 	
 	<Icon>
 		<Position x="0.1" y="-0.1" z="-0.1" />
 		<Rotation x="45" y="225" z="0" />
-		<Scale x="2" y="2" z="2" />
+		<Scale x="0.18" y="0.18" z="0.18" />
 	</Icon>
 
 	
 	<Colliders>
 		<BoxCollider>
-			<Position x="0.0" y="0.0" z="0.075" />
+			<Position x="0.0" y="0.0" z="0.31" />
 			<Rotation x="270" y="0.0" z="180" />
-			<Scale x="0.35" y="0.05" z="0.35" />
+			<Scale x="0.35" y="0.6" z="0.35" />
 		</BoxCollider>
 	</Colliders>
 	

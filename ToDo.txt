@@ -1,12 +1,11 @@
-x kill air wall
-
-+ missile ignite other missile
-
-+ optimize turning rate
-
-+ air2ground
-
 + add virtual key
 
 + RWR radius
+
+MFD, CC
+- MFD_RadarDisplayer enemy use dictionary
+- A2G
+- Load
+- BlackOut
+
 

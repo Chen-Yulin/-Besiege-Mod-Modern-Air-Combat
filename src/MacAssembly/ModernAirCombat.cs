@@ -31,12 +31,15 @@ namespace ModernAirCombat
 			Mod.AddComponent<HUDMsgReceiver>();
 			Mod.AddComponent<EOMsgReceiver>();
 			Mod.AddComponent<ModControllerMsgReceiver>();
-			Mod.AddComponent<StickMsgReceiver>();
 			Mod.AddComponent<LoadDataManager>();
 			Mod.AddComponent<AddBottomBound>();
 			//new 
-			Mod.AddComponent<Radar2CCData>();
 			Mod.AddComponent<CC2RadarDisplayerData>();
+			Mod.AddComponent<RadarDisplayerSimulator_MsgReceiver>();
+			Mod.AddComponent<MFDMsgReceiver>();
+			Mod.AddComponent<CCData>();
+			Mod.AddComponent<CCDataReceiver>();
+			Mod.AddComponent<CC2LoadDisplayerData>();
 
 
 			AssetManager.Instance.transform.SetParent(Mod.transform);

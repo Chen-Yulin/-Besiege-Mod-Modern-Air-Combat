@@ -388,6 +388,7 @@ namespace ModernAirCombat
             DataManager.Instance.TV_LockPosition[myPlayerID] = LockPosition;
             DataManager.Instance.TV_FOV[myPlayerID] = FOV;
             DataManager.Instance.A2G_TargetData[myPlayerID].velocity = LockVelocity;
+            DataManager.Instance.A2G_TargetData[myPlayerID].position = LockPosition;
             DataManager.Instance.EO_InverseThermal[myPlayerID] = CameraTV.IsInverse;
             DataManager.Instance.EO_ThermalOn[myPlayerID] = CameraTV.ThermalOn;
 

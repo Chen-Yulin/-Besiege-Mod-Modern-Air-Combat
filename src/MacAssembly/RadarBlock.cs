@@ -36,6 +36,7 @@ namespace ModernAirCombat
         public float closingRate;
         public float distance;
         public int playerID = -1;
+        public float pitch = 0;
 
         public Target()
         {
@@ -70,7 +71,10 @@ namespace ModernAirCombat
             closingRate = calculateClossingRate(position, velocity, radar.transform.position, radar.GetComponent<Rigidbody>().velocity);
             //calculate the angle displayed on displayer
             //displayAngle = vector2angle(new Vector2(myVelocity.x, myVelocity.z))-vector2angle(new Vector2(-relativePositionNormalized.x,-relativePositionNormalized.z));
-            
+            float deltaPitch = Vector3.Angle(Vector3.up, radar.transform.forward) 
+                                - Vector3.Angle(Vector3.up, col.transform.position - radar.transform.position);
+            pitch = Mathf.Clamp(deltaPitch, -35, 35);
+
             if (col.attachedRigidbody.gameObject.GetComponent<BlockBehaviour>().Team == radar.Team)
             {
                 enemy = false;
@@ -140,6 +144,7 @@ namespace ModernAirCombat
             if (targets[currRegion].hasObject)
             {
                 targets[currRegion].hasObject = false;
+                targets[currRegion].distance = 0;
             }
         }
     }
@@ -175,6 +180,9 @@ namespace ModernAirCombat
         public IEnumerator SendRadarHead;
 
         public static MessageType ClientRadarHeadMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Vector3);
+        //tmp target data
+        // playerID, targetIndex, distance, hasObject
+        public static MessageType ClientTmpTargetData = ModNetworking.CreateMessageType(DataType.Integer, DataType.Integer, DataType.Single);
 
         protected Mesh scannerMesh;
         protected Mesh radarHeadMesh;
@@ -394,6 +402,7 @@ namespace ModernAirCombat
             {
                 StopCoroutine(SendRadarHead);
             }
+            RadarDisplayerSimulator_MsgReceiver.Instance.CleartmpTargetData(myPlayerID);
         }
 
         public override void SimulateFixedUpdateHost()
@@ -403,6 +412,8 @@ namespace ModernAirCombat
                 GetTWSAim();
             }
             catch { }
+            int currRegion = (int)Math.Floor((scanAngle + 60) / 1.2f + 0.5f);
+            ModNetworking.SendToAll(ClientTmpTargetData.CreateMessage(myPlayerID, currRegion, targetManagerRadar.targets[currRegion].distance));
             //RadarBase.transform.position = myTransform.position+0.5f*myTransform.localScale.z*transform.forward;
             RadarBase.transform.rotation = Quaternion.LookRotation((myTransform.rotation * Vector3.back).normalized);
             
@@ -429,5 +440,12 @@ namespace ModernAirCombat
             RadarBase.transform.rotation = Quaternion.LookRotation((myTransform.rotation * Vector3.back).normalized);
             ScanCollider.transform.localRotation = Quaternion.Lerp(ScanCollider.transform.localRotation, Quaternion.Euler(RadarMsgReceiver.Instance.ScanColLocalRotation[myPlayerID]),0.2f);
         }
+        private void OnGUI()
+        {
+            //GUI.Box(new Rect(200, 200, 100, 50), targetManagerRadar.targets[49].hasObject.ToString());
+            //GUI.Box(new Rect(200, 250, 100, 50), targetManagerRadar.targets[50].hasObject.ToString());
+            //GUI.Box(new Rect(200, 300, 100, 50), targetManagerRadar.targets[51].hasObject.ToString());
+        }
     }
+
 }

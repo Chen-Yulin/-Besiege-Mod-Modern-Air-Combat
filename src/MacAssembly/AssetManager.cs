@@ -6,6 +6,14 @@ using Modding;
 
 namespace ModernAirCombat
 {
+    public class Asset_RadarScreen
+    {
+        public GameObject RadarScreen;
+        public Asset_RadarScreen(ModAssetBundle modAssetBundle)
+        {
+            RadarScreen = modAssetBundle.LoadAsset<GameObject>("RadarScreen");
+        }
+    }
     public class Asset_HUD
     {
         public GameObject HUD;
@@ -154,6 +162,7 @@ namespace ModernAirCombat
         public Asset_Shader Shader { get; protected set; }
 
         public Asset_HUD HUD { get; protected set; }
+        public Asset_RadarScreen RadarScreen { get; protected set; }
 
 
 
@@ -169,6 +178,7 @@ namespace ModernAirCombat
             PerformSmoke = new Asset_PerformSmoke(ModResource.GetAssetBundle("Perform Effect"));
             Shader = new Asset_Shader(ModResource.GetAssetBundle("Shader"));
             HUD = new Asset_HUD(ModResource.GetAssetBundle("HUD AB"));
+            RadarScreen = new Asset_RadarScreen(ModResource.GetAssetBundle("RadarScreen AB"));
         }
     }
 }

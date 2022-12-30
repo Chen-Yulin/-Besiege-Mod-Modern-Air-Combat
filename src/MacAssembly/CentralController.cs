@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml.Serialization;
 using System.Collections;
+using System.Linq;
 
 using Modding.Modules;
 using Modding;
@@ -11,34 +12,144 @@ using UnityEngine;
 
 namespace ModernAirCombat
 {
-    //class Radar2CCData : SingleInstance<Radar2CCData>
-    //{
-    //    public override string Name { get; } = "Radar2CC Data";
-    //    public class CC2Radar
-    //    {
-    //        public float radarPitch = 0;
-    //        public float radarAngle = 0;
-    //        public void Reset()
-    //        {
-    //            radarPitch = 0;
-    //            radarAngle = 0;
-    //        }
-    //    }
-    //    public class Radar2CC
-    //    {
+    //receiver
+    class RadarDisplayerSimulator_MsgReceiver : SingleInstance<RadarDisplayerSimulator_MsgReceiver>
+    {
+        public override string Name { get; } = "RadarDisplayerSimulator MsgReceiver";
 
-    //    }
+        public bool[] NormalUpdated = new bool[16];
+        public bool[] LockUpdated = new bool[16];
+        // lock
+        public bool[] locking = new bool[16];
+        public float[] closingRate = new float[16];
+        // normal
+        public float[] pitch = new float[16];
+        public float[] deltaScanAngle = new float[16];
+        public Vector2[] ChooserPosition = new Vector2[16];
+        public float[] SLcurrAngle = new float[16];
+        public bool[] SLcurrDirection = new bool[16];
 
-    //    public CC2Radar cc2radar;
+        
 
-    //    public Radar2CCData(){
-    //        cc2radar = new CC2Radar();
-    //    }
+        public void NormalPanelReceiver(Message msg)
+        {
+            int playerID = (int)msg.GetData(0);
+            NormalUpdated[playerID] = true;
+            pitch[playerID] = (float)msg.GetData(1);
+            deltaScanAngle[playerID] = (float)msg.GetData(2);
+            ChooserPosition[playerID].x = (float)msg.GetData(3);
+            ChooserPosition[playerID].y = (float)msg.GetData(4);
+            SLcurrAngle[playerID] = (float)msg.GetData(5);
+            SLcurrDirection[playerID] = (bool)msg.GetData(6);
+        }
+        public void LockPanelReceiver(Message msg)
+        {
+            int playerID = (int)msg.GetData(0);
+            LockUpdated[playerID] = true;
+            pitch[playerID] = (float)msg.GetData(1);
+            closingRate[playerID] = (float)msg.GetData(2);
+            ChooserPosition[playerID].x = (float)msg.GetData(3);
+            ChooserPosition[playerID].y = (float)msg.GetData(4);
+        }
+        public void LockStatusReceiver(Message msg)
+        {
+            locking[(int)msg.GetData(0)] = (bool)msg.GetData(1);
+        }
 
-    //}
+        public void tmpTargetDataReceiver(Message msg)
+        {
+            int playerID = (int)msg.GetData(0);
+            int targetIndex = (int) msg.GetData(1);
+            float targetDistance = (float)msg.GetData(2);
+            DataManager.Instance.TargetData[playerID].targets[targetIndex].distance = targetDistance;
+            if (targetDistance == 0)
+            {
+                DataManager.Instance.TargetData[playerID].targets[targetIndex].hasObject = false;
+            }
+            else
+            {
+                DataManager.Instance.TargetData[playerID].targets[targetIndex].hasObject = true;
+            }
+        }
+        public void CleartmpTargetData(int playerID)
+        {
+            for (int i = 0; i < 100; i++)
+            {
+                DataManager.Instance.TargetData[playerID].targets[i] = new Target();
+            }
+        }
+
+
+    }
+    class CCDataReceiver : SingleInstance<CCDataReceiver> {
+        public override string Name { get; } = "CC Data Receiver";
+        public void RadarOnGUIMsgReceiver(Message msg)
+        {
+            CCData.Instance.OnGuiTarget[(int)msg.GetData(0)] = (Vector3)msg.GetData(1);
+        }
+        public void BlackoutMsgReceiver(Message msg)
+        {
+            CCData.Instance.BlackoutData[(int)msg.GetData(0)] = (float)msg.GetData(1);
+        }
+    }
+    // data
+    class CCData : SingleInstance<CCData>
+    {
+        public override string Name { get; } = "CC Data";
+        public Vector3[] OnGuiTarget = new Vector3[16];
+        public float[] BlackoutData = new float[16];
+        
+    }
     class CC2RadarDisplayerData : SingleInstance<CC2RadarDisplayerData>
     {
         public override string Name { get; } = "CC2RadarDisplayer Data";
+        public bool[] locked = new bool[16];
+        public Vector2[] ChooserPosition = new Vector2[16];
+        public float[] ClosingRate = new float[16];
+        public float[] currRegion = new float[16];
+        public float[] pitch = new float[16];
+        public float[] leftAngle = new float[16];
+        public float[] rightAngle = new float[16];
+        
+
+        public CC2RadarDisplayerData()
+        {
+            for (int i = 0; i < 16; i++)
+            {
+                locked[i] = false;
+                ChooserPosition[i] = Vector2.zero;
+                ClosingRate[i] = 0f;
+                currRegion[i] = 0f;
+                pitch[i] = 0f;
+            }
+        }
+    }
+    class CC2LoadDisplayerData : SingleInstance<CC2LoadDisplayerData>
+    {
+        public override string Name { get; } = "CC2LoadDisplayer Data";
+        public int[] BulletsLeft = new int[16];
+        public int[] FlareLeft = new int[16];
+        public int[] ChaffLeft = new int[16];
+        public bool[] noMachineGun = new bool[16];
+        public bool[] noFlare = new bool[16];
+        public bool[] noChaff = new bool[16];
+        public List<LoadDataManager.WeaponLoad>[] leftWingLoad = new List<LoadDataManager.WeaponLoad>[16];
+        public List<LoadDataManager.WeaponLoad>[] rightWingLoad = new List<LoadDataManager.WeaponLoad>[16];
+        public bool[] LoadListReady = new bool[16];
+
+        public CC2LoadDisplayerData()
+        {
+            for (int i = 0; i < 16; i++)
+            {
+                leftWingLoad[i] = new List<LoadDataManager.WeaponLoad>();
+                rightWingLoad[i] = new List<LoadDataManager.WeaponLoad>();
+                noMachineGun[i] = true;
+                noFlare[i] = true;
+                noChaff[i] = true;
+            }
+        }
+
+
     }
     // assist controller
     public class ScanLineController : MonoBehaviour
@@ -76,10 +187,10 @@ namespace ModernAirCombat
         }
 
     }
-
     //simulator
-    public class RadarDisplayerSimulator : BlockScript
+    public class RadarDisplayerSimulator : MonoBehaviour
     {
+        public int myPlayerID = 0;
         public bool isClient = false;
         // for RadarDisplayer
         public ScanLineController SLController;
@@ -87,11 +198,23 @@ namespace ModernAirCombat
         public IEnumerator sendPanelMsg;
         public static MessageType ClientTargetPositionMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Integer, DataType.Vector3);
         public static MessageType ClientTargetDistanceMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Integer, DataType.Single);
-        //playerID, leftScanAngle, rightScanAngle, currAngle, SLDirection, radarPitch, deltaScanAngle
-        public static MessageType ClientPanelMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Single, DataType.Single, DataType.Single, DataType.Boolean, DataType.Single, DataType.Single);
-        public static MessageType ClientChooserMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Single, DataType.Single);
-        public static MessageType ClientLockingMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Boolean);
-        public static MessageType ClientLockedTargetMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Single, DataType.Boolean, DataType.String);
+        //playerID, pitch, deltaScanAngle, ChooserPosition, SLcurrAngle, SLcurrDirection
+        public static MessageType ClientNormalPanelMsg = ModNetworking.CreateMessageType(   DataType.Integer, DataType.Single, DataType.Single, 
+                                                                                            DataType.Single, DataType.Single,
+                                                                                            DataType.Single, DataType.Boolean);
+        //playerID, pitch, closingRate, ChooserPosition, 
+        public static MessageType ClientLockPanelMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Single, DataType.Single,
+                                                                                            DataType.Single, DataType.Single);
+
+        // lock status
+        public static MessageType ClientLockStatusMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Boolean);
+
+        //tmp target data
+        // playerID, targetIndex, distance, hasObject
+        public static MessageType ClientTmpTargetData = ModNetworking.CreateMessageType(DataType.Integer, DataType.Integer, DataType.Single, DataType.Boolean);
+
+        public static MessageType ClientOnGuiTargetMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Vector3);
+
         public float radarPitch = 0;
         public float leftScanAngle = -60f;
         public float rightScanAngle = 60f;
@@ -99,6 +222,7 @@ namespace ModernAirCombat
         public float realMiddleScanAngle = 0f;
         public float deltaScanAngle = 60f;
         public Vector2 ChooserPosition = new Vector2(0, 0);
+
         public bool smallerAngle = false;
         public bool biggerAngle = false;
         public bool upChooser = false;
@@ -107,16 +231,99 @@ namespace ModernAirCombat
         public bool rightChooser = false;
         public bool downScan = false;
         public bool upScan = false;
+
+        public bool LockPressed = false;
+        public float ScanRegionAfterLock = 60f;
+
         public int currRegion;
         public bool locking; //whether the radar keeps tracking an object
         public int lockRegion = 0;
         public float deltaPitch = 0;
         public int currLockedPlayerID = -1;
+        public float closingRate = 0;
+        public Vector3 OnGuiTargetPosition;
         public displayerData DisplayerData = new displayerData(0, 0);
         public RadarTargetData sendBVRData = new RadarTargetData();
+        public RadarTargetData BVRData = new RadarTargetData();
 
-        // for displayer
+        //msg sender
+        public IEnumerator NormalClock;
+        public bool NormalClockhit = false;
+        public IEnumerator LockClock;
+        public bool LockClockhit = false;
 
+        public int iconSize = 28;
+        protected Texture LockIconOnScreen;
+
+
+        IEnumerator SendClockNormal(float time)
+        {
+            while (true)
+            {
+                yield return new WaitForSeconds(time);
+                NormalClockhit = true;
+            }
+        }
+        IEnumerator SendClockLock(float time)
+        {
+            while (true)
+            {
+                yield return new WaitForSeconds(time);
+                LockClockhit = true;
+            }
+        }
+        public void SendNormalPanelMsg() // call in host
+        {
+            if (NormalClockhit)
+            {
+                NormalClockhit = false;
+                ModNetworking.SendToAll(ClientNormalPanelMsg.CreateMessage(myPlayerID, radarPitch, deltaScanAngle,
+                                                                            ChooserPosition.x, ChooserPosition.y,
+                                                                            SLController.currAngle, SLController.direction));
+            }
+        }
+        public void SendLockPanelMsg() // call in host
+        {
+            if (LockClockhit)
+            {
+                LockClockhit = false;
+                ModNetworking.SendToAll(ClientLockPanelMsg.CreateMessage(myPlayerID, radarPitch, closingRate,
+                                                                            ChooserPosition.x, ChooserPosition.y));
+            }
+        }
+        public void SendLockStatusMsg()
+        {
+            ModNetworking.SendToAll(ClientLockStatusMsg.CreateMessage(myPlayerID, locking));
+        }
+        public void ClientSyncHostNormalPanel()
+        {
+            if (RadarDisplayerSimulator_MsgReceiver.Instance.NormalUpdated[myPlayerID])
+            {
+                RadarDisplayerSimulator_MsgReceiver.Instance.NormalUpdated[myPlayerID] = false;
+                radarPitch = RadarDisplayerSimulator_MsgReceiver.Instance.pitch[myPlayerID];
+                deltaScanAngle = RadarDisplayerSimulator_MsgReceiver.Instance.deltaScanAngle[myPlayerID];
+                ChooserPosition.x = RadarDisplayerSimulator_MsgReceiver.Instance.ChooserPosition[myPlayerID].x;
+                ChooserPosition.y = RadarDisplayerSimulator_MsgReceiver.Instance.ChooserPosition[myPlayerID].y;
+                SLController.currAngle = RadarDisplayerSimulator_MsgReceiver.Instance.SLcurrAngle[myPlayerID];
+                SLController.direction = RadarDisplayerSimulator_MsgReceiver.Instance.SLcurrDirection[myPlayerID];
+            }
+
+        }
+        public void ClientSyncHostLockPanel()
+        {
+            if (RadarDisplayerSimulator_MsgReceiver.Instance.LockUpdated[myPlayerID])
+            {
+                RadarDisplayerSimulator_MsgReceiver.Instance.LockUpdated[myPlayerID] = false;
+                radarPitch = RadarDisplayerSimulator_MsgReceiver.Instance.pitch[myPlayerID];
+                closingRate = RadarDisplayerSimulator_MsgReceiver.Instance.closingRate[myPlayerID];
+                ChooserPosition.x = RadarDisplayerSimulator_MsgReceiver.Instance.ChooserPosition[myPlayerID].x;
+                ChooserPosition.y = RadarDisplayerSimulator_MsgReceiver.Instance.ChooserPosition[myPlayerID].y;
+            }
+        }
+        public void ClientSyncHostLockStatus()
+        {
+            locking = RadarDisplayerSimulator_MsgReceiver.Instance.locking[myPlayerID];
+        }
         public void InitCCRadarDisplayer()
         {
             SLController = transform.gameObject.AddComponent<ScanLineController>();
@@ -187,25 +394,214 @@ namespace ModernAirCombat
             leftScanAngle = realMiddleScanAngle - deltaScanAngle;
             rightScanAngle = realMiddleScanAngle + deltaScanAngle;
         }
-
         public void SyncSLcontroller()
         {
             SLController.angleLeft = leftScanAngle;
             SLController.angleRight = rightScanAngle;
         }
+        public void SyncRadarTarget()
+        {
+            RadarTarget = DataManager.Instance.TargetData[myPlayerID].targets;
+        }
+        public void SendRadarPara()
+        {
+            displayerData DisplayerData = new displayerData(0, 0);
+            DisplayerData.radarPitch = radarPitch;
+            DisplayerData.radarAngle = SLController.currAngle;
+            DataManager.Instance.DisplayerData[myPlayerID] = DisplayerData;
+        }
+        public void SendRadarScreenPara()
+        {
+            CC2RadarDisplayerData.Instance.locked[myPlayerID] = locking;
+            CC2RadarDisplayerData.Instance.ChooserPosition[myPlayerID] = ChooserPosition;
+            CC2RadarDisplayerData.Instance.currRegion[myPlayerID] = currRegion;
+            CC2RadarDisplayerData.Instance.pitch[myPlayerID] = radarPitch;
+            CC2RadarDisplayerData.Instance.leftAngle[myPlayerID] = leftScanAngle;
+            CC2RadarDisplayerData.Instance.rightAngle[myPlayerID] = rightScanAngle;
+            if (locking)
+            {
+                CC2RadarDisplayerData.Instance.ClosingRate[myPlayerID] = closingRate;
+            }
+            else
+            {
+                CC2RadarDisplayerData.Instance.ClosingRate[myPlayerID] = 0;
+            }
+        }
+        public void SendBVRData()// before Sync RadarTargetData && after FindTarget
+        {
+            if (locking)
+            {
+                BVRData.position = RadarTarget[lockRegion].position;
+                BVRData.velocity = RadarTarget[lockRegion].velocity;
+            }
+            else
+            {
+                BVRData.position = Vector3.zero;
+                BVRData.velocity = Vector3.zero;
+            }
+            DataManager.Instance.BVRData[myPlayerID] = BVRData;
+        }
+        public void ClearOtherTargets()
+        {
+            float leftRegion = (leftScanAngle + 60) / 1.2f;
+            float rightRegion = (rightScanAngle + 60) / 1.2f;
+            for (int i = 0; i < leftRegion; i++)
+            {
+                DataManager.Instance.TargetData[myPlayerID].RemoveTarget(i);
+            }
+            for (int i = 100; i > rightRegion; i--)
+            {
+                DataManager.Instance.TargetData[myPlayerID].RemoveTarget(i);
+            }
+        }
+        public bool FindLockedTarget()
+        {
+            bool res = false;
+
+            for (int i = 0; i < 15; i++)
+            {
+                if (lockRegion - i >= 0 && lockRegion + i <= 100)
+                {
+                    if (RadarTarget[lockRegion + i].hasObject && !RadarTarget[lockRegion + i].isMissle && (currLockedPlayerID == -1 || currLockedPlayerID == RadarTarget[lockRegion + i].playerID))
+                    {
+                        currLockedPlayerID = RadarTarget[lockRegion + i].playerID;
+                        lockRegion = lockRegion + i;
+                        res = true;
+                    }
+                    else if (RadarTarget[lockRegion - i].hasObject && !RadarTarget[lockRegion - i].isMissle && (currLockedPlayerID == -1 || currLockedPlayerID == RadarTarget[lockRegion - i].playerID))
+                    {
+                        currLockedPlayerID = RadarTarget[lockRegion - i].playerID;
+                        lockRegion = lockRegion - i;
+                        res = true;
+                    }
+
+                    if (res)
+                    {
+                        ChooserPosition.x = (lockRegion - 50) * 1.2f;
+                        ChooserPosition.y = (RadarTarget[lockRegion].distance - 6000) * 0.01f;
+
+                        radarPitch = RadarTarget[lockRegion].pitch;
+                        closingRate = RadarTarget[lockRegion].closingRate;
+                        CCData.Instance.OnGuiTarget[myPlayerID] = RadarTarget[lockRegion].position;
+                        if (StatMaster.isMP)
+                        {
+                            ModNetworking.SendToAll(ClientOnGuiTargetMsg.CreateMessage(myPlayerID, CCData.Instance.OnGuiTarget[myPlayerID]));
+                        }
+
+                        return true;
+                    }
+                }
+            }
+            if (lockRegion != currRegion)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public void SendTargetData()
+        {
+            ModNetworking.SendToAll(ClientTmpTargetData.CreateMessage(myPlayerID, currRegion, RadarTarget[currRegion].distance, RadarTarget[currRegion].hasObject));
+        }
+
 
         public void Start()
         {
+            LockIconOnScreen = ModResource.GetTexture("LockIconScreen Texture").Texture;
             InitCCRadarDisplayer();
+            NormalClock = SendClockNormal(0.5f);
+            StartCoroutine(NormalClock);
+            LockClock = SendClockLock(0.05f);
+            StartCoroutine(LockClock);
+        }
+        public void OnDestry()
+        {
+            if (isClient)
+            {
+                DataManager.Instance.TargetData[myPlayerID] = new targetManager();
+            }
+            
         }
         public void Update()
         {
-            SyncSLcontroller();
+            if (!isClient)
+            {
+                SyncSLcontroller();
+                if (LockPressed)
+                {
+                    LockPressed = false;
+                    currLockedPlayerID = -1;
+                    locking = !locking;
+                    if (locking)
+                    {
+                        deltaScanAngle = ScanRegionAfterLock;
+                        NormalClockhit = true;
+                    }
+                    else
+                    {
+                        deltaScanAngle = 60;
+                        radarPitch = 0f;
+                        NormalClockhit = true;
+                    }
+                }
+            }
+            else
+            {
+                SyncSLcontroller();
+            }
+
         }
         public void FixedUpdate()
         {
             if (!isClient)
             {
+                SyncRadarTarget();
+                //SendTargetData();
+                // update region
+                currRegion = (int)Math.Floor((SLController.currAngle + 60) / 1.2f + 0.5f); // scan line
+                lockRegion = (int)Math.Floor((ChooserPosition.x + 60) / 1.2f + 0.5f); // TDC
+
+                if (!locking)
+                {
+                    UnlockedChooserMotion_FixedUpdateHost();
+                    UnlockedPitchMotion_FixedUpdateHost();
+                }
+                else
+                {
+                    if (!FindLockedTarget())
+                    {
+                        currLockedPlayerID = -1;
+                        deltaScanAngle = 60f;
+                        radarPitch = 0f;
+                        locking = false;
+                    }
+                    // send to client
+                    SendLockPanelMsg();
+                }
+                ClearOtherTargets();
+                SendLockStatusMsg();
+                AdjustScanAngle_FixedUpdate();
+                // tell radar
+                SendRadarPara();
+                // tell radar displayer
+                SendRadarScreenPara();
+                // send BVR
+                SendBVRData();
+
+                // send to client
+                SendNormalPanelMsg();
+                
+            }
+            else    // for client
+            {
+                SyncRadarTarget();
+                ClientSyncHostNormalPanel();
+                ClientSyncHostLockStatus();
+                ClientSyncHostLockPanel();
+
+                currRegion = (int)Math.Floor((SLController.currAngle + 60) / 1.2f + 0.5f); // scan line
+                lockRegion = (int)Math.Floor((ChooserPosition.x + 60) / 1.2f + 0.5f); // TDC
                 if (!locking)
                 {
                     UnlockedChooserMotion_FixedUpdateHost();
@@ -215,21 +611,615 @@ namespace ModernAirCombat
                 {
 
                 }
+                ClearOtherTargets();
                 AdjustScanAngle_FixedUpdate();
+                SendRadarPara();
+                SendRadarScreenPara();
             }
-            else
-            {
 
+
+        }
+        private void OnGUI()
+        {
+            if (locking)
+            {
+                if (StatMaster.isMP)
+                {
+                    if (PlayerData.localPlayer.networkId != myPlayerID)
+                    {
+                        return;
+                    }
+                }
+                GUI.color = Color.green;
+                Vector3 onScreenPosition = Camera.main.WorldToScreenPoint(CCData.Instance.OnGuiTarget[myPlayerID]);
+                if (onScreenPosition.z >= 0)
+                    GUI.DrawTexture(new Rect(onScreenPosition.x - iconSize / 2, Camera.main.pixelHeight - onScreenPosition.y - iconSize / 2, iconSize, iconSize), LockIconOnScreen);
             }
         }
 
     }
+    public class A2GDisplayerSimulator : MonoBehaviour
+    {
+        public int myPlayerID = 0;
+        public bool isClient = false;
+        //key
+        public bool LockPressed;
+        public bool ZoomInPressed;
+        public bool ZoomOutPressed;
+        public bool PitchUpPressed;
+        public bool PitchDownPressed;
+        public bool YawLeftPressed;
+        public bool YawRightPressed;
+        public bool TrackPressed;
+        public int iconSize = 24;
+        public Texture LockIcon;
 
+        public static MessageType ClientTrackMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Boolean);
+        public void Start()
+        {
+            LockIcon = ModResource.GetTexture("HUDA2GAim Texture").Texture;
+        }
+        public void Update()
+        {
+            if (LockPressed)
+            {
+                DataManager.Instance.TV_Lock[myPlayerID] = !DataManager.Instance.TV_Lock[myPlayerID];
+                LockPressed = false;
+            }
+            if (TrackPressed)
+            {
+                TrackPressed = false;
+                if (DataManager.Instance.TV_Lock[myPlayerID])
+                {
+                    DataManager.Instance.TV_Track[myPlayerID] = !DataManager.Instance.TV_Track[myPlayerID];
+                    ModNetworking.SendToAll(ClientTrackMsg.CreateMessage(myPlayerID, DataManager.Instance.TV_Track[myPlayerID]));
+                }
+            }
+            if (!DataManager.Instance.TV_Lock[myPlayerID])
+            {
+                DataManager.Instance.TV_Track[myPlayerID] = false;
+                ModNetworking.SendToAll(ClientTrackMsg.CreateMessage(myPlayerID, DataManager.Instance.TV_Track[myPlayerID]));
+            }
+        }
+        public void FixedUpdate()
+        {
+            if (YawLeftPressed)
+            {
+                DataManager.Instance.TV_LeftRight[myPlayerID] = -1;
+            }
+            else if (YawRightPressed)
+            {
+                DataManager.Instance.TV_LeftRight[myPlayerID] = 1;
+            }
+            else
+            {
+                DataManager.Instance.TV_LeftRight[myPlayerID] = 0;
+            }
+
+            if (PitchUpPressed)
+            {
+                DataManager.Instance.TV_UpDown[myPlayerID] = 1;
+            }
+            else if (PitchDownPressed)
+            {
+                DataManager.Instance.TV_UpDown[myPlayerID] = -1;
+            }
+            else
+            {
+                DataManager.Instance.TV_UpDown[myPlayerID] = 0;
+            }
+
+            if (ZoomInPressed)
+            {
+                DataManager.Instance.TV_FOV[myPlayerID] *= 0.98f;
+            }
+            else if (ZoomOutPressed)
+            {
+                DataManager.Instance.TV_FOV[myPlayerID] /= 0.98f;
+            }
+            DataManager.Instance.TV_FOV[myPlayerID] = Mathf.Clamp(DataManager.Instance.TV_FOV[myPlayerID], 0.5f, 40);
+        }
+        void OnGUI()
+        {
+            //GUI.Box(new Rect(100, 200, 200, 50), DataManager.Instance.EO_ThermalOn[myPlayerID].ToString());
+            //GUI.Box(new Rect(100, 300, 200, 50), DataManager.Instance.EO_InverseThermal[myPlayerID].ToString());
+            //GUI.Box(new Rect(100, 400, 200, 50), FOV.ToString());
+            if (DataManager.Instance.TV_Lock[myPlayerID])
+            {
+                if (StatMaster.isMP)
+                {
+                    if (PlayerData.localPlayer.networkId != myPlayerID)
+                    {
+                        return;
+                    }
+                }
+                GUI.color = Color.green;
+                Vector3 onScreenPosition = Camera.main.WorldToScreenPoint(DataManager.Instance.A2G_TargetData[myPlayerID].position);
+                if (onScreenPosition.z >= 0)
+                    GUI.DrawTexture(new Rect(onScreenPosition.x - iconSize / 2, Camera.main.pixelHeight - onScreenPosition.y - iconSize / 2, iconSize, iconSize), LockIcon);
+            }
+        }
+    }
+    public class LoadDisplayerSimulator : MonoBehaviour
+    {
+        public int myPlayerID;
+        public bool isClient;
+        public bool initialized = false;
+
+        public Plane selfPlane;
+
+        public bool LaunchSRAAM;
+        public bool LaunchMRAAM;
+        public bool LaunchAGM;
+        public bool LaunchGBU;
+        public float Region;
+        public float Offset;
+
+        public MKey KeyToBeEmulated;
+        public bool hasEmulateKey;
+
+        public bool noMachineGun = true;
+        public bool noFlare = true;
+        public bool noChaff = true;
+
+
+        public List<LoadDataManager.WeaponLoad> leftWingLoad = new List<LoadDataManager.WeaponLoad>();
+        public List<LoadDataManager.WeaponLoad> rightWingLoad = new List<LoadDataManager.WeaponLoad>();
+
+
+        public int BulletsLeft;
+        public int FlareLeft;
+        public int ChaffLeft;
+
+        public int leftRemain = 0;
+        public int rightRemain = 0;
+
+        public void SendLoadDisplayerData()
+        {
+            CC2LoadDisplayerData.Instance.LoadListReady[myPlayerID] = true;
+            CC2LoadDisplayerData.Instance.leftWingLoad[myPlayerID] = leftWingLoad;
+            CC2LoadDisplayerData.Instance.rightWingLoad[myPlayerID] = rightWingLoad;
+            CC2LoadDisplayerData.Instance.noMachineGun[myPlayerID] = noMachineGun;
+            CC2LoadDisplayerData.Instance.noFlare[myPlayerID] = noFlare;
+            CC2LoadDisplayerData.Instance.noChaff[myPlayerID] = noChaff;
+            CC2LoadDisplayerData.Instance.BulletsLeft[myPlayerID] = BulletsLeft;
+            CC2LoadDisplayerData.Instance.FlareLeft[myPlayerID] = FlareLeft;
+            CC2LoadDisplayerData.Instance.ChaffLeft[myPlayerID] = ChaffLeft;
+        }
+
+        public void InitLoad() // call in simlulate update
+        {
+            LoadDataManager.Instance.InitLoad(myPlayerID);
+            // filter the weapons out of region
+            Dictionary<int, LoadDataManager.WeaponLoad> filtered = new Dictionary<int, LoadDataManager.WeaponLoad>();
+            foreach (var weaponLoad in LoadDataManager.Instance.Weapons[myPlayerID])
+            {
+                if ((weaponLoad.Value.weaponTransform.position - transform.position).sqrMagnitude <= Mathf.Pow(Region, 2))
+                {
+                    filtered.Add(weaponLoad.Key, weaponLoad.Value);
+                }
+            }
+            selfPlane = new Plane(transform.right, transform.position + transform.right * Offset);
+            var sorted = from pair in filtered orderby Mathf.Abs(selfPlane.GetDistanceToPoint(pair.Value.weaponTransform.position)) ascending select pair;
+            foreach (var pair in sorted)
+            {
+                if (selfPlane.GetDistanceToPoint(pair.Value.weaponTransform.position) <= 0)
+                {
+                    leftWingLoad.Add(pair.Value);
+
+                }
+                else
+                {
+                    rightWingLoad.Add(pair.Value);
+                }
+            }
+            leftRemain = leftWingLoad.Count;
+            rightRemain = rightWingLoad.Count;
+            //Debug.Log("Left:");
+            //foreach (var weapon in leftWingLoad)
+            //{
+            //    Debug.Log(weapon.weapon);
+            //}
+            //Debug.Log("right:");
+            //foreach (var weapon in rightWingLoad)
+            //{
+            //    Debug.Log(weapon.weapon);
+            //}
+        }
+
+        public void myEmulateKey(MKey Key, bool t)
+        {
+            KeyToBeEmulated = Key;
+            hasEmulateKey = true;
+        }
+        public void finishEmulate()
+        {
+            hasEmulateKey = false;
+        }
+        public void LaunchWeapon() // before updateLoadAndIcon
+        {
+            //sraam
+            if (LaunchSRAAM)
+            {
+                LaunchSRAAM = false;
+                if (leftRemain >= rightRemain)
+                {
+                    if (leftRemain == 0)
+                    {
+                        return;
+                    }
+                    for (int i = leftWingLoad.Count - 1; i >= 0; i--)
+                    {
+                        if (leftWingLoad[i].weapon == LoadDataManager.WeaponType.SRAAM && leftWingLoad[i].released == false)
+                        {
+                            myEmulateKey(leftWingLoad[i].weaponTransform.gameObject.GetComponent<SRAAMBlock>().Launch, true);
+                            return;
+                        }
+                    }
+                    if (rightRemain == 0)
+                    {
+                        return;
+                    }
+                    for (int i = rightWingLoad.Count - 1; i >= 0; i--)
+                    {
+                        if (rightWingLoad[i].weapon == LoadDataManager.WeaponType.SRAAM && rightWingLoad[i].released == false)
+                        {
+                            myEmulateKey(rightWingLoad[i].weaponTransform.gameObject.GetComponent<SRAAMBlock>().Launch, true);
+                            return;
+                        }
+                    }
+                }
+                else
+                {
+                    if (rightRemain == 0)
+                    {
+                        return;
+                    }
+                    for (int i = rightWingLoad.Count - 1; i >= 0; i--)
+                    {
+                        if (rightWingLoad[i].weapon == LoadDataManager.WeaponType.SRAAM && rightWingLoad[i].released == false)
+                        {
+                            myEmulateKey(rightWingLoad[i].weaponTransform.gameObject.GetComponent<SRAAMBlock>().Launch, true);
+                            return;
+                        }
+                    }
+                    if (leftRemain == 0)
+                    {
+                        return;
+                    }
+                    for (int i = leftWingLoad.Count - 1; i >= 0; i--)
+                    {
+                        if (leftWingLoad[i].weapon == LoadDataManager.WeaponType.SRAAM && leftWingLoad[i].released == false)
+                        {
+                            myEmulateKey(leftWingLoad[i].weaponTransform.gameObject.GetComponent<SRAAMBlock>().Launch, true);
+                            return;
+                        }
+                    }
+                }
+            }
+            //mraam
+            if (LaunchMRAAM)
+            {
+                LaunchMRAAM = false;
+                if (leftRemain >= rightRemain)
+                {
+                    if (leftRemain == 0)
+                    {
+                        return;
+                    }
+                    for (int i = leftWingLoad.Count - 1; i >= 0; i--)
+                    {
+                        if (leftWingLoad[i].weapon == LoadDataManager.WeaponType.MRAAM && leftWingLoad[i].released == false)
+                        {
+                            myEmulateKey(leftWingLoad[i].weaponTransform.gameObject.GetComponent<MRAAMBlock>().Launch, true);
+                            return;
+                        }
+                    }
+                    if (rightRemain == 0)
+                    {
+                        return;
+                    }
+                    for (int i = rightWingLoad.Count - 1; i >= 0; i--)
+                    {
+                        if (rightWingLoad[i].weapon == LoadDataManager.WeaponType.MRAAM && rightWingLoad[i].released == false)
+                        {
+                            myEmulateKey(rightWingLoad[i].weaponTransform.gameObject.GetComponent<MRAAMBlock>().Launch, true);
+                            return;
+                        }
+                    }
+                }
+                else
+                {
+                    if (rightRemain == 0)
+                    {
+                        return;
+                    }
+                    for (int i = rightWingLoad.Count - 1; i >= 0; i--)
+                    {
+                        if (rightWingLoad[i].weapon == LoadDataManager.WeaponType.MRAAM && rightWingLoad[i].released == false)
+                        {
+                            myEmulateKey(rightWingLoad[i].weaponTransform.gameObject.GetComponent<MRAAMBlock>().Launch, true);
+                            return;
+                        }
+                    }
+                    if (leftRemain == 0)
+                    {
+                        return;
+                    }
+                    for (int i = leftWingLoad.Count - 1; i >= 0; i--)
+                    {
+                        if (leftWingLoad[i].weapon == LoadDataManager.WeaponType.MRAAM && leftWingLoad[i].released == false)
+                        {
+                            myEmulateKey(leftWingLoad[i].weaponTransform.gameObject.GetComponent<MRAAMBlock>().Launch, true);
+                            return;
+                        }
+                    }
+                }
+            }
+            //agm
+            if (LaunchAGM)
+            {
+                LaunchAGM = false;
+                if (leftRemain >= rightRemain)
+                {
+                    if (leftRemain == 0)
+                    {
+                        return;
+                    }
+                    for (int i = leftWingLoad.Count - 1; i >= 0; i--)
+                    {
+                        if (leftWingLoad[i].weapon == LoadDataManager.WeaponType.AGM && leftWingLoad[i].released == false)
+                        {
+                            myEmulateKey(leftWingLoad[i].weaponTransform.gameObject.GetComponent<AGMBlock>().Launch, true);
+                            return;
+                        }
+                    }
+                    if (rightRemain == 0)
+                    {
+                        return;
+                    }
+                    for (int i = rightWingLoad.Count - 1; i >= 0; i--)
+                    {
+                        if (rightWingLoad[i].weapon == LoadDataManager.WeaponType.AGM && rightWingLoad[i].released == false)
+                        {
+                            myEmulateKey(rightWingLoad[i].weaponTransform.gameObject.GetComponent<AGMBlock>().Launch, true);
+                            return;
+                        }
+                    }
+                }
+                else
+                {
+                    if (rightRemain == 0)
+                    {
+                        return;
+                    }
+                    for (int i = rightWingLoad.Count - 1; i >= 0; i--)
+                    {
+                        if (rightWingLoad[i].weapon == LoadDataManager.WeaponType.AGM && rightWingLoad[i].released == false)
+                        {
+                            myEmulateKey(rightWingLoad[i].weaponTransform.gameObject.GetComponent<AGMBlock>().Launch, true);
+                            return;
+                        }
+                    }
+                    if (leftRemain == 0)
+                    {
+                        return;
+                    }
+                    for (int i = leftWingLoad.Count - 1; i >= 0; i--)
+                    {
+                        if (leftWingLoad[i].weapon == LoadDataManager.WeaponType.AGM && leftWingLoad[i].released == false)
+                        {
+                            myEmulateKey(leftWingLoad[i].weaponTransform.gameObject.GetComponent<AGMBlock>().Launch, true);
+                            return;
+                        }
+                    }
+                }
+            }
+            //gbu
+            if (LaunchGBU)
+            {
+                LaunchGBU = false;
+                if (leftRemain >= rightRemain)
+                {
+                    if (leftRemain == 0)
+                    {
+                        return;
+                    }
+                    for (int i = leftWingLoad.Count - 1; i >= 0; i--)
+                    {
+                        if (leftWingLoad[i].weapon == LoadDataManager.WeaponType.GBU && leftWingLoad[i].released == false)
+                        {
+                            myEmulateKey(leftWingLoad[i].weaponTransform.gameObject.GetComponent<GuidedBombBlock>().Launch, true);
+                            return;
+                        }
+                    }
+                    if (rightRemain == 0)
+                    {
+                        return;
+                    }
+                    for (int i = rightWingLoad.Count - 1; i >= 0; i--)
+                    {
+                        if (rightWingLoad[i].weapon == LoadDataManager.WeaponType.GBU && rightWingLoad[i].released == false)
+                        {
+                            myEmulateKey(rightWingLoad[i].weaponTransform.gameObject.GetComponent<GuidedBombBlock>().Launch, true);
+                            return;
+                        }
+                    }
+                }
+                else
+                {
+                    if (rightRemain == 0)
+                    {
+                        return;
+                    }
+                    for (int i = rightWingLoad.Count - 1; i >= 0; i--)
+                    {
+                        if (rightWingLoad[i].weapon == LoadDataManager.WeaponType.GBU && rightWingLoad[i].released == false)
+                        {
+                            myEmulateKey(rightWingLoad[i].weaponTransform.gameObject.GetComponent<GuidedBombBlock>().Launch, true);
+                            return;
+                        }
+                    }
+                    if (leftRemain == 0)
+                    {
+                        return;
+                    }
+                    for (int i = leftWingLoad.Count - 1; i >= 0; i--)
+                    {
+                        if (leftWingLoad[i].weapon == LoadDataManager.WeaponType.GBU && leftWingLoad[i].released == false)
+                        {
+                            myEmulateKey(leftWingLoad[i].weaponTransform.gameObject.GetComponent<GuidedBombBlock>().Launch, true);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+        public void updateLoad()
+        {
+            for (int i = 0; i < leftWingLoad.Count; i++)
+            {
+                SRAAMBlock.status currStatus = SRAAMBlock.status.stored;
+                switch (leftWingLoad[i].weapon)
+                {
+                    case LoadDataManager.WeaponType.SRAAM:
+                        currStatus = leftWingLoad[i].weaponTransform.GetComponent<SRAAMBlock>().myStatus;
+                        break;
+                    case LoadDataManager.WeaponType.MRAAM:
+                        currStatus = leftWingLoad[i].weaponTransform.GetComponent<MRAAMBlock>().myStatus;
+                        break;
+                    case LoadDataManager.WeaponType.AGM:
+                        currStatus = leftWingLoad[i].weaponTransform.GetComponent<AGMBlock>().myStatus;
+                        break;
+                    case LoadDataManager.WeaponType.GBU:
+                        currStatus = leftWingLoad[i].weaponTransform.GetComponent<GuidedBombBlock>().myStatus;
+                        break;
+                    default:
+                        break;
+                }
+                if (currStatus != SRAAMBlock.status.stored)
+                {
+                    if (leftWingLoad[i].released == false)
+                    {
+                        leftWingLoad[i].released = true;
+                        leftRemain--;
+                    }
+                }
+
+            }
+            for (int i = 0; i < rightWingLoad.Count; i++)
+            {
+                SRAAMBlock.status currStatus = SRAAMBlock.status.stored;
+                switch (rightWingLoad[i].weapon)
+                {
+                    case LoadDataManager.WeaponType.SRAAM:
+                        currStatus = rightWingLoad[i].weaponTransform.GetComponent<SRAAMBlock>().myStatus;
+                        break;
+                    case LoadDataManager.WeaponType.MRAAM:
+                        currStatus = rightWingLoad[i].weaponTransform.GetComponent<MRAAMBlock>().myStatus;
+                        break;
+                    case LoadDataManager.WeaponType.AGM:
+                        currStatus = rightWingLoad[i].weaponTransform.GetComponent<AGMBlock>().myStatus;
+                        break;
+                    case LoadDataManager.WeaponType.GBU:
+                        currStatus = rightWingLoad[i].weaponTransform.GetComponent<GuidedBombBlock>().myStatus;
+                        break;
+                    default:
+                        break;
+                }
+                if (currStatus != SRAAMBlock.status.stored)
+                {
+                    if (rightWingLoad[i].released == false)
+                    {
+                        rightWingLoad[i].released = true;
+                        rightRemain--;
+                    }
+                }
+
+            }
+        }
+        public void updateMachineGunBullets()// call in LateUpdate
+        {
+            BulletsLeft = Mathf.Clamp(LoadDataManager.Instance.MachineGunBullets[myPlayerID], 0, 99999);
+            LoadDataManager.Instance.ClearMachineGunBullet(myPlayerID);
+        }
+        public void updateFlareNum()// call in LateUpdate
+        {
+            FlareLeft = Mathf.Clamp(LoadDataManager.Instance.FlareNum[myPlayerID], 0, 99999);
+            LoadDataManager.Instance.ClearFlareNum(myPlayerID);
+        }
+        public void updateChaffNum()// call in LateUpdate
+        {
+            ChaffLeft = Mathf.Clamp(LoadDataManager.Instance.ChaffNum[myPlayerID], 0, 99999);
+            LoadDataManager.Instance.ClearChaffNum(myPlayerID);
+        }
+        public void Start()
+        {
+        }
+
+        public void Update()
+        {
+            if (!isClient)
+            {
+                LaunchWeapon();
+            }
+        }
+        public void FixedUpdate()
+        {
+            if (!initialized)// call one time after OnsimulateStart
+            {
+                initialized = true;
+                InitLoad();
+            }
+            updateLoad();
+        }
+        public void LateUpdate()
+        {
+            try
+            {
+                updateMachineGunBullets();
+                noMachineGun = false;
+            }
+            catch
+            {
+                noMachineGun = true;
+            }
+            try
+            {
+                updateFlareNum();
+                noFlare = false;
+            }
+            catch
+            {
+                noFlare = true;
+            }
+            try
+            {
+                updateChaffNum();
+                noChaff = false;
+            }
+            catch
+            {
+                noChaff = true;
+            }
+            if (initialized)
+            {
+                SendLoadDisplayerData();
+            }
+            
+        }
+    }
+
+    // main
     class CentralController : BlockScript
     {
         //simulators
         public RadarDisplayerSimulator radarDisplayerSimulator;
+        public A2GDisplayerSimulator a2gDisplayerSimulator;
+        public LoadDisplayerSimulator loadDisplayerSimulator;
         public GameObject radarDisplayerSimulatorObject;
+        public GameObject a2gDisplayerSimulatorObject;
+        public GameObject loadDisplayerSimulatorObject;
 
         // general
         public int myPlayerID;
@@ -256,8 +1246,28 @@ namespace ModernAirCombat
         public MKey RadarLock;
         public MSlider ScanRegionAfterLock;
 
+        // for A2G displayer
+        public MKey A2GLock;
+        public MKey A2GZoomIn;
+        public MKey A2GZoomOut;
+        public MKey A2GPitchUp;
+        public MKey A2GPitchDown;
+        public MKey A2GYawLeft;
+        public MKey A2GYawRight;
+        public MKey A2GTrack;
+        public MMenu TVColor;
+
+        // for Load displayer
+        public MKey LaunchSRAAM;
+        public MKey LaunchMRAAM;
+        public MKey LaunchAGM;
+        public MKey LaunchGBU;
+        public MSlider LoadRegion;
+        public MSlider LoadOffset;
+
+        public override bool EmulatesAnyKeys { get { return true; } }
         // for blackout
-        public void addGeneralKey()
+        public void addGeneralMapper()
         {
             GTolerance = AddToggle("G-Tolerence", "G-Tolerence", true);
         }
@@ -310,12 +1320,11 @@ namespace ModernAirCombat
                 if (!StatMaster.isClient)
                 {
                     ModNetworking.SendToAll(ClientBlackoutMsg.CreateMessage(myPlayerID, blackoutIndex));
-
                 }
             }
             else
             {
-                blackoutIndex = DisplayerMsgReceiver.Instance.BlackoutData[(int)PlayerData.localPlayer.networkId];
+                blackoutIndex = CCData.Instance.BlackoutData[(int)PlayerData.localPlayer.networkId];
             }
 
 
@@ -333,23 +1342,52 @@ namespace ModernAirCombat
 
         }
 
-        // for radar displayer
-        public void addRadarDisplayerKey()
+        // for displayer
+        public void addRadarDisplayerMapper()
         {
-            RadarLock = AddKey("Lock", "Lock Target", KeyCode.X);
-            EnlargeScanAngle = AddKey("Expand scan range", "EnlargeScanAngle", KeyCode.T);
-            ReduceScanAngle = AddKey("Reduce scan range", "ReduceScanAngle", KeyCode.U);
-            ChooserUp = AddKey("Cursor up", "ChooserUp", KeyCode.Y);
-            ChooserDown = AddKey("Cursor down", "ChooserDown", KeyCode.H);
-            ChooserLeft = AddKey("Cursor left", "ChooserLeft", KeyCode.G);
-            ChooserRight = AddKey("Cursor right", "ChooserRight", KeyCode.J);
+            RadarLock = AddKey("Radar Lock", "Lock Target", KeyCode.X);
+            EnlargeScanAngle = AddKey("Radar Expand scan range", "EnlargeScanAngle", KeyCode.T);
+            ReduceScanAngle = AddKey("Radar Reduce scan range", "ReduceScanAngle", KeyCode.U);
+            ChooserUp = AddKey("Radar Cursor up", "ChooserUp", KeyCode.Y);
+            ChooserDown = AddKey("Radar Cursor down", "ChooserDown", KeyCode.H);
+            ChooserLeft = AddKey("Radar Cursor left", "ChooserLeft", KeyCode.G);
+            ChooserRight = AddKey("Radar Cursor right", "ChooserRight", KeyCode.J);
             scanUp = AddKey("Radar pitch up", "scan up", KeyCode.I);
             scanDown = AddKey("Radar pitch down", "scan down", KeyCode.K);
-            ScanRegionAfterLock = AddSlider("Default scan angle when locking", "Default scan angle when locking", 20f, 5f, 60f);
+            ScanRegionAfterLock = AddSlider("Radar Default scan angle when locking", "Default scan angle when locking", 20f, 5f, 60f);
         }
-
+        public void addA2GDisplayerMapper()
+        {
+            A2GLock = AddKey("A2G Lock", "A2GLock", KeyCode.X);
+            A2GZoomIn = AddKey("A2G ZoomIn", "A2GZoomIn", KeyCode.N);
+            A2GZoomOut = AddKey("A2G ZoomOut", "A2GZoomOut", KeyCode.M);
+            A2GPitchUp = AddKey("A2G Pitch Up", "A2GPitchUp", KeyCode.Y);
+            A2GPitchDown = AddKey("A2G Pitch Down", "A2GPitchDown", KeyCode.H);
+            A2GYawLeft = AddKey("A2G Yaw Left", "A2GYawLeft", KeyCode.G);
+            A2GYawRight = AddKey("A2G Yaw Right", "A2GYawRight", KeyCode.J);
+            A2GTrack = AddKey("A2G Track", "A2GTrack", KeyCode.T);
+        }
+        public void addLoadDisplayerMapper()
+        {
+            LaunchSRAAM = AddKey("Launch SRAAM", "LaunchSRAAM", KeyCode.Alpha1);
+            LaunchMRAAM = AddKey("Launch MRAAM", "LaunchMRAAM", KeyCode.Alpha2);
+            LaunchAGM = AddKey("Launch AGM", "LaunchAGM", KeyCode.Alpha3);
+            LaunchGBU = AddKey("Launch GBU", "LaunchGBU", KeyCode.Alpha4);
+            LoadRegion = AddSlider("Load Region", "Region", 20f, 0f, 40f);
+            LoadOffset = AddSlider("Load Offset", "Offset", 0f, -2f, 2f);
+        }
         public void RadarDisplayerKey_Update()
         {
+            // lock key
+            if (RadarLock.IsPressed)
+            {
+                radarDisplayerSimulator.LockPressed = true;
+            }
+            else if(RadarLock.IsReleased)
+            {
+                radarDisplayerSimulator.LockPressed = false;
+            }
+
             //judge whether the key for adjusting Scan angle is pressed
             if (EnlargeScanAngle.IsPressed)
             {
@@ -420,38 +1458,205 @@ namespace ModernAirCombat
                 radarDisplayerSimulator.downScan = false;
             }
         }
-
-        public void SendRadarRara()
+        public void A2GDisplayerKey_Update()
         {
-            displayerData DisplayerData = new displayerData(0,0);
-            DisplayerData.radarPitch = radarDisplayerSimulator.radarPitch;
-            DisplayerData.radarAngle = radarDisplayerSimulator.SLController.currAngle;
-            DataManager.Instance.DisplayerData[myPlayerID] = DisplayerData;
+            if (A2GLock.IsPressed)
+            {
+                a2gDisplayerSimulator.LockPressed = true;
+            }
+            else if (A2GLock.IsReleased)
+            {
+                a2gDisplayerSimulator.LockPressed = false;
+            }
+            if (A2GTrack.IsPressed)
+            {
+                a2gDisplayerSimulator.TrackPressed = true;
+            }
+            else if (A2GTrack.IsReleased)
+            {
+                a2gDisplayerSimulator.TrackPressed = false;
+            }
+
+            if (A2GYawLeft.IsHeld)
+            {
+                a2gDisplayerSimulator.YawLeftPressed = true;
+            }
+            else
+            {
+                a2gDisplayerSimulator.YawLeftPressed = false;
+            }
+            if (A2GYawRight.IsHeld)
+            {
+                a2gDisplayerSimulator.YawRightPressed = true;
+            }
+            else
+            {
+                a2gDisplayerSimulator.YawRightPressed = false;
+            }
+
+            if (A2GPitchUp.IsHeld)
+            {
+                a2gDisplayerSimulator.PitchUpPressed = true;
+            }
+            else
+            {
+                a2gDisplayerSimulator.PitchUpPressed = false;
+            }
+            if (A2GPitchDown.IsHeld)
+            {
+                a2gDisplayerSimulator.PitchDownPressed = true;
+            }
+            else
+            {
+                a2gDisplayerSimulator.PitchDownPressed = false;
+            }
+
+            if (A2GZoomIn.IsHeld)
+            {
+                a2gDisplayerSimulator.ZoomInPressed = true;
+            }
+            else
+            {
+                a2gDisplayerSimulator.ZoomInPressed = false;
+            }
+            if (A2GZoomOut.IsHeld)
+            {
+                a2gDisplayerSimulator.ZoomOutPressed = true;
+            }
+            else
+            {
+                a2gDisplayerSimulator.ZoomOutPressed = false;
+            }
         }
+        public void LoadDisplayerKey_Update()
+        {
+            if (LaunchSRAAM.IsPressed)
+            {
+                loadDisplayerSimulator.LaunchSRAAM = true;
+            }
+            else if (LaunchSRAAM.IsReleased)
+            {
+                loadDisplayerSimulator.LaunchSRAAM = false;
+            }
+
+            if (LaunchMRAAM.IsPressed)
+            {
+                loadDisplayerSimulator.LaunchMRAAM = true;
+            }
+            else if (LaunchMRAAM.IsReleased)
+            {
+                loadDisplayerSimulator.LaunchMRAAM = false;
+            }
+
+            if (LaunchAGM.IsPressed)
+            {
+                loadDisplayerSimulator.LaunchAGM = true;
+            }
+            else if (LaunchAGM.IsReleased)
+            {
+                loadDisplayerSimulator.LaunchAGM = false;
+            }
+            if (LaunchGBU.IsPressed)
+            {
+                loadDisplayerSimulator.LaunchGBU = true;
+            }
+            else if (LaunchGBU.IsReleased)
+            {
+                loadDisplayerSimulator.LaunchGBU = false;
+            }
+        }
+        public void EmulateLoadDisplayerKey_FixedUpdateHost()
+        {
+            if (loadDisplayerSimulator.hasEmulateKey)
+            {
+                base.EmulateKeys(new MKey[0], loadDisplayerSimulator.KeyToBeEmulated, true);
+                loadDisplayerSimulator.finishEmulate();
+            }
+        }
+    
 
         public override void SafeAwake()
         {
             myPlayerID = BlockBehaviour.ParentMachine.PlayerID;
-            addRadarDisplayerKey();
+            GTolerance = AddToggle("GTolerance", "GTolerance", true);
+            addRadarDisplayerMapper();
+            addA2GDisplayerMapper();
+            addLoadDisplayerMapper();
         }
         public override void OnSimulateStart()
         {
-            radarDisplayerSimulator = new RadarDisplayerSimulator();
+            myRigid = BlockBehaviour.GetComponent<Rigidbody>();
+            InitBlackOut();
             if (!transform.Find("Radar Displayer Simulator"))
             {
                 radarDisplayerSimulatorObject = new GameObject("Radar Displayer Simulator");
                 radarDisplayerSimulatorObject.transform.SetParent(transform);
+                radarDisplayerSimulatorObject.transform.localPosition = Vector3.zero;
+                radarDisplayerSimulatorObject.transform.localRotation = Quaternion.identity;
+                radarDisplayerSimulatorObject.transform.localScale = Vector3.one;
                 radarDisplayerSimulator = radarDisplayerSimulatorObject.AddComponent<RadarDisplayerSimulator>();
+                radarDisplayerSimulator.myPlayerID = myPlayerID;
+                radarDisplayerSimulator.isClient = StatMaster.isClient;
+                radarDisplayerSimulator.ScanRegionAfterLock = ScanRegionAfterLock.Value;
+            }
+            if (!transform.Find("A2G Displayer Simulator"))
+            {
+                a2gDisplayerSimulatorObject = new GameObject("A2G Displayer Simulator");
+                a2gDisplayerSimulatorObject.transform.SetParent(transform);
+                a2gDisplayerSimulatorObject.transform.localPosition = Vector3.zero;
+                a2gDisplayerSimulatorObject.transform.localRotation = Quaternion.identity;
+                a2gDisplayerSimulatorObject.transform.localScale = Vector3.one;
+                a2gDisplayerSimulator = a2gDisplayerSimulatorObject.AddComponent<A2GDisplayerSimulator>();
+                a2gDisplayerSimulator.myPlayerID = myPlayerID;
+                a2gDisplayerSimulator.isClient = StatMaster.isClient;
+            }
+            if (!transform.Find("Load Displayer Simulator"))
+            {
+                loadDisplayerSimulatorObject = new GameObject("Load Displayer Simulator");
+                loadDisplayerSimulatorObject.transform.SetParent(transform);
+                loadDisplayerSimulatorObject.transform.localPosition = Vector3.zero;
+                loadDisplayerSimulatorObject.transform.localRotation = Quaternion.identity;
+                loadDisplayerSimulatorObject.transform.localScale = Vector3.one;
+                loadDisplayerSimulator = loadDisplayerSimulatorObject.AddComponent<LoadDisplayerSimulator>();
+                loadDisplayerSimulator.myPlayerID = myPlayerID;
+                loadDisplayerSimulator.isClient = StatMaster.isClient;
+                loadDisplayerSimulator.Region = LoadRegion.Value;
+                loadDisplayerSimulator.Offset = LoadOffset.Value;
             }
         }
         public override void OnSimulateStop()
         {
+            preVeclocity = Vector3.zero;
+            overLoad = Vector3.zero;
+            blackoutIndex = 0;
+            ModNetworking.SendToAll(ClientBlackoutMsg.CreateMessage(myPlayerID, 0f));
+            Destroy(BlackOut);
+
+            loadDisplayerSimulator.initialized = false;
+            loadDisplayerSimulator.leftWingLoad.Clear();
+            loadDisplayerSimulator.rightWingLoad.Clear();
+            CC2LoadDisplayerData.Instance.LoadListReady[myPlayerID] = false;
             //Radar2CCData.Instance.cc2radar.Reset();
         }
         public override void SimulateUpdateHost()
         {
             RadarDisplayerKey_Update();
-            SendRadarRara();
+            A2GDisplayerKey_Update();
+            LoadDisplayerKey_Update();
+        }
+        public override void SimulateUpdateClient()
+        {
+            RadarDisplayerKey_Update();
+            A2GDisplayerKey_Update();
+        }
+        public override void SimulateFixedUpdateHost()
+        {
+            DisplayBlackout();
+            EmulateLoadDisplayerKey_FixedUpdateHost();
+        }
+        public override void SimulateFixedUpdateClient()
+        {
+            DisplayBlackout();
         }
         public void OnGUI()
         {

@@ -605,6 +605,7 @@ namespace ModernAirCombat
                 blackoutMaterial.SetColor("_TintColor", new Color(0,0,0,0f));
                 BlackOut.GetComponent<MeshRenderer>().sharedMaterial = blackoutMaterial;
                 BlackOut.SetActive(GTolerance.isDefaultValue);
+                BlackOut.layer = 30;
 
             }
         }
@@ -795,7 +796,7 @@ namespace ModernAirCombat
         {
             if (IsSimulating)
             {
-                //set the position of scanLine
+                //set the position of scanLine 
                 ScanLine.transform.localPosition = new Vector3(SLController.currAngle * 0.00175f, 0, 0.095f);
                 //set the position of chooser
                 if (!locking || StatMaster.isClient)
@@ -1141,6 +1142,10 @@ namespace ModernAirCombat
         void OnGUI()
         {
             //GUI.Box(new Rect(100, 100, 200, 50), currLockedPlayerID.ToString());
+            //GUI.Box(new Rect(100, 200, 200, 50), RadarTarget[49].hasObject.ToString());
+            //GUI.Box(new Rect(100, 250, 200, 50), RadarTarget[50].hasObject.ToString());
+            //GUI.Box(new Rect(100, 300, 200, 50), RadarTarget[51].hasObject.ToString());
+
             if (locking && IsSimulating)
             {
                 if (StatMaster.isMP)
