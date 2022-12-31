@@ -35,6 +35,49 @@ namespace ModernAirCombat
         public GameObject leftAngle;
         public GameObject rightAngle;
         public GameObject pitchIndicator;
+
+        public GameObject RadarHeightUp;
+        public GameObject RadarHeightDown;
+        public GameObject RadarHeightTarget;
+
+        public Text RadarHeightUpText;
+        public Text RadarHeightDownText;
+        public Text RadarHeightTargetText;
+
+        Vector3 RadarForward;
+        float RadarBasePitch;
+        float RadarPitch;
+        public void UpdateRadarHeight()
+        {
+            RadarForward = DataManager.Instance.RadarTransformForward[myPlayerID];
+            RadarBasePitch = 90-Vector3.Angle(RadarForward, Vector3.up);
+            RadarPitch = CC2RadarDisplayerData.Instance.pitch[myPlayerID]+ RadarBasePitch;
+
+            float myHeight = transform.position.y/100;
+            float dist = CC2RadarDisplayerData.Instance.ChooserPosition[myPlayerID].y + 60;
+
+            float upperheight = Mathf.Clamp(myHeight + dist * Mathf.Sin(Mathf.Clamp((RadarPitch + 10),-90,90) * Mathf.PI / 180),0,60);
+            float lowerheight = Mathf.Clamp(myHeight + dist * Mathf.Sin(Mathf.Clamp((RadarPitch - 10),-90,90) * Mathf.PI / 180),0,60);
+            float targetheight = Mathf.Clamp(myHeight + dist * Mathf.Sin(RadarPitch * Mathf.PI / 180), 0, 60);
+
+            //0~60 => 0~0.196
+            RadarHeightDown.transform.localPosition = new Vector3(0, lowerheight * 0.003267f, 0);
+            RadarHeightUp.transform.localPosition = new Vector3(0, upperheight * 0.003267f, 0);
+            RadarHeightTarget.transform.localPosition = new Vector3(0, targetheight * 0.003267f, 0);
+            RadarHeightUpText.text = Mathf.Round(upperheight).ToString();
+            RadarHeightDownText.text = Mathf.Round(lowerheight).ToString();
+            RadarHeightTargetText.text = Mathf.Round(targetheight).ToString();
+
+            if (CC2RadarDisplayerData.Instance.locked[myPlayerID])
+            {
+                RadarHeightTarget.SetActive(true);
+            }
+            else
+            {
+                RadarHeightTarget.SetActive(false);
+            }
+        }
+
         public void Start()
         {
             radarScreen = Instantiate(AssetManager.Instance.RadarScreen.RadarScreen);
@@ -50,6 +93,12 @@ namespace ModernAirCombat
             pitchIndicator = radarScreen.transform.FindChild("pitchIndicator").gameObject;
             leftAngle = radarScreen.transform.FindChild("leftAngle").gameObject;
             rightAngle = radarScreen.transform.FindChild("rightAngle").gameObject;
+            RadarHeightUp = radarScreen.transform.FindChild("Height").FindChild("up").gameObject;
+            RadarHeightDown = radarScreen.transform.FindChild("Height").FindChild("down").gameObject;
+            RadarHeightTarget = radarScreen.transform.FindChild("Height").FindChild("target").gameObject;
+            RadarHeightUpText = RadarHeightUp.transform.FindChild("Text").GetComponent<Text>();
+            RadarHeightDownText = RadarHeightDown.transform.FindChild("Text").GetComponent<Text>();
+            RadarHeightTargetText = RadarHeightTarget.transform.FindChild("Text").GetComponent<Text>();
             GameObject enemies = radarScreen.transform.FindChild("enemies").gameObject;
             enemy[50] = enemies.transform.FindChild("enemy50").gameObject;
             enemy[50].SetActive(false);
@@ -67,6 +116,7 @@ namespace ModernAirCombat
         }
         public void LateUpdate()
         {
+            UpdateRadarHeight();
             if (!isClient)
             {
                 scanLine.transform.localPosition = new Vector3((CC2RadarDisplayerData.Instance.currRegion[myPlayerID] - 50) * 0.0021f, 0, 0f);
@@ -135,7 +185,11 @@ namespace ModernAirCombat
                     }
                 }
             }
-            
+        }
+        public void OnGUI()
+        {
+            //GUI.Box(new Rect(100, 200, 200, 50), RadarBasePitch.ToString());
+            //GUI.Box(new Rect(100, 250, 200, 50), RadarPitch.ToString());
         }
     }
 
@@ -419,7 +473,6 @@ namespace ModernAirCombat
         public List<GameObject> leftWingLoadIcons = new List<GameObject>();
         public List<GameObject> rightWingLoadIcons = new List<GameObject>();
 
-
         public Vector3 leftRoot = new Vector3(-0.03f, -0.32f, 0f);
         public Vector3 leftTip = new Vector3(-1f, 0f, 0f);
         public Vector3 rightRoot = new Vector3(0.03f, -0.32f, 0f);
@@ -633,7 +686,6 @@ namespace ModernAirCombat
             {
                 ChaffMesh.text = "Chaff:       x";
             }
-
         }
         
         public void Start()
@@ -694,6 +746,12 @@ namespace ModernAirCombat
         public MMenu DefaultScreen;
         public MMenu TVColor;
 
+        public MToggle DisableNone;
+        public MToggle DisableRadar;
+        public MToggle DisableA2G;
+        public MToggle DisableLoad;
+        public MToggle DisableNavigation;
+
         ScreenType screenType;
 
         public GameObject RadarDisplayer;
@@ -722,6 +780,11 @@ namespace ModernAirCombat
                 "Green TV",
                 "Gray TV"
             }, false);
+            DisableNone = AddToggle("Disable \"None Screen\"", "DisableNone", false);
+            DisableRadar = AddToggle("Disable \"Radar Screen\"", "DisableRadar", false);
+            DisableA2G = AddToggle("Disable \"A2G Screen\"", "DisableA2G", false);
+            DisableLoad = AddToggle("Disable \"Load Screen\"", "DisableLoad", false);
+            DisableNavigation = AddToggle("Disable \"Navigation Screen\"", "DisableNavigation", false);
 
             gameObject.name = "MFD";
             if (!transform.Find("RadarDisplayer"))
@@ -785,9 +848,40 @@ namespace ModernAirCombat
         }
         public override void SimulateUpdateHost()
         {
+            if (!DisableNone.isDefaultValue&&!DisableRadar.isDefaultValue&&!DisableA2G.isDefaultValue&&!DisableLoad.isDefaultValue)
+            {
+                RadarDisplayer.SetActive(false);
+                A2GDisplayer.SetActive(false);
+                LoadDisplayer.SetActive(false);
+                return;
+            }
             if (Switch.IsPressed)
             {
-                screenType.Next();
+                while (true)
+                {
+                    screenType.Next();
+                    if (screenType.Type == ScreenType.ScreenTypes.None && DisableNone.isDefaultValue)
+                    {
+                        break;
+                    }
+                    if (screenType.Type == ScreenType.ScreenTypes.Radar && DisableRadar.isDefaultValue)
+                    {
+                        break;
+                    }
+                    if (screenType.Type == ScreenType.ScreenTypes.A2G && DisableA2G.isDefaultValue)
+                    {
+                        break;
+                    }
+                    if (screenType.Type == ScreenType.ScreenTypes.Load && DisableLoad.isDefaultValue)
+                    {
+                        break;
+                    }
+                    if (screenType.Type == ScreenType.ScreenTypes.Navigation && DisableNavigation.isDefaultValue)
+                    {
+                        break;
+                    }
+                }
+                
                 ModNetworking.SendToAll(clientMFDType.CreateMessage(myPlayerID, (int)screenType.Type));
             }
 
@@ -818,6 +912,13 @@ namespace ModernAirCombat
         }
         public override void SimulateUpdateClient()
         {
+            if (!DisableNone.isDefaultValue && !DisableRadar.isDefaultValue && !DisableA2G.isDefaultValue && !DisableLoad.isDefaultValue)
+            {
+                RadarDisplayer.SetActive(false);
+                A2GDisplayer.SetActive(false);
+                LoadDisplayer.SetActive(false);
+                return;
+            }
             if (MFDMsgReceiver.Instance.ScreenType[myPlayerID] == 1)
             {
                 RadarDisplayer.SetActive(true);

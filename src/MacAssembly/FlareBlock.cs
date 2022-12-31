@@ -67,11 +67,30 @@ namespace ModernAirCombat
             {
                 return Vector3.zero;
             }
-            
+
         }
 
 
     }
+
+    public class RandomFlareForce : MonoBehaviour
+    {
+        Rigidbody myRigid;
+        float randomness = 3;
+        Vector3 Force = Vector3.zero;
+        public void Start()
+        {
+            myRigid = transform.gameObject.GetComponent<Rigidbody>();
+        }
+        public void FixedUpdate()
+        {
+            Force = -Force + new Vector3(randomness * (UnityEngine.Random.value - 0.5f),
+                                        randomness * (UnityEngine.Random.value - 0.5f),
+                                        randomness * (UnityEngine.Random.value - 0.5f));
+            myRigid.AddRelativeForce(Force);
+        }
+    }
+
 
     public class FlareBlock : BlockScript
     {
@@ -114,6 +133,7 @@ namespace ModernAirCombat
             FlareObject.name = "flare";
             Destroy(FlareObject.GetComponent<MeshFilter>());
             FlareObject.GetComponent<BoxCollider>().size = new Vector3(0.1f,0.1f,0.1f);
+            FlareObject.AddComponent<RandomFlareForce>();
 
             FlareFlame = (GameObject)Instantiate(AssetManager.Instance.Flare.FlameFlare, FlareObject.transform);
             FlareSmoke = (GameObject)Instantiate(AssetManager.Instance.Flare.SmokeFlare, FlareObject.transform);

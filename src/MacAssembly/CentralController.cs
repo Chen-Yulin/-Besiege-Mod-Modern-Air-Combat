@@ -9,6 +9,7 @@ using Modding.Modules;
 using Modding;
 using Modding.Blocks;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace ModernAirCombat
 {
@@ -152,6 +153,122 @@ namespace ModernAirCombat
 
     }
     // assist controller
+    public class KneeboardController : MonoBehaviour
+    {
+        public GameObject canvas;
+        public float size;
+        Vector3 appearPosition;
+        Vector3 disappearPosition;
+        public bool boardOn = false;
+
+        public GameObject customText;
+        public KeyCode RadarPU;
+        public KeyCode RadarPD;
+        public KeyCode RadarSI;
+        public KeyCode RadarSD;
+        public KeyCode RadarLock;
+        public KeyCode RadarTDCU;
+        public KeyCode RadarTDCD;
+        public KeyCode RadarTDCL;
+        public KeyCode RadarTDCR;
+        public KeyCode A2GLock;
+        public KeyCode A2GTrack;
+        public KeyCode A2GZI;
+        public KeyCode A2GZO;
+        public KeyCode A2GPU;
+        public KeyCode A2GPD;
+        public KeyCode A2GYL;
+        public KeyCode A2GYR;
+        public KeyCode SRAAM;
+        public KeyCode MRAAM;
+        public KeyCode AGM;
+        public KeyCode GBU;
+        public string ownNotes;
+        public int FontSize = 28;
+        
+        public void InitText()
+        {
+            customText.transform.Find("RadarPitchUp").gameObject.GetComponent<Text>().text = KeyText(RadarPU);
+            customText.transform.Find("RadarPitchDown").gameObject.GetComponent<Text>().text = KeyText(RadarPD);;
+            customText.transform.Find("RadarScanInc").gameObject.GetComponent<Text>().text = KeyText(RadarSI);;
+            customText.transform.Find("RadarScanDec").gameObject.GetComponent<Text>().text = KeyText(RadarSD);
+            customText.transform.Find("RadarLock").gameObject.GetComponent<Text>().text = KeyText(RadarLock);
+            customText.transform.Find("TDCUp").gameObject.GetComponent<Text>().text = KeyText(RadarTDCU);
+            customText.transform.Find("TDCDown").gameObject.GetComponent<Text>().text = KeyText(RadarTDCD);
+            customText.transform.Find("TDCLeft").gameObject.GetComponent<Text>().text = KeyText(RadarTDCL);
+            customText.transform.Find("TDCRight").gameObject.GetComponent<Text>().text = KeyText(RadarTDCR);
+            customText.transform.Find("A2GLock").gameObject.GetComponent<Text>().text = KeyText(A2GLock);
+            customText.transform.Find("A2GTrack").gameObject.GetComponent<Text>().text = KeyText(A2GTrack);
+            customText.transform.Find("A2GZoomIn").gameObject.GetComponent<Text>().text = KeyText(A2GZI);
+            customText.transform.Find("A2GZoomOut").gameObject.GetComponent<Text>().text = KeyText(A2GZO);
+            customText.transform.Find("A2GPitchUp").gameObject.GetComponent<Text>().text = KeyText(A2GPU);
+            customText.transform.Find("A2GPitchDown").gameObject.GetComponent<Text>().text = KeyText(A2GPD);
+            customText.transform.Find("A2GYawLeft").gameObject.GetComponent<Text>().text = KeyText(A2GYL);
+            customText.transform.Find("A2GYawRight").gameObject.GetComponent<Text>().text = KeyText(A2GYR);
+            customText.transform.Find("SRAAM").gameObject.GetComponent<Text>().text = KeyText(SRAAM);
+            customText.transform.Find("MRAAM").gameObject.GetComponent<Text>().text = KeyText(MRAAM);
+            customText.transform.Find("AGM").gameObject.GetComponent<Text>().text = KeyText(AGM);
+            customText.transform.Find("GBU").gameObject.GetComponent<Text>().text = KeyText(GBU);
+            //customText.transform.Find("customText").gameObject.GetComponent<Text>().text = ownNotes;
+            //customText.transform.Find("customText").gameObject.GetComponent<Text>().fontSize = FontSize;
+
+
+        }
+
+        public string KeyText(KeyCode key)
+        {
+            if (key.ToString() == "LeftArrow")
+            {
+                return "←";
+            }
+            if (key.ToString() == "RightArrow")
+            {
+                return "→";
+            }
+            if (key.ToString() == "UpArrow")
+            {
+                return "↑";
+            }
+            if (key.ToString() == "DownArrow")
+            {
+                return "↓";
+            }
+
+            return key.ToString();
+        }
+
+        public void Start()
+        {
+            canvas = transform.parent.gameObject;
+            transform.Find("woodbase").gameObject.SetActive(true);
+            transform.Find("paperBase").gameObject.SetActive(true);
+            float height = canvas.transform.localPosition.y * 2;
+            float width = canvas.transform.localPosition.x * 2;
+            transform.position = new Vector3(width - transform.localScale.x * 340 - 20, -transform.localScale.y * 490 - 20, 0);
+            customText = transform.Find("paperBase").Find("custom").gameObject;
+            InitText();
+        }
+        public void Update()
+        {
+            float height = canvas.transform.localPosition.y * 2;
+            float width = canvas.transform.localPosition.x * 2;
+            transform.localScale = height / 980 * Vector3.one * size;
+            appearPosition = new Vector3(width- transform.localScale.x*340-20, transform.localScale.y * 490+20, 0);
+            disappearPosition = new Vector3(width - transform.localScale.x * 340 - 20, -transform.localScale.y * 490 - 20, 0);
+            if (boardOn)
+            {
+                transform.position = Vector3.Lerp(transform.position, appearPosition, 0.1f);
+            }
+            else
+            {
+                transform.position = Vector3.Lerp(transform.position, disappearPosition, 0.2f);
+            }
+        }
+        public void FixedUpdate()
+        {
+
+        }
+    }
     public class ScanLineController : MonoBehaviour
     {
         public float frequency = 1;
@@ -1213,6 +1330,15 @@ namespace ModernAirCombat
     // main
     class CentralController : BlockScript
     {
+        //kneeboard
+        public MKey ToggleKneeboard;
+        public MSlider customTextSize;
+        public MText CustomText;
+        public MSlider KneeboardSize;
+        public GameObject KneeboardCanvas;
+        public GameObject Kneeboard;
+
+
         //simulators
         public RadarDisplayerSimulator radarDisplayerSimulator;
         public A2GDisplayerSimulator a2gDisplayerSimulator;
@@ -1266,6 +1392,66 @@ namespace ModernAirCombat
         public MSlider LoadOffset;
 
         public override bool EmulatesAnyKeys { get { return true; } }
+
+        // for kneeboard
+        public void addKneeboardMapper()
+        {
+            ToggleKneeboard = AddKey("Kneeboard Toggle", "KneeboardToggle", KeyCode.P);
+            KneeboardSize = AddSlider("Kneeboard Size", "KneeboardSize", 0.5f, 0.1f, 1f);
+            //customTextSize = AddSlider("Kneeboard note size", "KneeboardcustomTextSize", 28f, 12f, 64f);
+            //CustomText = AddText("Kneeboard custom text", "KneeboardCustomText", "Leave your own notes here.");
+        }
+        public void addKeyTextToKneeboard()
+        {
+            KneeboardController controller = Kneeboard.GetComponent<KneeboardController>();
+            controller.RadarPU = scanUp.GetKey(0);
+            controller.RadarPD = scanDown.GetKey(0);
+            controller.RadarSI = EnlargeScanAngle.GetKey(0);
+            controller.RadarSD = ReduceScanAngle.GetKey(0);
+            controller.RadarLock = RadarLock.GetKey(0);
+            controller.RadarTDCU = ChooserUp.GetKey(0);
+            controller.RadarTDCD = ChooserDown.GetKey(0);
+            controller.RadarTDCL = ChooserLeft.GetKey(0);
+            controller.RadarTDCR = ChooserDown.GetKey(0);
+            controller.A2GLock = A2GLock.GetKey(0);
+            controller.A2GTrack = A2GTrack.GetKey(0);
+            controller.A2GZI = A2GZoomIn.GetKey(0);
+            controller.A2GZO = A2GZoomOut.GetKey(0);
+            controller.A2GPU = A2GPitchUp.GetKey(0);
+            controller.A2GPD = A2GPitchDown.GetKey(0);
+            controller.A2GYL = A2GYawLeft.GetKey(0);
+            controller.A2GYR = A2GYawRight.GetKey(0);
+            controller.SRAAM = LaunchSRAAM.GetKey(0);
+            controller.MRAAM = LaunchMRAAM.GetKey(0);
+            controller.AGM = LaunchAGM.GetKey(0);
+            controller.GBU = LaunchGBU.GetKey(0);
+            controller.ownNotes = CustomText.Value;
+            controller.FontSize = (int)customTextSize.Value;
+        }
+        public void InitKneeboard()
+        {
+            if (!GameObject.Find("KneeboardCanvas"))
+            {
+                KneeboardCanvas = Instantiate(AssetManager.Instance.Kneeboard.KneeboardCanvas);
+                KneeboardCanvas.name = "KneeboardCanvas";
+                Kneeboard = KneeboardCanvas.transform.FindChild("kneeboard").gameObject;
+                Kneeboard.AddComponent<KneeboardController>().size = KneeboardSize.Value;
+                Kneeboard.transform.Find("woodbase").gameObject.SetActive(false);
+                Kneeboard.transform.Find("paperBase").gameObject.SetActive(false);
+            }
+            KneeboardCanvas.SetActive(true);
+            addKeyTextToKneeboard();
+            
+        }
+        public void KneeboardKey_Update()
+        {
+            if (ToggleKneeboard.IsPressed)
+            {
+                Kneeboard.GetComponent<KneeboardController>().boardOn = !Kneeboard.GetComponent<KneeboardController>().boardOn;
+            }
+        }
+
+
         // for blackout
         public void addGeneralMapper()
         {
@@ -1579,6 +1765,7 @@ namespace ModernAirCombat
         {
             myPlayerID = BlockBehaviour.ParentMachine.PlayerID;
             GTolerance = AddToggle("GTolerance", "GTolerance", true);
+            addKneeboardMapper();
             addRadarDisplayerMapper();
             addA2GDisplayerMapper();
             addLoadDisplayerMapper();
@@ -1587,6 +1774,7 @@ namespace ModernAirCombat
         {
             myRigid = BlockBehaviour.GetComponent<Rigidbody>();
             InitBlackOut();
+            InitKneeboard();
             if (!transform.Find("Radar Displayer Simulator"))
             {
                 radarDisplayerSimulatorObject = new GameObject("Radar Displayer Simulator");
@@ -1626,6 +1814,7 @@ namespace ModernAirCombat
         }
         public override void OnSimulateStop()
         {
+            Destroy(KneeboardCanvas);
             preVeclocity = Vector3.zero;
             overLoad = Vector3.zero;
             blackoutIndex = 0;
@@ -1640,12 +1829,14 @@ namespace ModernAirCombat
         }
         public override void SimulateUpdateHost()
         {
+            KneeboardKey_Update();
             RadarDisplayerKey_Update();
             A2GDisplayerKey_Update();
             LoadDisplayerKey_Update();
         }
         public override void SimulateUpdateClient()
         {
+            KneeboardKey_Update();
             RadarDisplayerKey_Update();
             A2GDisplayerKey_Update();
         }

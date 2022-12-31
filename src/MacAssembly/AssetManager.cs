@@ -6,6 +6,14 @@ using Modding;
 
 namespace ModernAirCombat
 {
+    public class Asset_Kneeboard
+    {
+        public GameObject KneeboardCanvas;
+        public Asset_Kneeboard(ModAssetBundle modAssetBundle){
+            KneeboardCanvas = modAssetBundle.LoadAsset<GameObject>("kneeboardCanvas");
+        }
+    }
+
     public class Asset_RadarScreen
     {
         public GameObject RadarScreen;
@@ -163,6 +171,7 @@ namespace ModernAirCombat
 
         public Asset_HUD HUD { get; protected set; }
         public Asset_RadarScreen RadarScreen { get; protected set; }
+        public Asset_Kneeboard Kneeboard { get; protected set; }
 
 
 
@@ -179,6 +188,7 @@ namespace ModernAirCombat
             Shader = new Asset_Shader(ModResource.GetAssetBundle("Shader"));
             HUD = new Asset_HUD(ModResource.GetAssetBundle("HUD AB"));
             RadarScreen = new Asset_RadarScreen(ModResource.GetAssetBundle("RadarScreen AB"));
+            Kneeboard = new Asset_Kneeboard(ModResource.GetAssetBundle("Kneeboard AB"));
         }
     }
 }
