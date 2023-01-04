@@ -1,9 +1,9 @@
 ManifestFileVersion: 0
-CRC: 594624684
+CRC: 4287355029
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: bef24babaae8a1e8ec13170de848df3b
+    Hash: 096ba61edc397a6f8ab2127de2bb3677
   TypeTreeHash:
     serializedVersion: 2
     Hash: 760685228a2f8f5649aeeef4dc66a7e3
@@ -36,5 +36,5 @@ ClassTypes:
 - Class: 224
   Script: {instanceID: 0}
 Assets:
-- Assets/radarScreen/RadarScreen.prefab
+- Assets/Info/kneeboardCanvas.prefab
 Dependencies: []

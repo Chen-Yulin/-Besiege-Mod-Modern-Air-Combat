@@ -6,6 +6,23 @@ using Modding;
 
 namespace ModernAirCombat
 {
+    public class Asset_NavScreen
+    {
+        public GameObject NavScreen;
+        public Asset_NavScreen(ModAssetBundle modAssetBundle)
+        {
+            NavScreen = modAssetBundle.LoadAsset<GameObject>("NavScreen");
+        }
+    }
+    public class Asset_BlackSmoke
+    {
+        public GameObject BlackSmoke;
+        public Asset_BlackSmoke(ModAssetBundle modAssetBundle)
+        {
+            BlackSmoke = modAssetBundle.LoadAsset<GameObject>("gunblacksmoke");
+        }
+    }
+
     public class Asset_Kneeboard
     {
         public GameObject KneeboardCanvas;
@@ -159,6 +176,7 @@ namespace ModernAirCombat
     {
         public override string Name { get; } = "Asset Manager";
 
+        public Asset_BlackSmoke BlackSmoke { get; protected set; }
         public Asset_Trail Trail { get; protected set; }
         public Asset_Explo Explo { get; protected set; }
         public Asset_AGMExplo AGMExplo { get; protected set; }
@@ -172,6 +190,7 @@ namespace ModernAirCombat
         public Asset_HUD HUD { get; protected set; }
         public Asset_RadarScreen RadarScreen { get; protected set; }
         public Asset_Kneeboard Kneeboard { get; protected set; }
+        public Asset_NavScreen NavScreen { get; protected set; }
 
 
 
@@ -189,6 +208,8 @@ namespace ModernAirCombat
             HUD = new Asset_HUD(ModResource.GetAssetBundle("HUD AB"));
             RadarScreen = new Asset_RadarScreen(ModResource.GetAssetBundle("RadarScreen AB"));
             Kneeboard = new Asset_Kneeboard(ModResource.GetAssetBundle("Kneeboard AB"));
+            BlackSmoke = new Asset_BlackSmoke(ModResource.GetAssetBundle("BlackSmoke AB"));
+            NavScreen = new Asset_NavScreen(ModResource.GetAssetBundle("NavScreen AB"));
         }
     }
 }

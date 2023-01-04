@@ -1,9 +1,9 @@
 ManifestFileVersion: 0
-CRC: 3756368905
+CRC: 487117858
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: 14809dbf176aea5ebdfc72ffe86bd2bd
+    Hash: b3025f4cbe78b9f801eb384439c7fdbe
   TypeTreeHash:
     serializedVersion: 2
     Hash: 8e73928d58048341e9b2fe1dbcc1debf
@@ -24,8 +24,5 @@ ClassTypes:
 - Class: 199
   Script: {instanceID: 0}
 Assets:
-- Assets/FlareFrame.prefab
-- Assets/Flare/FlareSmoke.prefab
-- Assets/FlareSmoke.prefab
-- Assets/Flare/FlareFrame.prefab
+- Assets/gunblacksmoke.prefab
 Dependencies: []

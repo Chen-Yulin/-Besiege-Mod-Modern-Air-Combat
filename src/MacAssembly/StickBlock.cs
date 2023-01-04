@@ -190,6 +190,10 @@ namespace ModernAirCombat
             }
 
         }
+        public override void OnSimulateStop()
+        {
+            DataManager.Instance.StickOn[myPlayerID] = false;
+        }
 
         protected void Update()
         {
@@ -246,6 +250,7 @@ namespace ModernAirCombat
                     XAxis = 0;
                     YAxis = 0;
                 }
+                DataManager.Instance.StickOn[myPlayerID] = StickOn;
             }
 
         }

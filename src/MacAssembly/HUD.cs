@@ -39,6 +39,13 @@ namespace ModernAirCombat
         Transform BlockTransform;
         public Vector3 myInitialScale;
         public float BaseScale = 1;
+
+        public void UpdatePosition()
+        {
+            Vector3 Blocklossy = BlockTransform.lossyScale;
+            transform.localScale = BaseScale * new Vector3(myInitialScale.x / Blocklossy.x, myInitialScale.y / Blocklossy.z, myInitialScale.z / Blocklossy.y);
+            transform.position = myCamera.transform.position + 0.7f * HUDTransform.forward;
+        }
         // Use this for initialization
         void Start()
         {
@@ -51,9 +58,18 @@ namespace ModernAirCombat
         // Update is called once per frame
         void LateUpdate()
         {
-            Vector3 Blocklossy = BlockTransform.lossyScale;
-            transform.localScale = BaseScale * new Vector3(myInitialScale.x / Blocklossy.x, myInitialScale.y / Blocklossy.z, myInitialScale.z / Blocklossy.y);
-            transform.position = myCamera.transform.position + 0.7f * HUDTransform.forward;
+            if (StatMaster.isClient)
+            {
+                return;
+            }
+            UpdatePosition();
+        }
+        void OnGUI()
+        {
+            if (StatMaster.isClient)
+            {
+                UpdatePosition();
+            }
         }
     }
     public class HUDPitchFollowCamera : MonoBehaviour
@@ -62,6 +78,15 @@ namespace ModernAirCombat
         Transform HUDTransform;
         Transform BlockTransform;
         public Vector3 myInitialScale;
+
+        public void UpdatePosition()
+        {
+            Vector3 Blocklossy = BlockTransform.lossyScale;
+            transform.localScale = new Vector3(myInitialScale.x / Blocklossy.x, myInitialScale.y / Blocklossy.z, myInitialScale.z / Blocklossy.y);
+            transform.position = myCamera.transform.position;
+            transform.rotation = Quaternion.LookRotation(BlockTransform.up);
+            transform.rotation = Quaternion.Euler(new Vector3(0, transform.rotation.eulerAngles.y, 0));
+        }
         // Use this for initialization
         void Start()
         {
@@ -74,11 +99,18 @@ namespace ModernAirCombat
         // Update is called once per frame
         void LateUpdate()
         {
-            Vector3 Blocklossy = BlockTransform.lossyScale;
-            transform.localScale = new Vector3(myInitialScale.x / Blocklossy.x, myInitialScale.y / Blocklossy.z, myInitialScale.z / Blocklossy.y);
-            transform.position = myCamera.transform.position;
-            transform.rotation = Quaternion.LookRotation(BlockTransform.up);
-            transform.rotation = Quaternion.Euler(new Vector3(0, transform.rotation.eulerAngles.y, 0));
+            if (StatMaster.isClient)
+            {
+                return;
+            }
+            UpdatePosition();
+        }
+        void OnGUI()
+        {
+            if (StatMaster.isClient)
+            {
+                UpdatePosition();
+            }
         }
     }
     class MeterText
@@ -356,8 +388,8 @@ namespace ModernAirCombat
                 GunAimController.AimOn = false;
 
                 Panelbase = Panel.transform.FindChild("Mask").FindChild("Base").gameObject;
-                Panelbase.AddComponent<HUDPanelFollowCamera>();
-                Panel.transform.FindChild("Mask").FindChild("PitchIconBase").gameObject.AddComponent<HUDPitchFollowCamera>();
+                DataManager.Instance.hudPanelFollowCamera.Add(Panelbase.AddComponent<HUDPanelFollowCamera>());
+                DataManager.Instance.hudPitchFollowCamera.Add(Panel.transform.FindChild("Mask").FindChild("PitchIconBase").gameObject.AddComponent<HUDPitchFollowCamera>());
                 Panel.transform.FindChild("Mask").FindChild("Base").FindChild("Mask").gameObject.AddComponent<MeterController>();
                 
 

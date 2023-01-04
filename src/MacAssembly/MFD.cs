@@ -22,6 +22,229 @@ namespace ModernAirCombat
         }
     }
 
+    public class NAVController : MonoBehaviour
+    {
+        public int myPlayerID;
+
+        public Vector3[] dist = new Vector3[8];
+        public bool[] hasWP = new bool[8];
+        public string[] WPName = new string[8];
+        public float orientation = 0;
+        public Vector3 myPosition = Vector3.zero;
+
+        GameObject rotationObject;
+        GameObject[] WP = new GameObject[8];
+        GameObject Line;
+        Text CurrWPx;
+        Text CurrWPy;
+        Text CurrWPz;
+        Text CurrWPName;
+        Text ScaleText;
+
+        int selected = 0;
+        public float scale = 0.0001f;
+
+        public Vector2 PointRotate(Vector3 Point, float angle)
+        {
+            return new Vector2(Mathf.Cos(angle) * Point.x + Mathf.Sin(angle) * Point.y, -Mathf.Sin(angle) * Point.x + Mathf.Cos(angle) * Point.y);
+        }
+        private float SignedAngle(Vector2 v1, Vector2 v2)
+        {
+            if (v1.x * v2.y - v1.y * v2.x < 0)
+            {
+                return -Vector2.Angle(v1, v2);
+            }
+            else
+            {
+                return Vector2.Angle(v1, v2);
+            }
+        }
+
+        private void DrawLine(Vector2 origin, Vector2 end)
+        {
+            Vector2 backDirection = new Vector2(origin.x - end.x, origin.y - end.y);
+            float xModifier, yModifier;
+            if (end.x > 0.1f || end.x < -0.1f)
+            {
+                xModifier = 1 - Mathf.Abs(0.1f / end.x);
+            }
+            else
+            {
+                xModifier = 0;
+            }
+            end += xModifier * backDirection;
+
+            backDirection = new Vector2(origin.x - end.x, origin.y - end.y);
+            if (end.y > 0.1f)
+            {
+                yModifier = 1 - Mathf.Abs(0.16f / (end.y + 0.06f));
+            }
+            else if (end.y < -0.1f)
+            {
+                yModifier = 1 - Mathf.Abs(0.04f / (-end.y - 0.06f));
+            }
+            else
+            {
+                yModifier = 0;
+            }
+            end += yModifier * backDirection;
+
+            Line.transform.localPosition = (origin + end) / 2;
+            float Angle = SignedAngle(Vector2.right,
+                new Vector2((origin - end).x, (origin - end).y));
+            Line.transform.localRotation = Quaternion.Euler(0, 0, Angle);
+            Line.transform.localScale = new Vector3((end - origin).magnitude, 0.001f, 0.001f);
+        }
+
+        public bool NoneWP()
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                if (hasWP[i])
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public void SelectNext()
+        {
+            if (!NoneWP())
+            {
+                selected++;
+                while (!hasWP[selected])
+                {
+                    selected++;
+                    if (selected >= 8)
+                    {
+                        selected = 0;
+                    }
+                }
+            }
+        }
+
+        public void ScaleDec()
+        {
+            scale /= 2;
+        }
+
+        public void ScaleInc()
+        {
+            scale *= 2;
+        }
+
+        public void UpdateWP()
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                if (hasWP[i])
+                {
+                    WP[i].SetActive(true);
+                    WP[i].transform.localPosition = new Vector3(dist[i].x - myPosition.x, dist[i].z - myPosition.z, 0) * scale;
+                    WP[i].transform.localRotation = Quaternion.Euler(   WP[i].transform.localEulerAngles.x,
+                                                                        WP[i].transform.localEulerAngles.y, 
+                                                                        -orientation);
+                }
+                else
+                {
+                    WP[i].SetActive(false);
+                }
+            }
+        }
+        public void UpdateLine()
+        {
+            Vector2 origin = new Vector2(rotationObject.transform.localPosition.x, rotationObject.transform.localPosition.y);
+            Vector2 end = origin + PointRotate(WP[selected].transform.localPosition, -orientation * Mathf.PI / 180);
+            DrawLine(origin, end);
+        }
+        public void UpdateText()
+        {
+            if (hasWP[selected])
+            {
+                CurrWPName.text = WPName[selected];
+                CurrWPx.text = dist[selected].x.ToString();
+                CurrWPy.text = dist[selected].y.ToString();
+                CurrWPz.text = dist[selected].z.ToString();
+            }
+            else
+            {
+                CurrWPName.text = "";
+                CurrWPx.text = "";
+                CurrWPy.text = "";
+                CurrWPz.text = "";
+            }
+            ScaleText.text = (0.0001f / scale).ToString() + "km";
+        }
+        public void SyncData()
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                dist[i] = CC2NavDisplayerData.Instance.dist[myPlayerID][i];
+                hasWP[i] = CC2NavDisplayerData.Instance.hasWP[myPlayerID][i];
+                WPName[i] = CC2NavDisplayerData.Instance.WPName[myPlayerID][i];
+                orientation = CC2NavDisplayerData.Instance.orientation[myPlayerID];
+                myPosition = CC2NavDisplayerData.Instance.myPosition[myPlayerID];
+            }
+        }
+        public void KeyAction()
+        {
+            if (CC2NavDisplayerData.Instance.ScaleIncPressed[myPlayerID])
+            {
+                CC2NavDisplayerData.Instance.ScaleIncPressed[myPlayerID] = false;
+                ScaleInc();
+            }
+            if (CC2NavDisplayerData.Instance.ScaleDecPressed[myPlayerID])
+            {
+                CC2NavDisplayerData.Instance.ScaleDecPressed[myPlayerID] = false;
+                ScaleDec();
+            }
+            if (CC2NavDisplayerData.Instance.ChangeSelection[myPlayerID])
+            {
+                CC2NavDisplayerData.Instance.ChangeSelection[myPlayerID] = false;
+                SelectNext();
+            }
+        }
+
+        // Use this for initialization
+        void Start()
+        {
+            rotationObject = transform.Find("Mask").Find("rotate").gameObject;
+            Line = transform.Find("Mask").Find("Line").gameObject;
+            for (int i = 0; i < 8; i++)
+            {
+                WP[i] = rotationObject.transform.Find("WPs").Find("WP" + i.ToString()).gameObject;
+            }
+            Transform fixedObject = transform.Find("Mask").Find("fixed");
+            CurrWPName = fixedObject.Find("WPName").GetComponent<Text>();
+            CurrWPx = fixedObject.Find("WPx").GetComponent<Text>();
+            CurrWPy = fixedObject.Find("WPy").GetComponent<Text>();
+            CurrWPz = fixedObject.Find("WPz").GetComponent<Text>();
+            ScaleText = fixedObject.Find("scale").GetComponent<Text>();
+        }
+
+        // Update is called once per frame
+        void Update()
+        {
+            SyncData();
+            KeyAction();
+            rotationObject.transform.localRotation = Quaternion.Euler(0, 0, orientation);
+            UpdateWP();
+            if (hasWP[selected])
+            {
+                UpdateLine();
+                Line.SetActive(true);
+            }
+            else
+            {
+                Line.SetActive(false);
+            }
+            UpdateText();
+            
+
+        }
+    }
+
     public class RadarScreen_MFD : MonoBehaviour
     {
         public int myPlayerID;
@@ -104,7 +327,6 @@ namespace ModernAirCombat
             enemy[50].SetActive(false);
             for (int i = 0; i < 101; i++)
             {
-                
                 if (i == 50)
                 {
                     continue;
@@ -710,6 +932,23 @@ namespace ModernAirCombat
         }
     }
 
+    public class NavScreen_MFD : MonoBehaviour
+    {
+        public int myPlayerID;
+        GameObject NavScreen;
+        NAVController controller;
+        public void Start()
+        {
+            NavScreen = Instantiate(AssetManager.Instance.NavScreen.NavScreen);
+            NavScreen.transform.SetParent(transform);
+            NavScreen.transform.localPosition = Vector3.zero;
+            NavScreen.transform.localRotation = Quaternion.identity;
+            NavScreen.transform.localScale = Vector3.one;
+            NavScreen.name = "NavScreen";
+            NavScreen.AddComponent<NAVController>().myPlayerID = myPlayerID;
+        }
+    }
+
     class MFD : BlockScript
     {
         class ScreenType
@@ -757,6 +996,7 @@ namespace ModernAirCombat
         public GameObject RadarDisplayer;
         public GameObject A2GDisplayer;
         public GameObject LoadDisplayer;
+        public GameObject NavDisplayer;
 
         public static MessageType clientMFDType = ModNetworking.CreateMessageType(DataType.Integer, DataType.Integer);
 
@@ -814,6 +1054,15 @@ namespace ModernAirCombat
                 LoadDisplayer.transform.localScale = Vector3.one;
                 LoadDisplayer.SetActive(false);
             }
+            if (!transform.Find("NavDisplayer"))
+            {
+                NavDisplayer = new GameObject("NavDisplayer");
+                NavDisplayer.transform.SetParent(transform);
+                NavDisplayer.transform.localPosition = new Vector3(0, 0, 0.096f);
+                NavDisplayer.transform.localRotation = Quaternion.Euler(0, 180, 180);
+                NavDisplayer.transform.localScale = Vector3.one*1.25f;
+                NavDisplayer.SetActive(false);
+            }
 
         }
         public void Start()
@@ -844,15 +1093,17 @@ namespace ModernAirCombat
             ModNetworking.SendToAll(clientMFDType.CreateMessage(myPlayerID, (int)screenType.Type));
 
             LoadDisplayer.AddComponent<LoadScreen_MFD>().myPlayerID = myPlayerID;
+            NavDisplayer.AddComponent<NavScreen_MFD>().myPlayerID = myPlayerID;
 
         }
         public override void SimulateUpdateHost()
         {
-            if (!DisableNone.isDefaultValue&&!DisableRadar.isDefaultValue&&!DisableA2G.isDefaultValue&&!DisableLoad.isDefaultValue)
+            if (!DisableNone.isDefaultValue&&!DisableRadar.isDefaultValue&&!DisableA2G.isDefaultValue&&!DisableLoad.isDefaultValue && !DisableNavigation.isDefaultValue)
             {
                 RadarDisplayer.SetActive(false);
                 A2GDisplayer.SetActive(false);
                 LoadDisplayer.SetActive(false);
+                NavDisplayer.SetActive(false);
                 return;
             }
             if (Switch.IsPressed)
@@ -909,14 +1160,23 @@ namespace ModernAirCombat
             {
                 LoadDisplayer.SetActive(false);
             }
+            if (screenType.Type == ScreenType.ScreenTypes.Navigation)
+            {
+                NavDisplayer.SetActive(true);
+            }
+            else
+            {
+                NavDisplayer.SetActive(false);
+            }
         }
         public override void SimulateUpdateClient()
         {
-            if (!DisableNone.isDefaultValue && !DisableRadar.isDefaultValue && !DisableA2G.isDefaultValue && !DisableLoad.isDefaultValue)
+            if (!DisableNone.isDefaultValue && !DisableRadar.isDefaultValue && !DisableA2G.isDefaultValue && !DisableLoad.isDefaultValue && !DisableNavigation.isDefaultValue)
             {
                 RadarDisplayer.SetActive(false);
                 A2GDisplayer.SetActive(false);
                 LoadDisplayer.SetActive(false);
+                NavDisplayer.SetActive(false);
                 return;
             }
             if (MFDMsgReceiver.Instance.ScreenType[myPlayerID] == 1)
@@ -942,6 +1202,14 @@ namespace ModernAirCombat
             else
             {
                 LoadDisplayer.SetActive(false);
+            }
+            if (MFDMsgReceiver.Instance.ScreenType[myPlayerID] == 4)
+            {
+                NavDisplayer.SetActive(true);
+            }
+            else
+            {
+                NavDisplayer.SetActive(false);
             }
         }
 

@@ -4,12 +4,14 @@ using System.Text;
 using System.Xml.Serialization;
 using System.Collections;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 using Modding.Modules;
 using Modding;
 using Modding.Blocks;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 namespace ModernAirCombat
 {
@@ -30,7 +32,7 @@ namespace ModernAirCombat
         public float[] SLcurrAngle = new float[16];
         public bool[] SLcurrDirection = new bool[16];
 
-        
+
 
         public void NormalPanelReceiver(Message msg)
         {
@@ -60,7 +62,7 @@ namespace ModernAirCombat
         public void tmpTargetDataReceiver(Message msg)
         {
             int playerID = (int)msg.GetData(0);
-            int targetIndex = (int) msg.GetData(1);
+            int targetIndex = (int)msg.GetData(1);
             float targetDistance = (float)msg.GetData(2);
             DataManager.Instance.TargetData[playerID].targets[targetIndex].distance = targetDistance;
             if (targetDistance == 0)
@@ -82,7 +84,8 @@ namespace ModernAirCombat
 
 
     }
-    class CCDataReceiver : SingleInstance<CCDataReceiver> {
+    class CCDataReceiver : SingleInstance<CCDataReceiver>
+    {
         public override string Name { get; } = "CC Data Receiver";
         public void RadarOnGUIMsgReceiver(Message msg)
         {
@@ -99,7 +102,7 @@ namespace ModernAirCombat
         public override string Name { get; } = "CC Data";
         public Vector3[] OnGuiTarget = new Vector3[16];
         public float[] BlackoutData = new float[16];
-        
+
     }
     class CC2RadarDisplayerData : SingleInstance<CC2RadarDisplayerData>
     {
@@ -111,7 +114,7 @@ namespace ModernAirCombat
         public float[] pitch = new float[16];
         public float[] leftAngle = new float[16];
         public float[] rightAngle = new float[16];
-        
+
 
         public CC2RadarDisplayerData()
         {
@@ -152,9 +155,35 @@ namespace ModernAirCombat
 
 
     }
+    class CC2NavDisplayerData : SingleInstance<CC2NavDisplayerData>
+    {
+        public override string Name { get; } = "CC2NavDisplayer Data";
+        public Vector3[][] dist = new Vector3[16][];
+        public bool[][] hasWP = new bool[16][];
+        public string[][] WPName = new string[16][];
+        public float[] orientation = new float[16];
+        public Vector3[] myPosition = new Vector3[16];
+
+        public bool[] ScaleIncPressed = new bool[16];
+        public bool[] ScaleDecPressed = new bool[16];
+        public bool[] ChangeSelection = new bool[16];
+
+        public CC2NavDisplayerData()
+        {
+            for (int i = 0; i < 16; i++)
+            {
+                dist[i] = new Vector3[8];
+                hasWP[i] = new bool[8];
+                WPName[i] = new string[8];
+            }
+        }
+ 
+    }
     // assist controller
     public class KneeboardController : MonoBehaviour
     {
+        public int myPlayerID;
+
         public GameObject canvas;
         public float size;
         Vector3 appearPosition;
@@ -183,14 +212,17 @@ namespace ModernAirCombat
         public KeyCode MRAAM;
         public KeyCode AGM;
         public KeyCode GBU;
+        public KeyCode NavSwitch;
+        public KeyCode NavScaleInc;
+        public KeyCode NavScaleDec;
         public string ownNotes;
         public int FontSize = 28;
-        
+
         public void InitText()
         {
             customText.transform.Find("RadarPitchUp").gameObject.GetComponent<Text>().text = KeyText(RadarPU);
-            customText.transform.Find("RadarPitchDown").gameObject.GetComponent<Text>().text = KeyText(RadarPD);;
-            customText.transform.Find("RadarScanInc").gameObject.GetComponent<Text>().text = KeyText(RadarSI);;
+            customText.transform.Find("RadarPitchDown").gameObject.GetComponent<Text>().text = KeyText(RadarPD); ;
+            customText.transform.Find("RadarScanInc").gameObject.GetComponent<Text>().text = KeyText(RadarSI); ;
             customText.transform.Find("RadarScanDec").gameObject.GetComponent<Text>().text = KeyText(RadarSD);
             customText.transform.Find("RadarLock").gameObject.GetComponent<Text>().text = KeyText(RadarLock);
             customText.transform.Find("TDCUp").gameObject.GetComponent<Text>().text = KeyText(RadarTDCU);
@@ -209,9 +241,24 @@ namespace ModernAirCombat
             customText.transform.Find("MRAAM").gameObject.GetComponent<Text>().text = KeyText(MRAAM);
             customText.transform.Find("AGM").gameObject.GetComponent<Text>().text = KeyText(AGM);
             customText.transform.Find("GBU").gameObject.GetComponent<Text>().text = KeyText(GBU);
-            //customText.transform.Find("customText").gameObject.GetComponent<Text>().text = ownNotes;
-            //customText.transform.Find("customText").gameObject.GetComponent<Text>().fontSize = FontSize;
+            customText.transform.Find("NavSwitch").gameObject.GetComponent<Text>().text = KeyText(NavSwitch);
+            customText.transform.Find("NavScaleInc").gameObject.GetComponent<Text>().text = KeyText(NavScaleInc);
+            customText.transform.Find("NavScaleDec").gameObject.GetComponent<Text>().text = KeyText(NavScaleDec);
 
+            for (int i = 0; i < 8; i++)
+            {
+                if (CC2NavDisplayerData.Instance.hasWP[myPlayerID][i])
+                {
+                    customText.transform.Find("WPName" + i.ToString()).gameObject.GetComponent<Text>().text = CC2NavDisplayerData.Instance.WPName[myPlayerID][i];
+                    customText.transform.Find("WP" + i.ToString()).gameObject.GetComponent<Text>().text = CC2NavDisplayerData.Instance.dist[myPlayerID][i].ToString("f0");
+                }
+                else
+                {
+                    customText.transform.Find("WPName" + i.ToString()).gameObject.GetComponent<Text>().text = "";
+                    customText.transform.Find("WP" + i.ToString()).gameObject.GetComponent<Text>().text = "";
+                }
+                
+            }
 
         }
 
@@ -253,15 +300,15 @@ namespace ModernAirCombat
             float height = canvas.transform.localPosition.y * 2;
             float width = canvas.transform.localPosition.x * 2;
             transform.localScale = height / 980 * Vector3.one * size;
-            appearPosition = new Vector3(width- transform.localScale.x*340-20, transform.localScale.y * 490+20, 0);
+            appearPosition = new Vector3(width - transform.localScale.x * 340 - 20, transform.localScale.y * 490 + 20, 0);
             disappearPosition = new Vector3(width - transform.localScale.x * 340 - 20, -transform.localScale.y * 490 - 20, 0);
             if (boardOn)
             {
-                transform.position = Vector3.Lerp(transform.position, appearPosition, 0.1f);
+                transform.position = Vector3.Lerp(transform.position, appearPosition, 0.2f);
             }
             else
             {
-                transform.position = Vector3.Lerp(transform.position, disappearPosition, 0.2f);
+                transform.position = Vector3.Lerp(transform.position, disappearPosition, 0.3f);
             }
         }
         public void FixedUpdate()
@@ -316,7 +363,7 @@ namespace ModernAirCombat
         public static MessageType ClientTargetPositionMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Integer, DataType.Vector3);
         public static MessageType ClientTargetDistanceMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Integer, DataType.Single);
         //playerID, pitch, deltaScanAngle, ChooserPosition, SLcurrAngle, SLcurrDirection
-        public static MessageType ClientNormalPanelMsg = ModNetworking.CreateMessageType(   DataType.Integer, DataType.Single, DataType.Single, 
+        public static MessageType ClientNormalPanelMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Single, DataType.Single,
                                                                                             DataType.Single, DataType.Single,
                                                                                             DataType.Single, DataType.Boolean);
         //playerID, pitch, closingRate, ChooserPosition, 
@@ -445,7 +492,7 @@ namespace ModernAirCombat
         {
             SLController = transform.gameObject.AddComponent<ScanLineController>();
         }
-        
+
         public void UnlockedChooserMotion_FixedUpdateHost()
         {
             //adjust the Chooser and the effected scan angle
@@ -638,7 +685,7 @@ namespace ModernAirCombat
             {
                 DataManager.Instance.TargetData[myPlayerID] = new targetManager();
             }
-            
+
         }
         public void Update()
         {
@@ -708,7 +755,7 @@ namespace ModernAirCombat
 
                 // send to client
                 SendNormalPanelMsg();
-                
+
             }
             else    // for client
             {
@@ -1323,17 +1370,310 @@ namespace ModernAirCombat
             {
                 SendLoadDisplayerData();
             }
-            
+
         }
+    }
+    public class NavDisplayerSimulator : MonoBehaviour
+    {
+        public Vector3[] dist = new Vector3[8];
+        public bool[] hasWP = new bool[8];
+        public string[] WPName = new string[8];
+        public float orientation = 0;
+        public Vector3 myPosition = Vector3.zero;
+
+        public bool ScaleIncPressed;
+        public bool ScaleDecPressed;
+        public bool ChangeSelectionPressed;
+
+        public void Start()
+        {
+
+        }
+        public void Update()
+        {
+            if (ScaleIncPressed)
+            {
+                ScaleIncPressed = false;
+            }
+        }
+    }
+
+    // camera
+    public class PilotCameraController : MonoBehaviour
+    {
+        public int myPlayerID;
+
+        public bool activeKeyPressed;
+        public float defaultFOV = 50f;
+        public float minFOV = 20;
+        public float maxFOV = 60;
+        public float Sensitivity = 1;
+
+        public bool CameraOn;
+        public float targetFOV;
+        public float originFOV;
+        public float rotationX;
+        public float rotationY;
+
+        public Camera _viewCamera;
+        public Camera _hudCamera;
+
+        public Texture CameraOnIcon;
+
+        public bool IsFixedCameraActive
+        {
+            get
+            {
+                return SingleInstance<FixedCameraController>.Instance.activeCamera;
+            }
+        }
+        public Camera MainCamera
+        {
+            get
+            {
+                bool flag;
+                if (this._viewCamera == null)
+                {
+                    MouseOrbit instance = SingleInstanceFindOnly<MouseOrbit>.Instance;
+                    flag = (((instance != null) ? instance.cam : null) != null);
+                }
+                else
+                {
+                    flag = false;
+                }
+                bool flag2 = flag;
+                if (flag2)
+                {
+                    this._viewCamera = SingleInstanceFindOnly<MouseOrbit>.Instance.cam;
+                }
+                bool flag3 = this._viewCamera == null;
+                if (flag3)
+                {
+                    this._viewCamera = Camera.main;
+                }
+                return this._viewCamera;
+            }
+        }
+        public Camera HUDCamera
+        {
+            get
+            {
+                bool flag;
+                if (this._hudCamera == null)
+                {
+                    MouseOrbit instance = SingleInstanceFindOnly<MouseOrbit>.Instance;
+                    flag = (((instance != null) ? instance.hud3Dcam : null) != null);
+                }
+                else
+                {
+                    flag = false;
+                }
+                bool flag2 = flag;
+                if (flag2)
+                {
+                    this._hudCamera = SingleInstanceFindOnly<MouseOrbit>.Instance.hud3Dcam;
+                }
+                bool flag3 = this._hudCamera == null;
+                if (flag3)
+                {
+                    this._hudCamera = Camera.main.transform.GetChild(0).GetComponent<Camera>();
+                }
+                return this._hudCamera;
+            }
+        }
+
+        public void Awake()
+        {
+            originFOV = MainCamera.fieldOfView;
+            CameraOnIcon = ModResource.GetTexture("Cursor Texture").Texture;
+        }
+
+        public void Update()
+        {
+            if (StatMaster.isMP)
+            {
+                if (StatMaster.isClient)
+                {
+                    return;
+                }
+                if (PlayerData.localPlayer.networkId != myPlayerID)
+                {
+                    return;
+                }
+            }
+            if (activeKeyPressed)
+            {
+                activeKeyPressed = false;
+                CameraOn = !CameraOn;
+                if (CameraOn)
+                {
+                    rotationX = 0;
+                    rotationY = 0;
+                    targetFOV = defaultFOV;
+                    MainCamera.transform.rotation = transform.rotation * new Quaternion(1, 0, 0, 1f);
+                }
+            }
+
+            if (CameraOn)
+            {
+                if (DataManager.Instance.StickOn[myPlayerID])
+                {
+                    SingleInstanceFindOnly<MouseOrbit>.Instance.isActive = false;
+                    targetFOV -= Input.GetAxis("Mouse ScrollWheel") * 70f;
+                    targetFOV = Mathf.Clamp(targetFOV, minFOV, maxFOV);
+                    MainCamera.transform.position = transform.position + 0.9f * transform.forward;
+                    Cursor.lockState = CursorLockMode.None;
+                    MainCamera.transform.rotation = Quaternion.Lerp(MainCamera.transform.rotation, transform.rotation * new Quaternion(1, 0, 0, 1f) * Quaternion.Euler(-rotationY, rotationX, 0), 0.2f);
+                    Cursor.visible = true;
+                    MainCamera.fieldOfView = MainCamera.fieldOfView + 0.2f * (targetFOV - MainCamera.fieldOfView);
+                }
+                else
+                {
+                    SingleInstanceFindOnly<MouseOrbit>.Instance.isActive = false;
+                    targetFOV -= Input.GetAxis("Mouse ScrollWheel") * 60f;
+                    targetFOV = Mathf.Clamp(targetFOV, minFOV, maxFOV);
+                    MainCamera.transform.position = transform.position + 0.9f * transform.forward;
+                    rotationX += Input.GetAxis("Mouse X") * Sensitivity;
+                    rotationY += Input.GetAxis("Mouse Y") * Sensitivity;
+                    rotationX = Mathf.Clamp(rotationX, -170, 170);
+                    rotationY = Mathf.Clamp(rotationY, -70, 70);
+                    MainCamera.transform.rotation = Quaternion.Lerp(MainCamera.transform.rotation, transform.rotation * new Quaternion(1, 0, 0, 1f) * Quaternion.Euler(-rotationY, rotationX, 0), 0.2f);
+                    Cursor.lockState = CursorLockMode.Locked;
+                    Cursor.visible = false;
+                    MainCamera.fieldOfView = MainCamera.fieldOfView + 0.2f * (targetFOV - MainCamera.fieldOfView);
+                }
+            }
+            else
+            {
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+                targetFOV = originFOV;
+                MainCamera.fieldOfView = originFOV;
+                SingleInstanceFindOnly<MouseOrbit>.Instance.isActive = true;
+            }
+        }
+        public void LateUpdate()
+        {
+            if (StatMaster.isMP)
+            {
+                if (!StatMaster.isClient)
+                {
+                    return;
+                }
+                if (PlayerData.localPlayer.networkId != myPlayerID)
+                {
+                    return;
+                }
+            }
+            if (activeKeyPressed)
+            {
+                activeKeyPressed = false;
+                CameraOn = !CameraOn;
+                if (CameraOn)
+                {
+                    rotationX = 0;
+                    rotationY = 0;
+                    targetFOV = defaultFOV;
+                    MainCamera.transform.rotation = transform.rotation * new Quaternion(1, 0, 0, 1f);
+                }
+            }
+
+            if (CameraOn)
+            {
+                if (DataManager.Instance.StickOn[myPlayerID]) // when stick active
+                {
+                    SingleInstanceFindOnly<MouseOrbit>.Instance.isActive = false;
+                    targetFOV -= Input.GetAxis("Mouse ScrollWheel") * 70f;
+                    targetFOV = Mathf.Clamp(targetFOV, minFOV, maxFOV);
+                    MainCamera.transform.position = transform.position + 0.9f * transform.forward;
+                    Cursor.lockState = CursorLockMode.None;
+                    MainCamera.transform.rotation = Quaternion.Lerp(MainCamera.transform.rotation, transform.rotation * new Quaternion(1, 0, 0, 1f) * Quaternion.Euler(-rotationY, rotationX, 0), 0.2f);
+                    Cursor.visible = true;
+                    MainCamera.fieldOfView = MainCamera.fieldOfView + 0.2f * (targetFOV - MainCamera.fieldOfView);
+                }
+                else
+                {
+                    SingleInstanceFindOnly<MouseOrbit>.Instance.isActive = false;
+                    targetFOV -= Input.GetAxis("Mouse ScrollWheel") * 60f;
+                    targetFOV = Mathf.Clamp(targetFOV, minFOV, maxFOV);
+                    MainCamera.transform.position = transform.position + 0.9f * transform.forward;
+                    rotationX += Input.GetAxis("Mouse X") * Sensitivity * targetFOV/70;
+                    rotationY += Input.GetAxis("Mouse Y") * Sensitivity * targetFOV / 70;
+                    rotationX = Mathf.Clamp(rotationX, -170, 170);
+                    rotationY = Mathf.Clamp(rotationY, -70, 70);
+                    MainCamera.transform.rotation = Quaternion.Lerp(MainCamera.transform.rotation, transform.rotation * new Quaternion(1, 0, 0, 1f) * Quaternion.Euler(-rotationY, rotationX, 0), 0.2f);
+                    Cursor.lockState = CursorLockMode.Locked;
+                    Cursor.visible = false;
+                    MainCamera.fieldOfView = MainCamera.fieldOfView + 0.2f * (targetFOV - MainCamera.fieldOfView);
+                }
+            }
+            else
+            {
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+                targetFOV = originFOV;
+                MainCamera.fieldOfView = originFOV;
+                SingleInstanceFindOnly<MouseOrbit>.Instance.isActive = true;
+            }
+        }
+        
+        public void OnDestroy()
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+            targetFOV = originFOV;
+            MainCamera.fieldOfView = originFOV;
+            SingleInstanceFindOnly<MouseOrbit>.Instance.isActive = true;
+        }
+
+        public void OnGUI()
+        {
+            if (StatMaster.isMP)
+            {
+                if (PlayerData.localPlayer.networkId != myPlayerID)
+                {
+                    return;
+                }
+            }
+
+            if (CameraOn)
+            {
+                if (DataManager.Instance.StickOn[myPlayerID])
+                {
+                    Cursor.visible = true;
+                }
+                else
+                {
+                    Cursor.visible = false;
+                }
+            }
+            else
+            {
+                Cursor.visible = true;
+            }
+            if (CameraOn)
+            {
+                GUI.color = Color.yellow;
+                GUI.DrawTexture(new Rect(Screen.width/2 - 20 / 2, Screen.height/2 - 20 / 2, 20, 20), CameraOnIcon);
+            }
+        }
+
     }
 
     // main
     class CentralController : BlockScript
     {
+        //camera
+        public MKey CamKey;
+        public MSlider minFOV;
+        public MSlider maxFOV;
+        public MSlider CameraSensitivity;
+        public MSlider DefaultFOV;
+        public GameObject PilotCam;
+        public PilotCameraController PCC;
+
         //kneeboard
         public MKey ToggleKneeboard;
-        public MSlider customTextSize;
-        public MText CustomText;
         public MSlider KneeboardSize;
         public GameObject KneeboardCanvas;
         public GameObject Kneeboard;
@@ -1343,9 +1683,11 @@ namespace ModernAirCombat
         public RadarDisplayerSimulator radarDisplayerSimulator;
         public A2GDisplayerSimulator a2gDisplayerSimulator;
         public LoadDisplayerSimulator loadDisplayerSimulator;
+        //public NavDisplayerSimulator navDisplayerSimulator;
         public GameObject radarDisplayerSimulatorObject;
         public GameObject a2gDisplayerSimulatorObject;
         public GameObject loadDisplayerSimulatorObject;
+        public GameObject navDisplayerSimulatorObject;
 
         // general
         public int myPlayerID;
@@ -1391,7 +1733,50 @@ namespace ModernAirCombat
         public MSlider LoadRegion;
         public MSlider LoadOffset;
 
+        // for Navigation displayer
+        public MKey SwitchWP;
+        public MKey NavScaleInc;
+        public MKey NavScaleDec;
+        public MText[] WPName = new MText[8];
+        public MText[] WPPos = new MText[8];
+
+
+
+
         public override bool EmulatesAnyKeys { get { return true; } }
+
+        //for Camera
+        public void addCameraMapper()
+        {
+            CamKey = AddKey("Camera Activate", "CameraActivate", KeyCode.F);
+            DefaultFOV = AddSlider("Camera Default FOV", "CameraDefaultFOV", 50f, 40f, 90f);
+            minFOV = AddSlider("Camera Min FOV", "CameraMinFOV", 20f, 5f, 40f);
+            maxFOV = AddSlider("Camera Max FOV", "CameraMaxFOV", 60f, 40f, 90f);
+            CameraSensitivity = AddSlider("Camera Sensitivity", "CameraSensitivity", 1f, 0.2f, 2f);
+        }
+        public void InitCam()
+        {
+            if (!transform.FindChild("PilotCam"))
+            {
+                PilotCam = new GameObject("PilotCam");
+                PilotCam.transform.SetParent(transform);
+                PilotCam.transform.localPosition = new Vector3(0, 0, 0);
+                PilotCam.transform.localRotation = Quaternion.identity;
+                PilotCam.transform.localScale = Vector3.one;
+                PCC = PilotCam.AddComponent<PilotCameraController>();
+                PCC.myPlayerID = myPlayerID;
+                PCC.minFOV = minFOV.Value;
+                PCC.maxFOV = maxFOV.Value;
+                PCC.Sensitivity = CameraSensitivity.Value;
+            }
+        }
+        public void CamKey_Update()
+        {
+            if (CamKey.IsPressed)
+            {
+                PCC.activeKeyPressed = true;
+            }
+        }
 
         // for kneeboard
         public void addKneeboardMapper()
@@ -1425,8 +1810,9 @@ namespace ModernAirCombat
             controller.MRAAM = LaunchMRAAM.GetKey(0);
             controller.AGM = LaunchAGM.GetKey(0);
             controller.GBU = LaunchGBU.GetKey(0);
-            controller.ownNotes = CustomText.Value;
-            controller.FontSize = (int)customTextSize.Value;
+            controller.NavSwitch = SwitchWP.GetKey(0);
+            controller.NavScaleInc = NavScaleInc.GetKey(0);
+            controller.NavScaleDec = NavScaleDec.GetKey(0);
         }
         public void InitKneeboard()
         {
@@ -1436,12 +1822,13 @@ namespace ModernAirCombat
                 KneeboardCanvas.name = "KneeboardCanvas";
                 Kneeboard = KneeboardCanvas.transform.FindChild("kneeboard").gameObject;
                 Kneeboard.AddComponent<KneeboardController>().size = KneeboardSize.Value;
+                Kneeboard.GetComponent<KneeboardController>().myPlayerID = myPlayerID;
                 Kneeboard.transform.Find("woodbase").gameObject.SetActive(false);
                 Kneeboard.transform.Find("paperBase").gameObject.SetActive(false);
             }
             KneeboardCanvas.SetActive(true);
             addKeyTextToKneeboard();
-            
+
         }
         public void KneeboardKey_Update()
         {
@@ -1562,6 +1949,19 @@ namespace ModernAirCombat
             LoadRegion = AddSlider("Load Region", "Region", 20f, 0f, 40f);
             LoadOffset = AddSlider("Load Offset", "Offset", 0f, -2f, 2f);
         }
+        public void addNavDisplayerMapper()
+        {
+            SwitchWP = AddKey("Switch Way Point", "SwitchWayPoint", KeyCode.RightShift);
+            NavScaleInc = AddKey("Nav Scale Increase", "NacScaleInc", KeyCode.N);
+            NavScaleDec = AddKey("Nav Scale Decrease", "NacScaleDec", KeyCode.M);
+            WPName[0] = AddText("WP0 Name", "WPName0", "Origin Point");
+            WPPos[0] = AddText("WP0 Coordinate", "WPCoordinate0", "0,0,0");
+            for (int i = 1; i < 8; i++)
+            {
+                WPName[i] = AddText("WP"+i.ToString()+" Name", "WPName" + i.ToString(), "");
+                WPPos[i] = AddText("WP" + i.ToString() + " Coordinate", "WPCoordinate" + i.ToString(), "");
+            }
+        }
         public void RadarDisplayerKey_Update()
         {
             // lock key
@@ -1569,7 +1969,7 @@ namespace ModernAirCombat
             {
                 radarDisplayerSimulator.LockPressed = true;
             }
-            else if(RadarLock.IsReleased)
+            else if (RadarLock.IsReleased)
             {
                 radarDisplayerSimulator.LockPressed = false;
             }
@@ -1751,6 +2151,28 @@ namespace ModernAirCombat
                 loadDisplayerSimulator.LaunchGBU = false;
             }
         }
+        public void NavDisplayerDataAndKey_Update()
+        {
+            if (SwitchWP.IsPressed)
+            {
+                CC2NavDisplayerData.Instance.ChangeSelection[myPlayerID] = true;
+            }
+            if (NavScaleDec.IsPressed)
+            {
+                CC2NavDisplayerData.Instance.ScaleDecPressed[myPlayerID] = true;
+            }
+            if (NavScaleInc.IsPressed)
+            {
+                CC2NavDisplayerData.Instance.ScaleIncPressed[myPlayerID] = true;
+            }
+            CC2NavDisplayerData.Instance.myPosition[myPlayerID] = transform.position;
+            float angle = -SignedAngle(new Vector2(0,1), -new Vector2(transform.up.x,transform.up.z));
+            if (angle < 0)
+            {
+                angle += 360;
+            }
+            CC2NavDisplayerData.Instance.orientation[myPlayerID] = angle;
+        }
         public void EmulateLoadDisplayerKey_FixedUpdateHost()
         {
             if (loadDisplayerSimulator.hasEmulateKey)
@@ -1759,22 +2181,41 @@ namespace ModernAirCombat
                 loadDisplayerSimulator.finishEmulate();
             }
         }
-    
+
+        // assist 
+        private float SignedAngle(Vector3 v1, Vector3 v2)
+        {
+            if (v1.x * v2.y - v1.y * v2.x < 0)
+            {
+                return -Vector2.Angle(v1, v2);
+            }
+            else
+            {
+                return Vector2.Angle(v1, v2);
+            }
+        }
+
 
         public override void SafeAwake()
         {
+            name = "Central Controller";
             myPlayerID = BlockBehaviour.ParentMachine.PlayerID;
             GTolerance = AddToggle("GTolerance", "GTolerance", true);
-            addKneeboardMapper();
+
+            addCameraMapper();
             addRadarDisplayerMapper();
             addA2GDisplayerMapper();
             addLoadDisplayerMapper();
+            addNavDisplayerMapper();
+            addKneeboardMapper();
+            
         }
         public override void OnSimulateStart()
         {
             myRigid = BlockBehaviour.GetComponent<Rigidbody>();
             InitBlackOut();
-            InitKneeboard();
+            InitCam();
+            
             if (!transform.Find("Radar Displayer Simulator"))
             {
                 radarDisplayerSimulatorObject = new GameObject("Radar Displayer Simulator");
@@ -1811,6 +2252,33 @@ namespace ModernAirCombat
                 loadDisplayerSimulator.Region = LoadRegion.Value;
                 loadDisplayerSimulator.Offset = LoadOffset.Value;
             }
+            if (!transform.Find("Navigation Displayer Simulator"))
+            {
+                navDisplayerSimulatorObject = new GameObject("Navigation Displayer Simulator");
+                navDisplayerSimulatorObject.transform.SetParent(transform);
+                navDisplayerSimulatorObject.transform.localPosition = Vector3.zero;
+                navDisplayerSimulatorObject.transform.localRotation = Quaternion.identity;
+                navDisplayerSimulatorObject.transform.localScale = Vector3.one;
+                //navDisplayerSimulator = navDisplayerSimulatorObject.AddComponent<NavDisplayerSimulator>();
+                for (int i = 0; i < 8; i++)
+                {
+                    string[] coordText;
+                    coordText = WPPos[i].Value.Split(',');
+                    try
+                    {
+                        CC2NavDisplayerData.Instance.dist[myPlayerID][i].x = float.Parse(coordText[0]);
+                        CC2NavDisplayerData.Instance.dist[myPlayerID][i].y = float.Parse(coordText[1]);
+                        CC2NavDisplayerData.Instance.dist[myPlayerID][i].z = float.Parse(coordText[2]);
+                        CC2NavDisplayerData.Instance.hasWP[myPlayerID][i] = true;
+                        CC2NavDisplayerData.Instance.WPName[myPlayerID][i] = WPName[i].Value;
+                    }
+                    catch {
+                        CC2NavDisplayerData.Instance.hasWP[myPlayerID][i] = false;
+                    }
+                }
+
+            }
+            InitKneeboard();// after init nav CC2Nav
         }
         public override void OnSimulateStop()
         {
@@ -1829,16 +2297,20 @@ namespace ModernAirCombat
         }
         public override void SimulateUpdateHost()
         {
-            KneeboardKey_Update();
+            CamKey_Update();
             RadarDisplayerKey_Update();
             A2GDisplayerKey_Update();
             LoadDisplayerKey_Update();
+            NavDisplayerDataAndKey_Update();
+            KneeboardKey_Update();
         }
         public override void SimulateUpdateClient()
         {
-            KneeboardKey_Update();
+            CamKey_Update();
             RadarDisplayerKey_Update();
             A2GDisplayerKey_Update();
+            NavDisplayerDataAndKey_Update();
+            KneeboardKey_Update();
         }
         public override void SimulateFixedUpdateHost()
         {
@@ -1851,7 +2323,7 @@ namespace ModernAirCombat
         }
         public void OnGUI()
         {
-            //GUI.Box(new Rect(100, 200, 200, 50), radarDisplayerSimulator.radarPitch.ToString());
+            //GUI.Box(new Rect(100, 200, 200, 50), ShouldShowGUI().ToString());
             //GUI.Box(new Rect(100, 250, 200, 50), radarDisplayerSimulator.SLController.currAngle.ToString());
         }
 

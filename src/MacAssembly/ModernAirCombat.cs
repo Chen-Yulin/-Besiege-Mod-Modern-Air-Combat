@@ -40,6 +40,7 @@ namespace ModernAirCombat
 			Mod.AddComponent<CCData>();
 			Mod.AddComponent<CCDataReceiver>();
 			Mod.AddComponent<CC2LoadDisplayerData>();
+			Mod.AddComponent<CC2NavDisplayerData>();
 
 
 			AssetManager.Instance.transform.SetParent(Mod.transform);

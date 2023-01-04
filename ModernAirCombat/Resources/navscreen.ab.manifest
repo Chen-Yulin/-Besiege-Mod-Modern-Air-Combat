@@ -1,12 +1,12 @@
 ManifestFileVersion: 0
-CRC: 594624684
+CRC: 2362328963
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: bef24babaae8a1e8ec13170de848df3b
+    Hash: c3f752a10806a090a625a3760b86d9d5
   TypeTreeHash:
     serializedVersion: 2
-    Hash: 760685228a2f8f5649aeeef4dc66a7e3
+    Hash: 8637aee00f7aaf10e8fccdaf4a7faa7f
 HashAppended: 0
 ClassTypes:
 - Class: 1
@@ -24,6 +24,8 @@ ClassTypes:
 - Class: 114
   Script: {fileID: -98529514, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
 - Class: 114
+  Script: {fileID: -146154839, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
+- Class: 114
   Script: {fileID: 708705254, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
 - Class: 115
   Script: {instanceID: 0}
@@ -36,5 +38,5 @@ ClassTypes:
 - Class: 224
   Script: {instanceID: 0}
 Assets:
-- Assets/radarScreen/RadarScreen.prefab
+- Assets/Navi/NAVScreen.prefab
 Dependencies: []

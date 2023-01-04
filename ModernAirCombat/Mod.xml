@@ -9,11 +9,11 @@
 	<Name>ModernAirCombat</Name>
 	<Author>Chen, Yulin</Author> <!-- FIX: Insert your name here. -->
 	<!-- Major.Minor.Build -->
-	<Version>1.0.0</Version>
+	<Version>1.0.1</Version>
 	
 	<Description>
 	A mod for simulating modern air combat in besiege. 
-	Version 1.0.0
+	Version 1.0.1
 	</Description>
 	<Icon name="icon"/>
 	<Debug>false</Debug>
@@ -160,6 +160,10 @@
 		<Mesh name="pilot Mesh" path="CentralController\pilot.obj"/>
 		<Texture name="pilot Texture" path="CentralController\pilot.png"/>
 		<AssetBundle name="RadarScreen AB" path="radarscreen.ab"/>
+		<AssetBundle name="Kneeboard AB" path="kneeboard.ab"/>
+		<AssetBundle name="BlackSmoke AB" path="blacksmoke.ab"/>
+		<AssetBundle name="NavScreen AB" path="navscreen.ab"/>
+		<Texture name="Cursor Texture" path="CentralController\cursor.png"/>
 
 		<!--  for different appearance options
 		-->

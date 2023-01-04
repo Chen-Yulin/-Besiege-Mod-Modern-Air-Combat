@@ -39,6 +39,9 @@
     <Reference Include="Assembly-CSharp">
       <HintPath>$(BESIEGE_GAME_ASSEMBLIES)Assembly-CSharp.dll</HintPath>
     </Reference>
+    <Reference Include="Assembly-CSharp-Editor">
+      <HintPath>..\ref\Assembly-CSharp-Editor.dll</HintPath>
+    </Reference>
     <Reference Include="Assembly-UnityScript, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL" />
     <Reference Include="DynamicText">
       <HintPath>$(BESIEGE_GAME_ASSEMBLIES)DynamicText.dll</HintPath>
@@ -87,6 +90,9 @@
     <Compile Include="SRAAMBlock.cs" />
     <Compile Include="StickBlock.cs" />
     <Compile Include="ThermalVision.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="..\ref\Assembly-CSharp-Editor.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

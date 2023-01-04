@@ -40,9 +40,12 @@ namespace ModernAirCombat
         public float BoundarySize = 20000f;
         public bool RestrictionGUI = false;
         public bool Restriction = false;
+        public bool showWayPoints;
+        public string path;
 
         public static MessageType ClientRestrictionMsg = ModNetworking.CreateMessageType(DataType.Boolean);
         public static MessageType ClientBoundaryMsg = ModNetworking.CreateMessageType(DataType.Boolean);
+
 
         public void KillBoundary()
         {
@@ -314,7 +317,13 @@ namespace ModernAirCombat
         {
             BoundaryOffGUI = GUILayout.Toggle(BoundaryOff, "Turn Off Boundary (Provided by AdCustomModule)");
             RestrictionGUI = GUILayout.Toggle(RestrictionGUI, "Turn On Missile Restriction");
+            GUILayout.Label("## Important Notification ##");
+            GUILayout.Label("New block Central Controller and Multiple Function Displayer are added!");
+            GUILayout.Label("It's highly recommended to replace your displayers and cameras with these two blocks.");
+            GUILayout.Label("Radar Displayer, A2G Displayer, Load Displayer are now deprecated, which means that they will not be maintained from now on.");
+
             GUILayout.Label("Press Ctrl+M to hide");
+            
             GUI.DragWindow();
 
         }

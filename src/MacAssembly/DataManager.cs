@@ -68,6 +68,11 @@ namespace ModernAirCombat
         public bool[] EO_InverseThermal = new bool[16];
         public float[] EO_Distance = new float[16];
 
+        public bool[] StickOn = new bool[16];
+
+        public List<HUDPanelFollowCamera> hudPanelFollowCamera = new List<HUDPanelFollowCamera>();
+        public List<HUDPitchFollowCamera> hudPitchFollowCamera = new List<HUDPitchFollowCamera>();
+
 
         public DataManager()
         {

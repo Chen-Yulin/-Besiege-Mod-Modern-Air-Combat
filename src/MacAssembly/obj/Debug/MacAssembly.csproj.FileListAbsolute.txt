@@ -24,3 +24,4 @@ S:\SteamLibrary\steamapps\common\Besiege\Besiege_Data\Mods\ModernAirCombat Proje
 S:\SteamLibrary\steamapps\common\Besiege\Besiege_Data\Mods\ModernAirCombat Project\src\MacAssembly\bin\Debug\System.Runtime.Serialization.dll
 S:\SteamLibrary\steamapps\common\Besiege\Besiege_Data\Mods\ModernAirCombat Project\src\MacAssembly\bin\Debug\Assembly-UnityScript.dll
 S:\SteamLibrary\steamapps\common\Besiege\Besiege_Data\Mods\ModernAirCombat Project\src\MacAssembly\bin\Debug\Boo.Lang.dll
+S:\SteamLibrary\steamapps\common\Besiege\Besiege_Data\Mods\ModernAirCombat Project\src\MacAssembly\bin\Debug\Assembly-CSharp-Editor.dll

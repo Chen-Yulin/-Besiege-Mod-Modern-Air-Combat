@@ -195,11 +195,15 @@ namespace ModernAirCombat
                         {
                             hit.collider.attachedRigidbody.AddForce(bullet.transform.forward * 2000f * Caliber.Value, ForceMode.Force);
                             hit.collider.attachedRigidbody.AddTorque(bullet.transform.up * 500000f * Caliber.Value, ForceMode.Force);
-                            //if (UnityEngine.Random.value>0.95)
-                            //{
-                            //    hit.collider.attachedRigidbody.gameObject.GetComponent<BlockBehaviour>().fireTag.Ignite();
-                            //}
-                            
+                            if (UnityEngine.Random.value > 0.9)
+                            {
+                                GameObject blacksmoke = (GameObject)Instantiate(AssetManager.Instance.BlackSmoke.BlackSmoke,hit.collider.gameObject.transform);
+                                blacksmoke.transform.position = hit.point;
+                                Destroy(blacksmoke, 10);
+                                hit.collider.attachedRigidbody.drag = 0.5f;
+                                hit.collider.attachedRigidbody.gameObject.GetComponent<FireTag>().Ignite();
+                            }
+
                         }
                         catch { }
                         if (Caliber.Value > 20)

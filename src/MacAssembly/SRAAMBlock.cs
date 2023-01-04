@@ -537,6 +537,10 @@ namespace ModernAirCombat
                     {
                         if (UnityEngine.Random.value>0.98)
                         {
+                            GameObject blacksmoke = (GameObject)Instantiate(AssetManager.Instance.BlackSmoke.BlackSmoke, hits.transform);
+                            blacksmoke.transform.position = hits.transform.position;
+                            Destroy(blacksmoke, 10);
+                            hits.attachedRigidbody.drag = 0.5f;
                             hits.attachedRigidbody.gameObject.GetComponent<FireTag>().Ignite();
                         }
                     }
