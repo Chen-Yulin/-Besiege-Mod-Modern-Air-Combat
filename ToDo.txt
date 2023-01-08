@@ -2,10 +2,8 @@
 
 + RWR radius
 
-MFD, CC
-- MFD_RadarDisplayer enemy use dictionary
-- A2G
-- Load
-- BlackOut
++ EO Skin
+
++ artificial horizon and other flight parameters
 
 

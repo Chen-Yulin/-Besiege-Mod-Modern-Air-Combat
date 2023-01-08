@@ -1402,6 +1402,7 @@ namespace ModernAirCombat
     public class PilotCameraController : MonoBehaviour
     {
         public int myPlayerID;
+        public float zScale = 1;
 
         public bool activeKeyPressed;
         public float defaultFOV = 50f;
@@ -1521,7 +1522,7 @@ namespace ModernAirCombat
                     SingleInstanceFindOnly<MouseOrbit>.Instance.isActive = false;
                     targetFOV -= Input.GetAxis("Mouse ScrollWheel") * 70f;
                     targetFOV = Mathf.Clamp(targetFOV, minFOV, maxFOV);
-                    MainCamera.transform.position = transform.position + 0.9f * transform.forward;
+                    MainCamera.transform.position = transform.position + 0.9f * transform.forward * zScale;
                     Cursor.lockState = CursorLockMode.None;
                     MainCamera.transform.rotation = Quaternion.Lerp(MainCamera.transform.rotation, transform.rotation * new Quaternion(1, 0, 0, 1f) * Quaternion.Euler(-rotationY, rotationX, 0), 0.2f);
                     Cursor.visible = true;
@@ -1532,7 +1533,7 @@ namespace ModernAirCombat
                     SingleInstanceFindOnly<MouseOrbit>.Instance.isActive = false;
                     targetFOV -= Input.GetAxis("Mouse ScrollWheel") * 60f;
                     targetFOV = Mathf.Clamp(targetFOV, minFOV, maxFOV);
-                    MainCamera.transform.position = transform.position + 0.9f * transform.forward;
+                    MainCamera.transform.position = transform.position + 0.9f * transform.forward * zScale;
                     rotationX += Input.GetAxis("Mouse X") * Sensitivity;
                     rotationY += Input.GetAxis("Mouse Y") * Sensitivity;
                     rotationX = Mathf.Clamp(rotationX, -170, 170);
@@ -1585,7 +1586,7 @@ namespace ModernAirCombat
                     SingleInstanceFindOnly<MouseOrbit>.Instance.isActive = false;
                     targetFOV -= Input.GetAxis("Mouse ScrollWheel") * 70f;
                     targetFOV = Mathf.Clamp(targetFOV, minFOV, maxFOV);
-                    MainCamera.transform.position = transform.position + 0.9f * transform.forward;
+                    MainCamera.transform.position = transform.position + 0.9f * transform.forward * zScale;
                     Cursor.lockState = CursorLockMode.None;
                     MainCamera.transform.rotation = Quaternion.Lerp(MainCamera.transform.rotation, transform.rotation * new Quaternion(1, 0, 0, 1f) * Quaternion.Euler(-rotationY, rotationX, 0), 0.2f);
                     Cursor.visible = true;
@@ -1596,7 +1597,7 @@ namespace ModernAirCombat
                     SingleInstanceFindOnly<MouseOrbit>.Instance.isActive = false;
                     targetFOV -= Input.GetAxis("Mouse ScrollWheel") * 60f;
                     targetFOV = Mathf.Clamp(targetFOV, minFOV, maxFOV);
-                    MainCamera.transform.position = transform.position + 0.9f * transform.forward;
+                    MainCamera.transform.position = transform.position + 0.9f * transform.forward * zScale;
                     rotationX += Input.GetAxis("Mouse X") * Sensitivity * targetFOV/70;
                     rotationY += Input.GetAxis("Mouse Y") * Sensitivity * targetFOV / 70;
                     rotationX = Mathf.Clamp(rotationX, -170, 170);
@@ -1768,6 +1769,7 @@ namespace ModernAirCombat
                 PCC.minFOV = minFOV.Value;
                 PCC.maxFOV = maxFOV.Value;
                 PCC.Sensitivity = CameraSensitivity.Value;
+                PCC.zScale = transform.localScale.z;
             }
         }
         public void CamKey_Update()
