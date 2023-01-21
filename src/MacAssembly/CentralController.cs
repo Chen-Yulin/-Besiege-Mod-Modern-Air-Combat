@@ -264,21 +264,70 @@ namespace ModernAirCombat
 
         public string KeyText(KeyCode key)
         {
-            if (key.ToString() == "LeftArrow")
+            switch (key)
             {
-                return "←";
-            }
-            if (key.ToString() == "RightArrow")
-            {
-                return "→";
-            }
-            if (key.ToString() == "UpArrow")
-            {
-                return "↑";
-            }
-            if (key.ToString() == "DownArrow")
-            {
-                return "↓";
+                case KeyCode.LeftArrow:
+                    return "←";
+                case KeyCode.RightArrow:
+                    return "→";
+                case KeyCode.UpArrow:
+                    return "↑";
+                case KeyCode.DownArrow:
+                    return "↓";
+                case KeyCode.Equals:
+                    return "=";
+                case KeyCode.Minus:
+                    return "-";
+                case KeyCode.LeftBracket:
+                    return "[";
+                case KeyCode.RightBracket:
+                    return "]";
+                case KeyCode.Semicolon:
+                    return ";";
+                case KeyCode.Quote:
+                    return "'";
+                case KeyCode.Comma:
+                    return ",";
+                case KeyCode.Period:
+                    return ".";
+                case KeyCode.Backslash:
+                    return "\\";
+                case KeyCode.Slash:
+                    return "/";
+                case KeyCode.Keypad0:
+                    return "▦0";
+                case KeyCode.Keypad1:
+                    return "▦1";
+                case KeyCode.Keypad2:
+                    return "▦2";
+                case KeyCode.Keypad3:
+                    return "▦3";
+                case KeyCode.Keypad4:
+                    return "▦4";
+                case KeyCode.Keypad5:
+                    return "▦5";
+                case KeyCode.Keypad6:
+                    return "▦6";
+                case KeyCode.Keypad7:
+                    return "▦7";
+                case KeyCode.Keypad8:
+                    return "▦8";
+                case KeyCode.Keypad9:
+                    return "▦9";
+                case KeyCode.KeypadEnter:
+                    return "▦Enter";
+                case KeyCode.KeypadPlus:
+                    return "▦+";
+                case KeyCode.KeypadMinus:
+                    return "▦-";
+                case KeyCode.KeypadMultiply:
+                    return "▦*";
+                case KeyCode.KeypadDivide:
+                    return "▦/";
+                case KeyCode.KeypadPeriod:
+                    return "▦.";
+                default:
+                    break;
             }
 
             return key.ToString();
@@ -2280,7 +2329,18 @@ namespace ModernAirCombat
                 }
 
             }
-            InitKneeboard();// after init nav CC2Nav
+            if (StatMaster.isMP)// after init nav CC2Nav
+            {
+                if (PlayerData.localPlayer.networkId == myPlayerID)
+                {
+                    InitKneeboard();
+                }
+            }
+            else
+            {
+                InitKneeboard();
+            }
+            
         }
         public override void OnSimulateStop()
         {
@@ -2304,7 +2364,18 @@ namespace ModernAirCombat
             A2GDisplayerKey_Update();
             LoadDisplayerKey_Update();
             NavDisplayerDataAndKey_Update();
-            KneeboardKey_Update();
+            if (StatMaster.isMP)
+            {
+                if (myPlayerID == 0)
+                {
+                    KneeboardKey_Update();
+                }
+            }
+            else
+            {
+                KneeboardKey_Update();
+            }
+            
         }
         public override void SimulateUpdateClient()
         {
@@ -2312,7 +2383,11 @@ namespace ModernAirCombat
             RadarDisplayerKey_Update();
             A2GDisplayerKey_Update();
             NavDisplayerDataAndKey_Update();
-            KneeboardKey_Update();
+            if (PlayerData.localPlayer.networkId == myPlayerID)
+            {
+                KneeboardKey_Update();
+            }
+            
         }
         public override void SimulateFixedUpdateHost()
         {

@@ -96,6 +96,7 @@ namespace ModernAirCombat
     {
         public MMenu launchedType;
         public MKey ReleaseKey;
+        public MSlider LaunchNum;
         public MSlider ReleaseInterval;
         public MSlider GroupSize;
 
@@ -160,7 +161,7 @@ namespace ModernAirCombat
         {
             if (launchedType.Value == 0)
             {
-                if (FlareAssembly.Count >= 8)
+                if (FlareAssembly.Count >= LaunchNum.Value)
                 {
                     return;
                 }
@@ -180,7 +181,7 @@ namespace ModernAirCombat
             }
             else
             {
-                if (ChaffAssembly.Count >= 8)
+                if (ChaffAssembly.Count >= LaunchNum.Value)
                 {
                     return;
                 }
@@ -213,6 +214,7 @@ namespace ModernAirCombat
                 "Chaff"
             }, false);
             ReleaseKey = AddKey("Launch", "Launch Flare", KeyCode.C);
+            LaunchNum = AddSlider("Launch Num", "LaunchNum", 8f, 0f, 256f);
             ReleaseInterval = AddSlider("Release Interval", "release interval", 0.2f, 0.05f, 0.5f);
             GroupSize = AddSlider("Group Size", "Group Size", 1f, 1f, 8f);
             InitFlare();
@@ -234,11 +236,11 @@ namespace ModernAirCombat
         {
             if (launchedType.Value == 0)
             {
-                LoadDataManager.Instance.AddFlareNum(myPlayerID, 8 - FlareAssembly.Count);
+                LoadDataManager.Instance.AddFlareNum(myPlayerID, (int)LaunchNum.Value - FlareAssembly.Count);
             }
             else
             {
-                LoadDataManager.Instance.AddChaffNum(myPlayerID, 8 - ChaffAssembly.Count);
+                LoadDataManager.Instance.AddChaffNum(myPlayerID, (int)LaunchNum.Value - ChaffAssembly.Count);
             }
 
             if (BlockBehaviour.BuildingBlock.Guid.GetHashCode() != 0 && BlockBehaviour.BuildingBlock.Guid.GetHashCode() != myGuid)
@@ -276,11 +278,11 @@ namespace ModernAirCombat
         {
             if (launchedType.Value == 0)
             {
-                LoadDataManager.Instance.AddFlareNum(myPlayerID, 8 - FlareAssembly.Count);
+                LoadDataManager.Instance.AddFlareNum(myPlayerID, (int)LaunchNum.Value - FlareAssembly.Count);
             }
             else
             {
-                LoadDataManager.Instance.AddChaffNum(myPlayerID, 8 - ChaffAssembly.Count);
+                LoadDataManager.Instance.AddChaffNum(myPlayerID, (int)LaunchNum.Value - ChaffAssembly.Count);
             }
             if (BlockBehaviour.BuildingBlock.Guid.GetHashCode() != 0 && BlockBehaviour.BuildingBlock.Guid.GetHashCode() != myGuid)
                 myGuid = BlockBehaviour.BuildingBlock.Guid.GetHashCode();
