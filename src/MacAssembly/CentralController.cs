@@ -1551,10 +1551,12 @@ namespace ModernAirCombat
                     return;
                 }
             }
+            bool keyChanged = false;
             if (activeKeyPressed)
             {
                 activeKeyPressed = false;
                 CameraOn = !CameraOn;
+                keyChanged = true;
                 if (CameraOn)
                 {
                     rotationX = 0;
@@ -1595,11 +1597,15 @@ namespace ModernAirCombat
             }
             else
             {
-                Cursor.lockState = CursorLockMode.None;
-                Cursor.visible = true;
-                targetFOV = originFOV;
-                MainCamera.fieldOfView = originFOV;
-                SingleInstanceFindOnly<MouseOrbit>.Instance.isActive = true;
+                if (keyChanged)
+                {
+                    Cursor.lockState = CursorLockMode.None;
+                    Cursor.visible = true;
+                    targetFOV = originFOV;
+                    MainCamera.fieldOfView = originFOV;
+                    SingleInstanceFindOnly<MouseOrbit>.Instance.isActive = true;
+                }
+                
             }
         }
         public void LateUpdate()
