@@ -251,6 +251,7 @@ namespace ModernAirCombat
         public MMenu modelType;
         public MSlider thrustTime;
         public MSlider thrust;
+        public MSlider BreakThrust;
 
         public float GModified = 30f;
         public float thrustTimeModified = 3.5f;
@@ -691,6 +692,7 @@ namespace ModernAirCombat
             GValue = AddSlider("Maximum G-value", "Maximum G-value", 30f, 10f, 70f);
             thrust = AddSlider("Thrust", "Thrust", 650, 500, 800);
             thrustTime = AddSlider("Thrust Duration","Thrust Duration", defaultValue: 3.5f, min: 2f, max: 10f);
+            BreakThrust = AddSlider("BreakThrust", "BreakThrust", 0f, 0f, 10000f);
 
             initScan();//挂载上导弹前方的圆锥触发器
             initTrail();
@@ -912,6 +914,7 @@ namespace ModernAirCombat
                     myRigidbody.angularDrag = 4.0f;
                     launchRotation = transform.rotation;
                     getlaunchRotation = true;
+                    myRigidbody.AddForce(BreakThrust.Value*transform.forward, ForceMode.Force);
                 }
                 
                 // when within work time

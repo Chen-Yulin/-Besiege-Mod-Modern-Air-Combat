@@ -146,7 +146,7 @@ namespace ModernAirCombat
                 ThermalCam.fieldOfView = FOV;
                 ThermalCam.clearFlags = CameraClearFlags.SolidColor;
                 ThermalCam.backgroundColor = Color.black;
-                ThermalCam.farClipPlane = 7000f;
+                ThermalCam.farClipPlane = ModController.Instance.ElectrOpticalCameraDistance;
                 ThermalCam.cullingMask = 1<<25;
                 ThermalCam.targetTexture = DataManager.Instance.highlight[myPlayerID];
 
@@ -162,7 +162,7 @@ namespace ModernAirCombat
                 NormalCam.transform.localRotation = Quaternion.identity;
                 NormalCam.transform.localScale = Vector3.one;
                 NormalCam.fieldOfView = FOV;
-                NormalCam.farClipPlane = 7000f;
+                NormalCam.farClipPlane = ModController.Instance.ElectrOpticalCameraDistance;
                 NormalCam.targetTexture = DataManager.Instance.output[myPlayerID];
 
                 CameraTV = NormalCamera.AddComponent<ThermalVision>();

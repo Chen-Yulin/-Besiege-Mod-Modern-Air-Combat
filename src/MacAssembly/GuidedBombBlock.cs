@@ -88,7 +88,8 @@ namespace ModernAirCombat
             GValue = AddSlider("Maximum G-value(deprecated)", "Maximum G-value", 10f, 5f, 30f);
             thrust = AddSlider("Thrust(deprecated)", "Thrust", 400, 0, 600);
             thrustTime = AddSlider("Thrust Duration(deprecated)", "Thrust Duration", defaultValue: 20f, min: 5f, max: 20f);
-            
+            BreakThrust = AddSlider("BreakThrust", "BreakThrust", 0f, 0f, 10000f);
+
 
             initScan();//挂载上导弹前方的圆锥触发器
             initTrail();
@@ -174,6 +175,7 @@ namespace ModernAirCombat
                     launchRotation = transform.rotation;
                     getlaunchRotation = true;
                     //Debug.Log(launchRotation);
+                    myRigidbody.AddForce(BreakThrust.Value * transform.forward, ForceMode.Force);
                 }
 
 

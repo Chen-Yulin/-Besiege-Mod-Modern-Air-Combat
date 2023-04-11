@@ -43,6 +43,9 @@ namespace ModernAirCombat
         public bool showWayPoints;
         public string path;
 
+        // for customize
+        public float ElectrOpticalCameraDistance = 20000f;
+
         public static MessageType ClientRestrictionMsg = ModNetworking.CreateMessageType(DataType.Boolean);
         public static MessageType ClientBoundaryMsg = ModNetworking.CreateMessageType(DataType.Boolean);
 
