@@ -1,0 +1,22 @@
+ManifestFileVersion: 0
+CRC: 69384576
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 0c3ae4599faef850a4ee96e95b04b075
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 5ca96f2aeeaf0be5aec43f03492d64c0
+HashAppended: 0
+ClassTypes:
+- Class: 1
+  Script: {instanceID: 0}
+- Class: 4
+  Script: {instanceID: 0}
+- Class: 43
+  Script: {instanceID: 0}
+- Class: 64
+  Script: {instanceID: 0}
+Assets:
+- Assets/Radar/RadarScanCol.prefab
+Dependencies: []

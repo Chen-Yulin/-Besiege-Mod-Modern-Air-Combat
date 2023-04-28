@@ -229,16 +229,16 @@ namespace ModernAirCombat
 
             if (RadarBase.transform.FindChild("RadarScanCol") == null)
             {
-                scannerMesh = ModResource.GetMesh("RadarScan Mesh").Mesh;
-                ScanCollider = new GameObject("RadarScanCol");
+                ScanCollider = (GameObject)Instantiate(AssetManager.Instance.MeshCol.RadarScanCol, RadarBase.transform);
+                ScanCollider.name = "RadarScanCol";
                 ScanCollider.transform.SetParent(RadarBase.transform);
                 ScanCollider.transform.localPosition = new Vector3(0f, 0f, 0f);
                 ScanCollider.transform.localRotation = Quaternion.Euler(270f, 0f, 0f);
                 ScanCollider.transform.localScale = new Vector3(2000, 2000, 2000);
-                radarScan = ScanCollider.AddComponent<MeshCollider>();
-                radarScan.sharedMesh = scannerMesh;
-                radarScan.convex = true;
-                radarScan.isTrigger = true;
+                
+                
+                radarScan = ScanCollider.GetComponent<MeshCollider>();
+                scannerMesh = radarScan.sharedMesh;
                 radarHit = ScanCollider.AddComponent<ScanCollisonHit>();
                 radarHit.Reset();
                 radarHit.myTeam = BlockBehaviour.Team;

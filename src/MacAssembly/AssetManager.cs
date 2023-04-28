@@ -6,6 +6,14 @@ using Modding;
 
 namespace ModernAirCombat
 {
+    public class Asset_MeshCol
+    {
+        public GameObject RadarScanCol;
+        public Asset_MeshCol(ModAssetBundle modAssetBundle)
+        {
+            RadarScanCol = modAssetBundle.LoadAsset<GameObject>("RadarScanCol");
+        }
+    }
     public class Asset_NavScreen
     {
         public GameObject NavScreen;
@@ -192,7 +200,7 @@ namespace ModernAirCombat
         public Asset_Kneeboard Kneeboard { get; protected set; }
         public Asset_NavScreen NavScreen { get; protected set; }
 
-
+        public Asset_MeshCol MeshCol { get; protected set; }
 
         protected void Awake()
         {
@@ -210,6 +218,7 @@ namespace ModernAirCombat
             Kneeboard = new Asset_Kneeboard(ModResource.GetAssetBundle("Kneeboard AB"));
             BlackSmoke = new Asset_BlackSmoke(ModResource.GetAssetBundle("BlackSmoke AB"));
             NavScreen = new Asset_NavScreen(ModResource.GetAssetBundle("NavScreen AB"));
+            MeshCol = new Asset_MeshCol(ModResource.GetAssetBundle("MeshCol AB"));
         }
     }
 }
