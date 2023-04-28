@@ -62,9 +62,6 @@
   <ItemGroup>
     <Compile Include="A2GScreenBlock.cs" />
     <Compile Include="AddBottomBound.cs" />
-    <Compile Include="AddScriptBase.cs" />
-    <Compile Include="AdNetworkBlock.cs" />
-    <Compile Include="AdNetworkCompression.cs" />
     <Compile Include="AGMBlock.cs" />
     <Compile Include="AssetManager.cs" />
     <Compile Include="CentralController.cs" />
@@ -82,7 +79,6 @@
     <Compile Include="ModController.cs" />
     <Compile Include="ModernAirCombat.cs" />
     <Compile Include="MRAAMBlock.cs" />
-    <Compile Include="NetworkBlockReg.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RadarBlock.cs" />
     <Compile Include="RWRBlock.cs" />
