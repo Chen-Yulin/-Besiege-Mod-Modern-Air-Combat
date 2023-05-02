@@ -56,6 +56,7 @@ namespace ModernAirCombat
         public MKey ToggleThermal;
         public MKey InverseThermal;
         public MKey Reset;
+        public MSlider LockDistance;
         public GameObject CameraBase;
         public GameObject ThermalCamera;
         public GameObject NormalCamera;
@@ -196,7 +197,7 @@ namespace ModernAirCombat
         {
             Ray CameraRay = new Ray(CameraBase.transform.position + CameraBase.transform.forward * 20, LockPosition-CameraBase.transform.position);
             RaycastHit hit;
-            if (Physics.Raycast(CameraRay, out hit, 7000))
+            if (Physics.Raycast(CameraRay, out hit, LockDistance.Value))
             {
                 LockPoint.transform.position = hit.point;
                 LockPosition = hit.point;
@@ -349,6 +350,7 @@ namespace ModernAirCombat
             Reset = AddKey("Reset", "Reset", KeyCode.R);
             ToggleThermal = AddKey("Toggle Thermal", "ToggleThermal", KeyCode.T);
             InverseThermal = AddKey("Toggle Thermal Inverse", "InverseThermal", KeyCode.I);
+            LockDistance = AddSlider("Lock Distance", "LockDistance", 7000, 2000, 20000);
             initCamera();
             initLockPoint();
         }

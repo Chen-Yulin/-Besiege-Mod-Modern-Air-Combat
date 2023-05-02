@@ -553,7 +553,15 @@ namespace ModernAirCombat
             PFCollider.SetActive(false);
         }
 
-
+        protected float CalculateTurningRate()
+        {
+            float axialSpeed = Vector3.Dot(myRigidbody.velocity, myTransform.up);
+            float angle = Vector3.Angle(myRigidbody.velocity, myTransform.up);
+            angle = Mathf.Clamp(angle, 0, 45);
+            float coeff = (6.8f - Mathf.Sqrt(angle)) / 40000;
+            
+            return axialSpeed * coeff;
+        }
 
         protected void GetAim()
         {
@@ -974,8 +982,8 @@ namespace ModernAirCombat
                             myTransform.rotation = Quaternion.Lerp(transform.rotation, launchRotation, 0.1f);
                         }
                         else // turn the missile if target found
-                        {   
-                            AxisLookAt(myTransform, predictPositionModified, Vector3.up, 0.06f);
+                        {
+                            AxisLookAt(myTransform, predictPositionModified, Vector3.up, CalculateTurningRate());
                         }
                     }
                 }
