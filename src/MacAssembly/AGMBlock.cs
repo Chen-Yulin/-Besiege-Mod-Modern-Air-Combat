@@ -241,7 +241,7 @@ namespace ModernAirCombat
 
                             if (A2GGetAim())
                             {
-                                AxisLookAt(myTransform, predictPositionModified, Vector3.up, 0.01f);
+                                AxisLookAt(myTransform, predictPositionModified, Vector3.up, CalculateTurningRate());
                             }
 
 

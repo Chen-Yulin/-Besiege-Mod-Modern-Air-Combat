@@ -276,7 +276,7 @@ namespace ModernAirCombat
 
                             if (PassiveGetAim())
                             {
-                                AxisLookAt(myTransform, predictPositionModified, Vector3.up, 0.01f);
+                                AxisLookAt(myTransform, predictPositionModified, Vector3.up, CalculateTurningRate());
                             }
                             
 
@@ -302,7 +302,7 @@ namespace ModernAirCombat
                                 GetAim();
                                 if (targetDetected)
                                 {
-                                    AxisLookAt(myTransform, predictPositionModified, Vector3.up, 0.03f);
+                                    AxisLookAt(myTransform, predictPositionModified, Vector3.up, CalculateTurningRate());
                                 }
                             }
                             
