@@ -15,10 +15,26 @@ namespace ModernAirCombat
     public class MFDMsgReceiver : SingleInstance<MFDMsgReceiver>
     {
         public override string Name { get; } = "MFD Msg Receiver";
-        public int[] ScreenType = new int[16];
+        public Dictionary<int,int>[] ScreenType = new Dictionary<int, int>[16];
+
+        public MFDMsgReceiver()
+        {
+            for (int i = 0; i < 16; i++)
+            {
+                ScreenType[i] = new Dictionary<int, int>();
+            }
+        }
+
         public void ScreenTypeMsgReceiver(Message msg)
         {
-            ScreenType[(int)msg.GetData(0)] = (int)msg.GetData(1);
+            if (ScreenType[(int)msg.GetData(0)].ContainsKey((int)msg.GetData(1)))
+            {
+                ScreenType[(int)msg.GetData(0)][(int)msg.GetData(1)] = (int)msg.GetData(2);
+            }
+            else
+            {
+                ScreenType[(int)msg.GetData(0)].Add((int)msg.GetData(1),(int)msg.GetData(2));
+            }
         }
     }
 
@@ -979,6 +995,7 @@ namespace ModernAirCombat
         }
 
         public int myPlayerID;
+        public int myGuid;
         public bool isClient;
 
         public MKey Switch;
@@ -998,7 +1015,7 @@ namespace ModernAirCombat
         public GameObject LoadDisplayer;
         public GameObject NavDisplayer;
 
-        public static MessageType clientMFDType = ModNetworking.CreateMessageType(DataType.Integer, DataType.Integer);
+        public static MessageType clientMFDType = ModNetworking.CreateMessageType(DataType.Integer, DataType.Integer, DataType.Integer);
 
         
         public override void SafeAwake()
@@ -1075,6 +1092,8 @@ namespace ModernAirCombat
         }
         public override void OnSimulateStart()
         {
+            myGuid = GetComponent<BlockBehaviour>().BuildingBlock.Guid.GetHashCode();
+
             screenType = new ScreenType((ScreenType.ScreenTypes)DefaultScreen.Value);
 
             RadarDisplayer.AddComponent<RadarScreen_MFD>().myPlayerID = myPlayerID;
@@ -1090,7 +1109,7 @@ namespace ModernAirCombat
             {
                 A2GDisplayer.GetComponent<A2GScreen_MFD>().TVColor = true;
             }
-            ModNetworking.SendToAll(clientMFDType.CreateMessage(myPlayerID, (int)screenType.Type));
+            ModNetworking.SendToAll(clientMFDType.CreateMessage(myPlayerID,myGuid,(int)screenType.Type));
 
             LoadDisplayer.AddComponent<LoadScreen_MFD>().myPlayerID = myPlayerID;
             NavDisplayer.AddComponent<NavScreen_MFD>().myPlayerID = myPlayerID;
@@ -1133,7 +1152,7 @@ namespace ModernAirCombat
                     }
                 }
                 
-                ModNetworking.SendToAll(clientMFDType.CreateMessage(myPlayerID, (int)screenType.Type));
+                ModNetworking.SendToAll(clientMFDType.CreateMessage(myPlayerID,myGuid,(int)screenType.Type));
             }
 
             if (screenType.Type == ScreenType.ScreenTypes.Radar)
@@ -1179,7 +1198,7 @@ namespace ModernAirCombat
                 NavDisplayer.SetActive(false);
                 return;
             }
-            if (MFDMsgReceiver.Instance.ScreenType[myPlayerID] == 1)
+            if (MFDMsgReceiver.Instance.ScreenType[myPlayerID][myGuid] == 1)
             {
                 RadarDisplayer.SetActive(true);
             }
@@ -1187,7 +1206,7 @@ namespace ModernAirCombat
             {
                 RadarDisplayer.SetActive(false);
             }
-            if (MFDMsgReceiver.Instance.ScreenType[myPlayerID] == 2)
+            if (MFDMsgReceiver.Instance.ScreenType[myPlayerID][myGuid] == 2)
             {
                 A2GDisplayer.SetActive(true);
             }
@@ -1195,7 +1214,7 @@ namespace ModernAirCombat
             {
                 A2GDisplayer.SetActive(false);
             }
-            if (MFDMsgReceiver.Instance.ScreenType[myPlayerID] == 3)
+            if (MFDMsgReceiver.Instance.ScreenType[myPlayerID][myGuid] == 3)
             {
                 LoadDisplayer.SetActive(true);
             }
@@ -1203,7 +1222,7 @@ namespace ModernAirCombat
             {
                 LoadDisplayer.SetActive(false);
             }
-            if (MFDMsgReceiver.Instance.ScreenType[myPlayerID] == 4)
+            if (MFDMsgReceiver.Instance.ScreenType[myPlayerID][myGuid] == 4)
             {
                 NavDisplayer.SetActive(true);
             }
