@@ -439,6 +439,7 @@ namespace ModernAirCombat
         {
             RadarBase.transform.rotation = Quaternion.LookRotation((myTransform.rotation * Vector3.back).normalized);
             ScanCollider.transform.localRotation = Quaternion.Lerp(ScanCollider.transform.localRotation, Quaternion.Euler(RadarMsgReceiver.Instance.ScanColLocalRotation[myPlayerID]),0.2f);
+            DataManager.Instance.RadarTransformForward[myPlayerID] = transform.forward;
         }
         private void OnGUI()
         {

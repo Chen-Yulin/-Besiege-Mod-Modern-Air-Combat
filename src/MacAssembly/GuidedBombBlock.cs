@@ -168,6 +168,12 @@ namespace ModernAirCombat
                 {
                     myStatus = status.active;
                 }
+                if (_offRack)
+                {
+                    _offRack = false;
+                    myRigidbody.AddForce(BreakThrust.Value * transform.forward, ForceMode.Force);
+
+                }
                 //get the launch rotation at the begining of launch
                 if (!getlaunchRotation)
                 {
@@ -175,7 +181,13 @@ namespace ModernAirCombat
                     launchRotation = transform.rotation;
                     getlaunchRotation = true;
                     //Debug.Log(launchRotation);
-                    myRigidbody.AddForce(BreakThrust.Value * transform.forward, ForceMode.Force);
+
+                    // pop missile up on released
+                    foreach (ConfigurableJoint joint in GetComponent<BlockBehaviour>().jointsToMe)
+                    {
+                        joint.breakForce = 0f;
+                    }
+                    _offRack = true;
                 }
 
 
@@ -185,8 +197,8 @@ namespace ModernAirCombat
                     
                     if (time > launchDelay.Value && time < thrustTimeModified*4 + launchDelay.Value)//play trail partical and add trust after launch delay 
                     {
-                        myRigidbody.AddRelativeForce(new Vector3(0, thrustModified, 0), ForceMode.Force);
-                        AddAerodynamics(0.5f, GModified);
+                        myRigidbody.AddRelativeForce(new Vector3(0, thrustModified/2f, 0), ForceMode.Force);
+                        AddAerodynamics(0.5f * dragPercent, GModified);
 
                     }
 

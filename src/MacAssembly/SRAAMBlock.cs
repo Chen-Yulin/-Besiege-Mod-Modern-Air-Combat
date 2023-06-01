@@ -322,7 +322,17 @@ namespace ModernAirCombat
 
         public bool currSkinStatus = false;
 
-
+        // for the influence of altitude on the missile's air drag
+        public float MaxHeight = 10000f;
+        public float dragPercent
+        {
+            get
+            {
+                return Mathf.Clamp((1 - transform.position.y / MaxHeight), 0.2f, 1f);
+            }
+        }
+        // for break thrust
+        protected bool _offRack;
         public virtual void InitModelType()
         {
             modelType = AddMenu("Missile Type", 0, new List<string>
@@ -560,7 +570,7 @@ namespace ModernAirCombat
             angle = Mathf.Clamp(angle, 0, 45);
             float coeff = (6.8f - Mathf.Sqrt(angle)) / 40000;
             
-            return axialSpeed * coeff;
+            return axialSpeed * coeff * dragPercent;
         }
 
         protected void GetAim()
@@ -910,19 +920,32 @@ namespace ModernAirCombat
                 myStatus = status.launched;
                 //Debug.Log("missle launched");
                 //Debug.Log(detectRange);
-                myRigidbody.drag = 0.1f;
+                myRigidbody.drag = 0.1f * dragPercent;
                 myRigidbody.angularDrag = 4.0f;
             }
 
             if (myStatus == status.launched)
             {
+                if (_offRack)
+                {
+                    _offRack = false;
+                    myRigidbody.AddForce(BreakThrust.Value * transform.forward, ForceMode.Force);
+
+                }
                 if (!getlaunchRotation)
                 {
-                    myRigidbody.drag = 0.05f;
+                    myRigidbody.drag = 0.05f * dragPercent;
                     myRigidbody.angularDrag = 4.0f;
                     launchRotation = transform.rotation;
                     getlaunchRotation = true;
-                    myRigidbody.AddForce(BreakThrust.Value*transform.forward, ForceMode.Force);
+
+                    // pop missile up on released
+                    foreach (ConfigurableJoint joint in GetComponent<BlockBehaviour>().jointsToMe)
+                    {
+                        joint.breakForce = 0f;
+                        joint.breakTorque = 0f;
+                    }
+                    _offRack = true;
                 }
                 
                 // when within work time
@@ -941,12 +964,12 @@ namespace ModernAirCombat
                             LaunchSoundEffect.SetActive(true);
                             LaunchSoundEffect.GetComponent<AudioSource>().Play();
                             Destroy(LaunchSoundEffect, thrustTimeModified);
-                            myRigidbody.drag = 0.5f;
+                            myRigidbody.drag = 0.05f * dragPercent;
 
                         }
                         
                         // add thrust
-                        myRigidbody.AddRelativeForce(new Vector3(0, thrustModified, 0), ForceMode.Force);
+                        myRigidbody.AddRelativeForce(new Vector3(0, thrustModified/2f, 0), ForceMode.Force);
                     }
 
                     // when within safety time
@@ -962,7 +985,7 @@ namespace ModernAirCombat
                             TrailSmokeParticle.Stop();
                             TrailFlameParticle.Stop();
                             activeTrail = false;
-                            myRigidbody.drag = 0.05f;
+                            myRigidbody.drag = 0.05f * dragPercent;
                         }
 
                         // active PF
@@ -979,7 +1002,7 @@ namespace ModernAirCombat
                         GetAim();
                         if (!targetDetected) // keep still if no target found
                         {
-                            myTransform.rotation = Quaternion.Lerp(transform.rotation, launchRotation, 0.1f);
+                            myTransform.rotation = Quaternion.Lerp(transform.rotation, launchRotation, 0.1f * dragPercent);
                         }
                         else // turn the missile if target found
                         {
@@ -1000,7 +1023,7 @@ namespace ModernAirCombat
                 }
                 if (time > launchDelay.Value+detectDelay.Value)
                 {
-                    AddAerodynamics(15, GModified);
+                    AddAerodynamics(15 * dragPercent, GModified);
                 }
 
 

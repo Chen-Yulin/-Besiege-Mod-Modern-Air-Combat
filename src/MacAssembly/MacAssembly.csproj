@@ -81,6 +81,7 @@
     <Compile Include="ModController.cs" />
     <Compile Include="ModernAirCombat.cs" />
     <Compile Include="MRAAMBlock.cs" />
+    <Compile Include="PanelDragController.cs" />
     <Compile Include="PropellerDragController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RadarBlock.cs" />

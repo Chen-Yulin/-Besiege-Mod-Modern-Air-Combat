@@ -9,6 +9,7 @@ using Modding;
 using Modding.Blocks;
 using UnityEngine;
 using UnityEngine.Networking;
+using InternalModding.Blocks;
 
 namespace ModernAirCombat
 {
@@ -60,8 +61,31 @@ namespace ModernAirCombat
                         }
                         break;
                     }
+                case (int)BlockType.WingPanel:
+                    {
+                        if (!block.gameObject.GetComponent<PanelDragController>())
+                        {
+                            block.gameObject.AddComponent<PanelDragController>();
+                        }
+                        break;
+                    }
+                case (int)BlockType.Wing:
+                    {
+                        if (!block.gameObject.GetComponent<PanelDragController>())
+                        {
+                            block.gameObject.AddComponent<PanelDragController>();
+                        }
+                        break;
+                    }
                 default:
                     {
+                        if (block.gameObject.GetComponent<SRAAMBlock>() || 
+                            block.gameObject.GetComponent<MRAAMBlock>() || 
+                            block.gameObject.GetComponent<AGMBlock>() || 
+                            block.gameObject.GetComponent<GuidedBombBlock>())
+                        {
+                            break;
+                        }
                         if (!block.gameObject.GetComponent<AirDragController>())
                         {
                             block.gameObject.AddComponent<AirDragController>();
