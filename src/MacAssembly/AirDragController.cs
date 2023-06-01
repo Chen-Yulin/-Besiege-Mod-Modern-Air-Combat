@@ -17,7 +17,7 @@ namespace ModernAirCombat
         private int _failCount = 0;
         public override void Start()
         {
-            if (GetComponent<BlockBehaviour>().isSimulating)
+            if (GetComponent<BlockBehaviour>().isSimulating && !StatMaster.isClient)
             {
                 _tf = transform;
                 if (!GetComponent<Rigidbody>())

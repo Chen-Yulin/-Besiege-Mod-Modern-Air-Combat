@@ -13,7 +13,7 @@ namespace ModernAirCombat
 {
     public class PropellerDragController : MonoBehaviour
     {
-        public float MaxHeight = 7000f;
+        public float MaxHeight = 10000f;
         protected Transform _tf;
         protected PropellorController _controller;
         protected float _originAxisDrag;
@@ -30,7 +30,7 @@ namespace ModernAirCombat
         }
         public virtual void Start()
         {
-            if (GetComponent<BlockBehaviour>().isSimulating)
+            if (GetComponent<BlockBehaviour>().isSimulating && !StatMaster.isClient)
             {
                 _tf = transform;
             }

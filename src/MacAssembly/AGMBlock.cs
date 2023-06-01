@@ -158,7 +158,7 @@ namespace ModernAirCombat
                 myStatus = status.launched;
                 //Debug.Log("AGM launched");
                 //Debug.Log(detectRange);
-                myRigidbody.drag = 0.05f;
+                myRigidbody.drag = 0.05f * dragPercent;
                 myRigidbody.angularDrag = 4.0f;
             }
 
@@ -168,6 +168,12 @@ namespace ModernAirCombat
                 {
                     myStatus = status.active;
                 }
+                if (_offRack)
+                {
+                    _offRack = false;
+                    myRigidbody.AddForce(BreakThrust.Value * transform.forward, ForceMode.Force);
+
+                }
                 //get the launch rotation at the begining of launch
                 if (!getlaunchRotation)
                 {
@@ -175,7 +181,13 @@ namespace ModernAirCombat
                     launchRotation = transform.rotation;
                     getlaunchRotation = true;
                     //Debug.Log(launchRotation);
-                    myRigidbody.AddForce(BreakThrust.Value * transform.forward, ForceMode.Force);
+
+                    // pop missile up on released
+                    foreach (ConfigurableJoint joint in GetComponent<BlockBehaviour>().jointsToMe)
+                    {
+                        joint.breakForce = 0f;
+                    }
+                    _offRack = true;
                 }
 
 
@@ -186,7 +198,7 @@ namespace ModernAirCombat
                     {
                         if (activeTrail == false)
                         {
-                            myRigidbody.drag = 0.5f;
+                            myRigidbody.drag = 0.05f * dragPercent;
                             TrailSmokeParticle.Play();
                             TrailFlameParticle.Play();
                             activeTrail = true;
@@ -195,14 +207,14 @@ namespace ModernAirCombat
                             LaunchSoundEffect.GetComponent<AudioSource>().Play();
                             Destroy(LaunchSoundEffect, thrustTimeModified);
                         }
-                        myRigidbody.AddRelativeForce(new Vector3(0, thrustModified, 0), ForceMode.Force);
-                        AddAerodynamics(17, GModified);
+                        myRigidbody.AddRelativeForce(new Vector3(0, thrustModified/2f, 0), ForceMode.Force);
+                        AddAerodynamics(17 * dragPercent, GModified);
                     }
                     if (time > thrustTimeModified + launchDelay.Value)//deactive trail effect and destroy it after sometime
                     {
                         if (activeTrail == true)
                         {
-                            myRigidbody.drag = 0.03f;
+                            myRigidbody.drag = 0.05f * dragPercent;
                             TrailSmokeParticle.Stop();
                             TrailFlameParticle.Stop();
                             activeTrail = false;
@@ -214,7 +226,7 @@ namespace ModernAirCombat
                             Destroy(TrailFlame, 3);
                             effectDestroyed = true;
                         }
-                        AddAerodynamics(17, GModified);
+                        AddAerodynamics(17 * dragPercent, GModified);
                     }
 
                     //judge whether the missle start to track enemy (passive or active) and active PF
