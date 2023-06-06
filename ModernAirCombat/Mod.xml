@@ -45,6 +45,7 @@
 		<Block path="LoadDisplayer.xml" />
 		<Block path="Multi-functionDisplayer.xml" />
 		<Block path="CentralController.xml" />
+		<Block path="RocketLauncher.xml" />
 	</Blocks>
 	
 	<!-- Any entities (level objects) your mod adds to the game.
@@ -165,6 +166,8 @@
 		<AssetBundle name="NavScreen AB" path="navscreen.ab"/>
 		<AssetBundle name="MeshCol AB" path="meshcol.ab"/>
 		<Texture name="Cursor Texture" path="CentralController\cursor.png"/>
+		<Mesh name="RocketLauncher Mesh" path="RocketLauncher\launcher.obj"/>
+		<Texture name="RocketLauncher Texture" path="RocketLauncher\launcher.png"/>
 
 		<!--  for different appearance options
 		-->
