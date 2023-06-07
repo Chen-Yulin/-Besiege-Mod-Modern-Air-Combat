@@ -102,15 +102,19 @@ namespace ModernAirCombat
     {
         public GameObject FlameTrail;
         public GameObject SmokeTrail;
+        public GameObject RocketTail;
 
         public Asset_Trail(ModAssetBundle modAssetBundle)
         {
             FlameTrail = modAssetBundle.LoadAsset<GameObject>("FrameTrail");
             SmokeTrail = modAssetBundle.LoadAsset<GameObject>("SmokeTrail");
+            RocketTail = modAssetBundle.LoadAsset<GameObject>("RocketTrail");
             FlameTrail.AddComponent<DestroyIfEditMode>();
             SmokeTrail.AddComponent<DestroyIfEditMode>();
+            RocketTail.AddComponent<DestroyIfEditMode>();
             FlameTrail.SetActive(false);
             SmokeTrail.SetActive(false);
+            RocketTail.SetActive(false);
         }
     }
 

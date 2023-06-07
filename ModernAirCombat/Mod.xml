@@ -168,6 +168,10 @@
 		<Texture name="Cursor Texture" path="CentralController\cursor.png"/>
 		<Mesh name="RocketLauncher Mesh" path="RocketLauncher\launcher.obj"/>
 		<Texture name="RocketLauncher Texture" path="RocketLauncher\launcher.png"/>
+		<Mesh name="Rocket Mesh" path="RocketLauncher\rocket.obj"/>
+		<Texture name="Rocket Texture" path="RocketLauncher\rocket.png"/>
+		<Mesh name="RocketTail Mesh" path="RocketLauncher\rocketTail.obj"/>
+		<Texture name="RocketTail Texture" path="RocketLauncher\rocketTail.png"/>
 
 		<!--  for different appearance options
 		-->
