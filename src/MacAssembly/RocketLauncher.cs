@@ -16,7 +16,7 @@ namespace ModernAirCombat
     {
         public float Thrust = 1000f;
         public bool MissileOn = false;
-        public float ThrustTime = 300f;
+        public float ThrustTime = 100f;
         public float ExploPower = 12000f;
         public float ExploRange = 2f;
 
@@ -27,7 +27,31 @@ namespace ModernAirCombat
 
         
         private int _thrustTimeCount = 0;
-        
+
+        public void Explo(Vector3 pos)
+        {
+            GetComponent<Rigidbody>().isKinematic = true;
+            GetComponent<MeshRenderer>().enabled = false;
+
+            GameObject ExploParticleEffect = (GameObject)Instantiate(AssetManager.Instance.AGMExplo.AGMExplo, transform.position, Quaternion.identity);
+            ExploParticleEffect.SetActive(true);
+            Destroy(ExploParticleEffect, 3);
+
+        }
+
+        public void DetectCollisionHost()
+        {
+            Ray RocketRay = new Ray(transform.position - _rigid.velocity.normalized * 2, transform.up);
+            RaycastHit hit;
+            if (Physics.Raycast(RocketRay, out hit, _rigid.velocity.magnitude / 100f))
+            {
+                if (hit.collider.isTrigger)
+                {
+                    return;
+                }
+                Explo(hit.point);
+            }
+        }
 
         public void Launch()
         {
@@ -41,6 +65,7 @@ namespace ModernAirCombat
 
         public void FixedUpdate()
         {
+
             if (MissileOn)
             {
                 if (!_rigid)
@@ -65,6 +90,17 @@ namespace ModernAirCombat
                 }
                 // modified gravity
                 _rigid.AddForce(Vector3.down * 0.15f);
+                if (StatMaster.isClient)
+                {
+
+                }
+                else
+                {
+                    if (_thrustTimeCount > 5)
+                    {
+                        DetectCollisionHost();
+                    }
+                }
             }
         }
 
