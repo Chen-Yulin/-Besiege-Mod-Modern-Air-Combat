@@ -9,11 +9,11 @@
 	<Name>ModernAirCombat</Name>
 	<Author>Chen, Yulin</Author> <!-- FIX: Insert your name here. -->
 	<!-- Major.Minor.Build -->
-	<Version>1.1.0</Version>
+	<Version>1.2.0</Version>
 	
 	<Description>
 	A mod for simulating modern air combat in besiege.
-	Version 1.1.0
+	Version 1.2.0
 	</Description>
 	<Icon name="icon"/>
 	<Debug>false</Debug>
