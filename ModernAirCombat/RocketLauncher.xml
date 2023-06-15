@@ -1,0 +1,44 @@
+<Block>
+	<Debug>false</Debug>
+	
+	<ID>18</ID>
+	
+	<Name>RocketLauncher</Name>
+	
+	<Script>ModernAirCombat.RocketLauncher</Script>
+
+	<Mass>2</Mass>
+	
+	
+	<Mesh name="RocketLauncher Mesh">
+		<Position x="0.0" y="0.0" z="0.3" />
+		<Rotation x="0.0" y="0.0" z="0.0" />
+		<Scale x="1.0" y="1.0" z="1.0" />
+	</Mesh>
+	
+	<Texture name="RocketLauncher Texture" /> <!-- Must be defined as a resource in the manifest. -->
+	
+	<Icon>
+		<Position x="0.0" y="0.0" z="0.0" />
+		<Rotation x="-20" y="0.0" z="-45" />
+		<Scale x="0.3" y="0.3" z="0.3" />
+	</Icon>
+
+	
+	<Colliders>
+		<CapsuleCollider>
+			<Position x="0.0" y="0.0" z="0.3" />
+			<Rotation x="0.0" y="0.0" z="0.0" />
+			<Capsule direction="Y" radius="0.28" height="4" />
+		</CapsuleCollider>
+	</Colliders>
+	
+	<BasePoint hasAddingPoint="false">
+		<Stickiness enabled="true" radius="0.6" />
+		<!-- Can only have motion if sticky -->
+		<Motion x="false" y="false" z="false" /> <!-- Optional -->
+	</BasePoint>
+	
+	<AddingPoints>
+	</AddingPoints>
+</Block>

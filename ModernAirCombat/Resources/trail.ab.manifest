@@ -1,12 +1,12 @@
 ManifestFileVersion: 0
-CRC: 145071157
+CRC: 2486726610
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: 3b65f1ffe5ac4d7084c36f8b3c8629d6
+    Hash: 9d6391ed50e9bbb90b127afab3694d19
   TypeTreeHash:
     serializedVersion: 2
-    Hash: 8e73928d58048341e9b2fe1dbcc1debf
+    Hash: 661c4ed84d7f3e79669edcea9ba7c32b
 HashAppended: 0
 ClassTypes:
 - Class: 1
@@ -19,11 +19,16 @@ ClassTypes:
   Script: {instanceID: 0}
 - Class: 48
   Script: {instanceID: 0}
+- Class: 84
+  Script: {instanceID: 0}
 - Class: 198
   Script: {instanceID: 0}
 - Class: 199
   Script: {instanceID: 0}
 Assets:
+- Assets/Mac/Trail/PerformSmoke.prefab
+- Assets/Mac/Trail/New Render Texture.renderTexture
+- Assets/Mac/Trail/RocketTrail.prefab
 - Assets/Mac/Trail/FrameTrail.prefab
 - Assets/Mac/Trail/SmokeTrail.prefab
 Dependencies: []

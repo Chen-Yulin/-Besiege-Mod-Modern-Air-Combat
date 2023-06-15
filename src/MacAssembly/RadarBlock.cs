@@ -413,12 +413,13 @@ namespace ModernAirCombat
             }
             catch { }
             int currRegion = (int)Math.Floor((scanAngle + 60) / 1.2f + 0.5f);
-            ModNetworking.SendToAll(ClientTmpTargetData.CreateMessage(myPlayerID, currRegion, targetManagerRadar.targets[currRegion].distance));
-            //RadarBase.transform.position = myTransform.position+0.5f*myTransform.localScale.z*transform.forward;
-            RadarBase.transform.rotation = Quaternion.LookRotation((myTransform.rotation * Vector3.back).normalized);
+            
             
             try
             {
+                ModNetworking.SendToAll(ClientTmpTargetData.CreateMessage(myPlayerID, currRegion, targetManagerRadar.targets[currRegion].distance));
+                //RadarBase.transform.position = myTransform.position+0.5f*myTransform.localScale.z*transform.forward;
+                RadarBase.transform.rotation = Quaternion.LookRotation((myTransform.rotation * Vector3.back).normalized);
                 //DisplayerBlock tmp;
                 //tmp = transform.parent.FindChild("Displayer").GetComponent<DisplayerBlock>();
                 scanAngle = DataManager.Instance.DisplayerData[myPlayerID].radarAngle;
