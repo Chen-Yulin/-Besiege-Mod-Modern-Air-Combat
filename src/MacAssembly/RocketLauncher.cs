@@ -20,22 +20,74 @@ namespace ModernAirCombat
         public float ExploPower = 12000f;
         public float ExploRange = 2f;
 
+        public float ExploRadius = 2f;
+
         private float _drag;
         private Rigidbody _rigid;
         private GameObject _smoke;
         private GameObject _flame;
 
+        private bool _exploded;
+
+
         
         private int _thrustTimeCount = 0;
 
+        public void ExploDestroy(Vector3 pos)
+        {
+            Debug.Log("explo");
+
+            Collider[] ExploCol = Physics.OverlapSphere(pos, ExploRadius);
+            foreach (Collider hits in ExploCol)
+            {
+                try
+                {
+                    hits.gameObject.transform.parent.parent.gameObject.GetComponent<BreakOnForce>().Break();
+                }
+                catch
+                {
+                }
+                if (hits.isTrigger)
+                {
+                    continue;
+                }
+                if (hits.attachedRigidbody != null)
+                {
+                    hits.attachedRigidbody.AddExplosionForce(ExploPower, pos, ExploRadius);
+                    try
+                    {
+                        if (UnityEngine.Random.value > 0.98)
+                        {
+                            GameObject blacksmoke = (GameObject)Instantiate(AssetManager.Instance.BlackSmoke.BlackSmoke, hits.transform);
+                            blacksmoke.transform.position = hits.transform.position;
+                            Destroy(blacksmoke, 10);
+                            hits.attachedRigidbody.drag = 0.5f;
+                            hits.attachedRigidbody.gameObject.GetComponent<FireTag>().Ignite();
+                        }
+                    }
+                    catch { }
+                }
+            }
+        }
+
         public void Explo(Vector3 pos)
         {
+            _exploded = true;
             GetComponent<Rigidbody>().isKinematic = true;
             GetComponent<MeshRenderer>().enabled = false;
 
-            GameObject ExploParticleEffect = (GameObject)Instantiate(AssetManager.Instance.AGMExplo.AGMExplo, transform.position, Quaternion.identity);
+            GameObject ExploParticleEffect = (GameObject)Instantiate(AssetManager.Instance.AGMExplo.AGMExplo, pos, Quaternion.identity);
             ExploParticleEffect.SetActive(true);
             Destroy(ExploParticleEffect, 3);
+            
+            _smoke.GetComponent<ParticleSystem>().Stop();
+            _flame.GetComponent<ParticleSystem>().Stop();
+
+            ExploDestroy(pos);
+
+            Destroy(gameObject.GetComponent<MeshRenderer>());
+            Destroy(gameObject.GetComponent<MeshFilter>());
+            Destroy(gameObject, 2f);
 
         }
 
@@ -56,17 +108,19 @@ namespace ModernAirCombat
         public void Launch()
         {
             MissileOn = true;
-            
+            _smoke = transform.GetChild(0).gameObject;
+            _flame = transform.GetChild(1).gameObject;
         }
 
         public void Start()
         {
+            
         }
 
         public void FixedUpdate()
         {
 
-            if (MissileOn)
+            if (MissileOn && !_exploded)
             {
                 if (!_rigid)
                 {
@@ -82,9 +136,9 @@ namespace ModernAirCombat
                 {
                     if (!_smoke)
                     {
-                        _smoke = transform.GetChild(0).gameObject;
+                        
                         _smoke.GetComponent<ParticleSystem>().Stop();
-                        _flame = transform.GetChild(1).gameObject;
+                        
                         _flame.GetComponent<ParticleSystem>().Stop();
                     }
                 }
@@ -159,16 +213,15 @@ namespace ModernAirCombat
                 rocketRigid.mass = 0.1f;
                 rocketRigid.drag = 0.05f;
                 Rigidbody.useGravity = false;
-                Rockets[currRocketIndex].GetComponent<Rocket>().Launch();
 
                 GameObject TrailSmoke = Instantiate(AssetManager.Instance.Trail.RocketTail);
                 GameObject TrailFlame = Instantiate(AssetManager.Instance.Trail.FlameTrail);
 
                 TrailSmoke.transform.SetParent(Rockets[currRocketIndex].transform);
-                TrailSmoke.transform.localPosition = Vector3.zero;
+                TrailSmoke.transform.localPosition = new Vector3(0,-1,0);
 
                 TrailFlame.transform.SetParent(Rockets[currRocketIndex].transform);
-                TrailFlame.transform.localPosition = Vector3.zero;
+                TrailFlame.transform.localPosition = new Vector3(0, -1, 0);
                 TrailFlame.transform.localRotation = Quaternion.Euler(90, 0, 0);
 
                 
@@ -176,6 +229,8 @@ namespace ModernAirCombat
                 TrailFlame.SetActive(true);
                 TrailSmoke.GetComponent<ParticleSystem>().Play();
                 TrailFlame.GetComponent<ParticleSystem>().Play();
+
+                Rockets[currRocketIndex].GetComponent<Rocket>().Launch();
 
                 Destroy(Rockets[currRocketIndex], 10f);
 

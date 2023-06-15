@@ -432,7 +432,7 @@ namespace ModernAirCombat
                 ScanFlare.transform.SetParent(BlockBehaviour.transform);
                 ScanFlare.transform.localPosition = new Vector3(0f, 25f, 0.3f);
                 ScanFlare.transform.localRotation = Quaternion.Euler(90, 0, 0);
-                ScanFlare.transform.localScale = new Vector3(25,25,25);
+                ScanFlare.transform.localScale = new Vector3(40,40,40);
                 SphereCollider ScanFlareCol = ScanFlare.AddComponent<SphereCollider>();
                 ScanFlareCol.radius = 1;
                 ScanFlareCol.isTrigger = true;
@@ -590,7 +590,6 @@ namespace ModernAirCombat
                     if (coneHit.targetCols.Count == 0 && flareHit.FlareCols.Count < 2)
                     {
                         targetDetected = false;
-                        return;
                     }
                     else
                     {
