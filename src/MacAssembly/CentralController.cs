@@ -1707,7 +1707,7 @@ namespace ModernAirCombat
             {
                 Cursor.visible = true;
             }
-            if (CameraOn)
+            if (CameraOn && !StatMaster.hudHidden)
             {
                 GUI.color = Color.yellow;
                 GUI.DrawTexture(new Rect(Screen.width/2 - 20 / 2, Screen.height/2 - 20 / 2, 20, 20), CameraOnIcon);
