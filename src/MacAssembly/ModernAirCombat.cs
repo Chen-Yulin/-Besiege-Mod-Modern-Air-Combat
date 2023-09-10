@@ -1,6 +1,7 @@
 using System;
 using Modding;
 using UnityEngine;
+using skpCustomModule;
 
 namespace ModernAirCombat
 {
@@ -42,15 +43,21 @@ namespace ModernAirCombat
 			Mod.AddComponent<CC2LoadDisplayerData>();
 			Mod.AddComponent<CC2NavDisplayerData>();
 			Mod.AddComponent<CustomBlockController>();
+            Mod.AddComponent<AdCustomModuleMod>();
 
 
-			AssetManager.Instance.transform.SetParent(Mod.transform);
+            AssetManager.Instance.transform.SetParent(Mod.transform);
 			MessageController.Instance.transform.SetParent(Mod.transform);
 
 			Debug.Log("Hello, this is Modern Air Combat£¡");
-
-			
-			// Called when the mod is loaded.
 		}
-	}
+        public override void OnEntityPrefabCreation(int entityId, GameObject prefab)
+        {
+            if (entityId == 1)
+            {
+                prefab.AddComponent<skpCustomModule.AdLevelBlockBehaviour>();
+            }
+        }
+    }
 }
+

@@ -6,5 +6,6 @@
   </PropertyGroup>
   <PropertyGroup>
     <ReferencePath>S:\SteamLibrary\steamapps\common\Besiege\Besiege_Data\Managed\</ReferencePath>
+    <ProjectView>ShowAllFiles</ProjectView>
   </PropertyGroup>
 </Project>
