@@ -9,11 +9,11 @@
 	<Name>ModernAirCombat</Name>
 	<Author>Chen, Yulin</Author> <!-- FIX: Insert your name here. -->
 	<!-- Major.Minor.Build -->
-	<Version>1.2.0</Version>
+	<Version>1.2.1</Version>
 	
 	<Description>
 	A mod for simulating modern air combat in besiege.
-	Version 1.2.0
+	Version 1.2.1
 	</Description>
 	<Icon name="icon"/>
 	<Debug>false</Debug>
@@ -198,6 +198,8 @@
 		<Texture name="GSH301 Texture" path="MachineGun\MG3.png"/>
 		<Mesh name="ADEN 30mm Mesh" path="MachineGun\MG4.obj"/>
 		<Texture name="ADEN 30mm Texture" path="MachineGun\MG4.png"/>
+
+		<AssetBundle name="ScreenGlass AB" path="screenglass.ab"/>
 		
 
 	</Resources>

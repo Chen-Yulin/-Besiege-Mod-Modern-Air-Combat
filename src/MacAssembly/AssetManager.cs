@@ -6,6 +6,14 @@ using Modding;
 
 namespace ModernAirCombat
 {
+    public class Asset_ScreenGlass
+    {
+        public GameObject ScreenGlass;
+        public Asset_ScreenGlass(ModAssetBundle modAssetBundle)
+        {
+            ScreenGlass = modAssetBundle.LoadAsset<GameObject>("ScreenGlass");
+        }
+    }
     public class Asset_MeshCol
     {
         public GameObject RadarScanCol;
@@ -206,6 +214,9 @@ namespace ModernAirCombat
 
         public Asset_MeshCol MeshCol { get; protected set; }
 
+        public Asset_ScreenGlass ScreenGlass { get; protected set; }
+
+
         protected void Awake()
         {
             Trail = new Asset_Trail(ModResource.GetAssetBundle("Trail Effect"));
@@ -223,6 +234,7 @@ namespace ModernAirCombat
             BlackSmoke = new Asset_BlackSmoke(ModResource.GetAssetBundle("BlackSmoke AB"));
             NavScreen = new Asset_NavScreen(ModResource.GetAssetBundle("NavScreen AB"));
             MeshCol = new Asset_MeshCol(ModResource.GetAssetBundle("MeshCol AB"));
+            ScreenGlass = new Asset_ScreenGlass(ModResource.GetAssetBundle("ScreenGlass AB"));
         }
     }
 }

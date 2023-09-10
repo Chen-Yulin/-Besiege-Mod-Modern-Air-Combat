@@ -1084,7 +1084,16 @@ namespace ModernAirCombat
         }
         public void Start()
         {
-            
+            /*
+            if (!transform.Find("Glass"))
+            {
+                GameObject Glass = (GameObject)Instantiate(AssetManager.Instance.ScreenGlass.ScreenGlass);
+                Glass.transform.SetParent(transform);
+                Glass.name = "Glass";
+                Glass.transform.localPosition = new Vector3(0, 0, 0.085f);
+                Glass.transform.localRotation = Quaternion.Euler(0, 0, 0);
+                Glass.transform.localScale = new Vector3(0.25f,0.25f, 0.02f);
+            }*/
         }
         public void Update()
         {
