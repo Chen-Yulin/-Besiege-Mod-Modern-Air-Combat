@@ -404,13 +404,11 @@ namespace ModernAirCombat
     public class RadarDisplayerSimulator : MonoBehaviour
     {
         public int myPlayerID = 0;
+        public int mySeed = 0;
         public bool isClient = false;
         // for RadarDisplayer
         public ScanLineController SLController;
         public Target[] RadarTarget;
-        public IEnumerator sendPanelMsg;
-        public static MessageType ClientTargetPositionMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Integer, DataType.Vector3);
-        public static MessageType ClientTargetDistanceMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Integer, DataType.Single);
         //playerID, pitch, deltaScanAngle, ChooserPosition, SLcurrAngle, SLcurrDirection
         public static MessageType ClientNormalPanelMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Single, DataType.Single,
                                                                                             DataType.Single, DataType.Single,
@@ -421,10 +419,6 @@ namespace ModernAirCombat
 
         // lock status
         public static MessageType ClientLockStatusMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Boolean);
-
-        //tmp target data
-        // playerID, targetIndex, distance, hasObject
-        public static MessageType ClientTmpTargetData = ModNetworking.CreateMessageType(DataType.Integer, DataType.Integer, DataType.Single, DataType.Boolean);
 
         public static MessageType ClientOnGuiTargetMsg = ModNetworking.CreateMessageType(DataType.Integer, DataType.Vector3);
 
@@ -449,7 +443,22 @@ namespace ModernAirCombat
         public float ScanRegionAfterLock = 60f;
 
         public int currRegion;
-        public bool locking; //whether the radar keeps tracking an object
+        bool _locking = false;
+        public bool locking
+        {
+            get
+            {
+                return _locking; 
+            }
+            set 
+            {
+                if (_locking != value)
+                {
+                    _locking = value;
+                    SendLockStatusMsg();
+                }
+            }
+        } //whether the radar keeps tracking an object
         public int lockRegion = 0;
         public float deltaPitch = 0;
         public int currLockedPlayerID = -1;
@@ -492,7 +501,7 @@ namespace ModernAirCombat
                 NormalClockhit = false;
                 ModNetworking.SendToAll(ClientNormalPanelMsg.CreateMessage(myPlayerID, radarPitch, deltaScanAngle,
                                                                             ChooserPosition.x, ChooserPosition.y,
-                                                                            SLController.currAngle, SLController.direction));
+                                                                            SLController.currAngle, SLController.direction)); // long gap msg
             }
         }
         public void SendLockPanelMsg() // call in host
@@ -501,12 +510,12 @@ namespace ModernAirCombat
             {
                 LockClockhit = false;
                 ModNetworking.SendToAll(ClientLockPanelMsg.CreateMessage(myPlayerID, radarPitch, closingRate,
-                                                                            ChooserPosition.x, ChooserPosition.y));
+                                                                            ChooserPosition.x, ChooserPosition.y));// short gap msg
             }
         }
         public void SendLockStatusMsg()
         {
-            ModNetworking.SendToAll(ClientLockStatusMsg.CreateMessage(myPlayerID, locking));
+            ModNetworking.SendToAll(ClientLockStatusMsg.CreateMessage(myPlayerID, locking));//sudden msg
         }
         public void ClientSyncHostNormalPanel()
         {
@@ -696,9 +705,9 @@ namespace ModernAirCombat
                         radarPitch = RadarTarget[lockRegion].pitch;
                         closingRate = RadarTarget[lockRegion].closingRate;
                         CCData.Instance.OnGuiTarget[myPlayerID] = RadarTarget[lockRegion].position;
-                        if (StatMaster.isMP)
+                        if (StatMaster.isMP && mySeed == ModController.Instance.state % 10)
                         {
-                            ModNetworking.SendToAll(ClientOnGuiTargetMsg.CreateMessage(myPlayerID, CCData.Instance.OnGuiTarget[myPlayerID]));
+                            ModNetworking.SendToAll(ClientOnGuiTargetMsg.CreateMessage(myPlayerID, CCData.Instance.OnGuiTarget[myPlayerID]));// short gap msg
                         }
 
                         return true;
@@ -713,14 +722,9 @@ namespace ModernAirCombat
             return false;
         }
 
-        public void SendTargetData()
-        {
-            ModNetworking.SendToAll(ClientTmpTargetData.CreateMessage(myPlayerID, currRegion, RadarTarget[currRegion].distance, RadarTarget[currRegion].hasObject));
-        }
-
-
         public void Start()
         {
+            mySeed = (int)(UnityEngine.Random.value * 10);
             LockIconOnScreen = ModResource.GetTexture("LockIconScreen Texture").Texture;
             InitCCRadarDisplayer();
             NormalClock = SendClockNormal(0.5f);
@@ -793,7 +797,7 @@ namespace ModernAirCombat
                     SendLockPanelMsg();
                 }
                 ClearOtherTargets();
-                SendLockStatusMsg();
+                
                 AdjustScanAngle_FixedUpdate();
                 // tell radar
                 SendRadarPara();
@@ -885,7 +889,7 @@ namespace ModernAirCombat
                 if (DataManager.Instance.TV_Lock[myPlayerID])
                 {
                     DataManager.Instance.TV_Track[myPlayerID] = !DataManager.Instance.TV_Track[myPlayerID];
-                    ModNetworking.SendToAll(ClientTrackMsg.CreateMessage(myPlayerID, DataManager.Instance.TV_Track[myPlayerID]));
+                    ModNetworking.SendToAll(ClientTrackMsg.CreateMessage(myPlayerID, DataManager.Instance.TV_Track[myPlayerID]));// sudden msg
                 }
             }
             if (!DataManager.Instance.TV_Lock[myPlayerID])
@@ -1739,7 +1743,6 @@ namespace ModernAirCombat
         public RadarDisplayerSimulator radarDisplayerSimulator;
         public A2GDisplayerSimulator a2gDisplayerSimulator;
         public LoadDisplayerSimulator loadDisplayerSimulator;
-        //public NavDisplayerSimulator navDisplayerSimulator;
         public GameObject radarDisplayerSimulatorObject;
         public GameObject a2gDisplayerSimulatorObject;
         public GameObject loadDisplayerSimulatorObject;
@@ -1797,6 +1800,8 @@ namespace ModernAirCombat
         public MText[] WPPos = new MText[8];
 
 
+
+        public int mySeed;
 
 
         public override bool EmulatesAnyKeys { get { return true; } }
@@ -1947,14 +1952,14 @@ namespace ModernAirCombat
                 }
                 blackoutIndex = Math.Min(blackoutIndex, 2);
                 blackoutIndex = Math.Max(blackoutIndex, 0);
-                if (!StatMaster.isClient)
+                if (!StatMaster.isClient && mySeed == ModController.Instance.state % 10)
                 {
                     ModNetworking.SendToAll(ClientBlackoutMsg.CreateMessage(myPlayerID, blackoutIndex));
                 }
             }
             else
             {
-                blackoutIndex = CCData.Instance.BlackoutData[(int)PlayerData.localPlayer.networkId];
+                blackoutIndex = Mathf.Lerp(blackoutIndex, CCData.Instance.BlackoutData[(int)PlayerData.localPlayer.networkId], 0.15f);
             }
 
 
@@ -2265,7 +2270,7 @@ namespace ModernAirCombat
             addLoadDisplayerMapper();
             addNavDisplayerMapper();
             addKneeboardMapper();
-            
+            mySeed = (int)(UnityEngine.Random.value * 10f);
         }
         public override void OnSimulateStart()
         {

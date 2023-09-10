@@ -153,7 +153,7 @@ namespace ModernAirCombat
             {
                 if (StatMaster.isMP)
                 {
-                    ModNetworking.SendToAll(KeymsgController.SendHeld.CreateMessage((int)myPlayerID, (int)myGuid, true));
+                    ModNetworking.SendToAll(KeymsgController.SendHeld.CreateMessage((int)myPlayerID, (int)myGuid, true));// sudden msg
                 }
                 myStatus = status.launched;
                 //Debug.Log("AGM launched");

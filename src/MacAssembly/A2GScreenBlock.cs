@@ -330,11 +330,13 @@ namespace ModernAirCombat
             if (Track.IsPressed && DataManager.Instance.TV_Lock[myPlayerID])
             {
                 DataManager.Instance.TV_Track[myPlayerID] = !DataManager.Instance.TV_Track[myPlayerID];
+                // sudden msg
                 ModNetworking.SendToAll(ClientTrackMsg.CreateMessage(myPlayerID, DataManager.Instance.TV_Track[myPlayerID]));
             }
             if (!DataManager.Instance.TV_Lock[myPlayerID])
             {
                 DataManager.Instance.TV_Track[myPlayerID] = false;
+                // sudden msg
                 ModNetworking.SendToAll(ClientTrackMsg.CreateMessage(myPlayerID, DataManager.Instance.TV_Track[myPlayerID]));
             }
         }
