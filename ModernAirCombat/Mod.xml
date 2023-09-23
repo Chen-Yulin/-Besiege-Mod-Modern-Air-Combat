@@ -9,11 +9,11 @@
 	<Name>ModernAirCombat</Name>
 	<Author>Chen, Yulin</Author> <!-- FIX: Insert your name here. -->
 	<!-- Major.Minor.Build -->
-	<Version>1.2.1</Version>
+	<Version>1.2.2</Version>
 	
 	<Description>
-	A mod for simulating modern air combat in besiege.
-	Version 1.2.1
+	Version 1.2.2
+	Fix Pilot Camera Default FOV
 	</Description>
 	<Icon name="icon"/>
 	<Debug>false</Debug>

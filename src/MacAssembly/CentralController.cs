@@ -1827,6 +1827,7 @@ namespace ModernAirCombat
                 PCC = PilotCam.AddComponent<PilotCameraController>();
                 PCC.myPlayerID = myPlayerID;
                 PCC.minFOV = minFOV.Value;
+                PCC.defaultFOV = DefaultFOV.Value;
                 PCC.maxFOV = maxFOV.Value;
                 PCC.Sensitivity = CameraSensitivity.Value;
                 PCC.zScale = transform.localScale.z;
