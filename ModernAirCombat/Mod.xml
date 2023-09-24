@@ -9,11 +9,11 @@
 	<Name>ModernAirCombat</Name>
 	<Author>Chen, Yulin</Author> <!-- FIX: Insert your name here. -->
 	<!-- Major.Minor.Build -->
-	<Version>1.2.2</Version>
+	<Version>1.2.3</Version>
 	
 	<Description>
-	Version 1.2.2
-	Fix Pilot Camera Default FOV
+	Version 1.2.3
+	Fix Mod Controller Hide Bug
 	</Description>
 	<Icon name="icon"/>
 	<Debug>false</Debug>
