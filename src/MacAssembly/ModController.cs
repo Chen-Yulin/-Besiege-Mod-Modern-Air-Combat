@@ -127,7 +127,10 @@ namespace ModernAirCombat
         private void OnGUI()
         {
             //GUI.Box(new Rect(100, 200, 200, 50), BoundaryOff.ToString());
-            windowRect = GUILayout.Window(windowID, windowRect, new GUI.WindowFunction(MACWindow), "Modern Air Combat Mod Setting");
+            if (!windowHidden && !StatMaster.hudHidden)
+            {
+                windowRect = GUILayout.Window(windowID, windowRect, new GUI.WindowFunction(MACWindow), "Modern Air Combat Mod Setting");
+            }
 
         }
     }
