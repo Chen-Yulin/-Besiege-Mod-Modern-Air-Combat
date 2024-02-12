@@ -375,6 +375,16 @@ namespace ModernAirCombat
             ModNetworking.SendToAll(ClientThermalOnMsg.CreateMessage(myPlayerID, false));
             ModNetworking.SendToAll(ClientInverseThermalMsg.CreateMessage(myPlayerID, false));
         }
+        public void FixedUpdate()
+        {
+            if (BlockBehaviour.isSimulating)
+            {
+                if (StatMaster.isClient)
+                {
+                    MySimulateFixedUpdateClient();
+                }
+            }
+        }
 
         public override void SimulateUpdateClient()
         {
@@ -455,11 +465,10 @@ namespace ModernAirCombat
             ModNetworking.SendToAll(ClientFOVMsg.CreateMessage(myPlayerID, FOV));
             ModNetworking.SendToAll(ClientLockMsg.CreateMessage(myPlayerID, Lock));
         }
-        public override void SimulateFixedUpdateClient()
+        public void MySimulateFixedUpdateClient()
         {
             DataManager.Instance.EO_Distance[myPlayerID] = (LockPosition - transform.position).magnitude;
             updateCameraParaClient();
-
         }
         public override void SimulateFixedUpdateHost()
         {

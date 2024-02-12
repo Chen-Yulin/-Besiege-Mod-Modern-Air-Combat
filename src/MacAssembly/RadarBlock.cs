@@ -404,6 +404,16 @@ namespace ModernAirCombat
             }
             RadarDisplayerSimulator_MsgReceiver.Instance.CleartmpTargetData(myPlayerID);
         }
+        public void FixedUpdate()
+        {
+            if (BlockBehaviour.isSimulating)
+            {
+                if (StatMaster.isClient)
+                {
+                    MySimulateFixedUpdateClient();
+                }
+            }
+        }
 
         public override void SimulateFixedUpdateHost()
         {
@@ -436,7 +446,7 @@ namespace ModernAirCombat
             catch
             {}
         }
-        public override void SimulateFixedUpdateClient()
+        public void MySimulateFixedUpdateClient()
         {
             RadarBase.transform.rotation = Quaternion.LookRotation((myTransform.rotation * Vector3.back).normalized);
             ScanCollider.transform.localRotation = Quaternion.Lerp(ScanCollider.transform.localRotation, Quaternion.Euler(RadarMsgReceiver.Instance.ScanColLocalRotation[myPlayerID]),0.2f);

@@ -2273,6 +2273,18 @@ namespace ModernAirCombat
             addKneeboardMapper();
             mySeed = (int)(UnityEngine.Random.value * 10f);
         }
+
+        public void FixedUpdate()
+        {
+            if (BlockBehaviour.isSimulating)
+            {
+                if (StatMaster.isClient)
+                {
+                    MySimulateFixedUpdateClient();
+                }
+            }
+        }
+
         public override void OnSimulateStart()
         {
             myRigid = BlockBehaviour.GetComponent<Rigidbody>();
@@ -2406,7 +2418,7 @@ namespace ModernAirCombat
             DisplayBlackout();
             EmulateLoadDisplayerKey_FixedUpdateHost();
         }
-        public override void SimulateFixedUpdateClient()
+        public void MySimulateFixedUpdateClient()
         {
             DisplayBlackout();
         }
