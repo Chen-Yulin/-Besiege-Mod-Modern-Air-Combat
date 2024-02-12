@@ -95,7 +95,7 @@ namespace ModernAirCombat
         {
             try
             {
-                
+
                 MPTeam hitedTeam;
                 if (targetCols.Count > 5 || col.name == "flare")
                     return;
@@ -116,7 +116,7 @@ namespace ModernAirCombat
                 if (col.isTrigger || col.transform.parent.GetInstanceID() == col.GetInstanceID())
                     return;
 
-                
+
 
                 if (col.attachedRigidbody.gameObject.name == "missle" || col.attachedRigidbody.gameObject.name == "GuidedBomb" || col.attachedRigidbody.gameObject.name == "AGM")
                     return;
@@ -134,11 +134,11 @@ namespace ModernAirCombat
                 }
                 targetCols.Push(col);
             }
-            catch 
+            catch
             {
                 return;
             }
-            
+
         }
 
 
@@ -195,7 +195,7 @@ namespace ModernAirCombat
         public bool IFF = true;
         public ushort playerID = 0;
         public bool explo = false;
-        
+
         void Start()
         {
         }
@@ -216,7 +216,7 @@ namespace ModernAirCombat
                         return;
                 }
                 catch { }
-                
+
                 if (col.name == "flare")
                 {
                     if (UnityEngine.Random.value > 0.8f)
@@ -231,7 +231,7 @@ namespace ModernAirCombat
                 explo = true;
             }
             catch { }
-            
+
         }
 
     }
@@ -406,7 +406,7 @@ namespace ModernAirCombat
                 ExploAS.SetSpatializerFloat(5, 1f);
                 ExploSound.SetActive(false);
             }
-            
+
         }
 
         public void initScan()
@@ -502,7 +502,7 @@ namespace ModernAirCombat
             GameObject ExploParticleEffect = (GameObject)Instantiate(AssetManager.Instance.Explo.Explo, transform.position, transform.rotation);
             ExploParticleEffect.SetActive(true);
             Destroy(ExploParticleEffect, 3);
-          
+
 
             BlockBehaviour.MeshRenderer.enabled = false;
             transform.FindChild("Colliders").gameObject.SetActive(false);
@@ -518,7 +518,7 @@ namespace ModernAirCombat
                 ModNetworking.SendToAll(missleExplo);
                 //Debug.Log(myGuid.ToString());
             }
-            
+
             Debug.Log("explo");
             playExploEffect();
             myRigidbody.constraints = RigidbodyConstraints.FreezePosition;
@@ -569,7 +569,7 @@ namespace ModernAirCombat
             float angle = Vector3.Angle(myRigidbody.velocity, myTransform.up);
             angle = Mathf.Clamp(angle, 0, 45);
             float coeff = (6.8f - Mathf.Sqrt(angle)) / 40000;
-            
+
             return axialSpeed * coeff * dragPercent;
         }
 
@@ -579,7 +579,7 @@ namespace ModernAirCombat
             {
                 ScanCollider.SetActive(true);
                 ScanFlare.SetActive(true);
-                
+
 
                 detectFreqTime += Time.fixedDeltaTime;
 
@@ -638,7 +638,7 @@ namespace ModernAirCombat
                         if (Vector3.Angle(StarePosition-transform.position,transform.up) < 75)
                         {
                             targetDetected = true;
-                            
+
                         }
                         else
                         {
@@ -732,7 +732,7 @@ namespace ModernAirCombat
         public void Start()
         {
             BlockBehaviour.blockJoint.breakForce = -1;
-            
+
             myTransform = gameObject.GetComponent<Transform>();
             myRigidbody = gameObject.GetComponent<Rigidbody>();
 
@@ -741,7 +741,7 @@ namespace ModernAirCombat
 
             Vector3 ScanColScale = new Vector3(550,550,550);
             ScanCollider.transform.localScale = ScanColScale;
-            
+
             initParticleSystem();
 
             misslePF.radius = PFRang.Value;
@@ -769,6 +769,16 @@ namespace ModernAirCombat
                 GModified = GValue.Value;
             }
         }
+        public void FixedUpdate()
+        {
+            if (BlockBehaviour.isSimulating)
+            {
+                if (StatMaster.isClient)
+                {
+                    MySimulateFixedUpdateClient();
+                }
+            }
+        }
 
         public override void OnSimulateStart()
         {
@@ -782,7 +792,7 @@ namespace ModernAirCombat
             }
             catch { }
 
-            
+
 
 
             if (StatMaster.isMP)
@@ -801,8 +811,8 @@ namespace ModernAirCombat
 
         public override void SimulateUpdateHost()
         {
-            
-            
+
+
             try
             {
                 if (IsSimulating)
@@ -829,11 +839,11 @@ namespace ModernAirCombat
                 }
             }
             catch { }
-            
-            
+
+
         }
 
-        public override void SimulateFixedUpdateClient()
+        public void MySimulateFixedUpdateClient()
         {
             try
             {
@@ -842,7 +852,8 @@ namespace ModernAirCombat
                     myStatus = status.launched;
                 }
             }
-            catch { }
+            catch {
+            }
 
 
             if (myStatus == status.launched)
@@ -862,7 +873,6 @@ namespace ModernAirCombat
                             LaunchSoundEffect.GetComponent<AudioSource>().Play();
                             Destroy(LaunchSoundEffect, thrustTimeModified);
                         }
-
                     }
 
                     if (time < detectDelay.Value + launchDelay.Value)
@@ -890,9 +900,8 @@ namespace ModernAirCombat
                 {
                     gameObject.SetActive(false);
                     myStatus = status.exploded;
-
                 }
-               time += Time.fixedDeltaTime;
+                time += Time.fixedDeltaTime;
             }
             if (myStatus == status.exploded)
             {
@@ -908,14 +917,14 @@ namespace ModernAirCombat
 
         public override void SimulateFixedUpdateHost()
         {
-            
+
             if (Launch.EmulationHeld() && myStatus == status.stored)
             {
                 if (StatMaster.isMP)
                 {
                     ModNetworking.SendToAll(KeymsgController.SendHeld.CreateMessage((int)myPlayerID, (int)myGuid, true));
                 }
-                
+
                 myStatus = status.launched;
                 //Debug.Log("missle launched");
                 //Debug.Log(detectRange);
@@ -946,7 +955,7 @@ namespace ModernAirCombat
                     }
                     _offRack = true;
                 }
-                
+
                 // when within work time
                 if (time < thrustTimeModified*4 + launchDelay.Value)
                 {
@@ -966,7 +975,7 @@ namespace ModernAirCombat
                             myRigidbody.drag = 0.05f * dragPercent;
 
                         }
-                        
+
                         // add thrust
                         myRigidbody.AddRelativeForce(new Vector3(0, thrustModified/2f, 0), ForceMode.Force);
                     }
@@ -1051,7 +1060,7 @@ namespace ModernAirCombat
             //GUI.Box(new Rect(100, 200, 200, 50), ModController.Instance.Restriction.ToString());
 
         }
-        
+
 
     }
 }

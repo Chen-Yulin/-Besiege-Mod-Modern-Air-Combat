@@ -107,6 +107,7 @@ namespace ModernAirCombat
         }
 
 
+
         protected new void Update()
         {
             if (currSkinStatus != OptionsMaster.skinsEnabled)
