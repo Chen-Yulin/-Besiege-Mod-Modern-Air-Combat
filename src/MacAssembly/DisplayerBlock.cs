@@ -905,6 +905,16 @@ namespace ModernAirCombat
 
             }
         }
+        public void FixedUpdate()
+        {
+            if (BlockBehaviour.isSimulating)
+            {
+                if (StatMaster.isClient)
+                {
+                    MySimulateFixedUpdateClient();
+                }
+            }
+        }
         public override void SimulateFixedUpdateHost()
         {
             DisplayBlackout();
@@ -1039,7 +1049,7 @@ namespace ModernAirCombat
 
         }
 
-        public override void SimulateFixedUpdateClient()
+        public void MySimulateFixedUpdateClient()
         {
             DisplayBlackout();
             PanelRectifyClient();

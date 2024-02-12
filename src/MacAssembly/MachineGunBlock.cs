@@ -456,6 +456,16 @@ namespace ModernAirCombat
                 currSkinStatus = OptionsMaster.skinsEnabled;
             }
         }
+        public void FixedUpdate()
+        {
+            if (BlockBehaviour.isSimulating)
+            {
+                if (StatMaster.isClient)
+                {
+                    MySimulateFixedUpdateClient();
+                }
+            }
+        }
         public override void SimulateUpdateHost()
         {
             try
@@ -600,7 +610,7 @@ namespace ModernAirCombat
             BulletExplo();
         }
 
-        public override void SimulateFixedUpdateClient()
+        public void MySimulateFixedUpdateClient()
         {
             for (int i = 0; i < BulletToBeFired; i++)
             {

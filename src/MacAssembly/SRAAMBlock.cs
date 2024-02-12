@@ -843,7 +843,7 @@ namespace ModernAirCombat
 
         }
 
-        public void MySimulateFixedUpdateClient()
+        public virtual void MySimulateFixedUpdateClient()
         {
             try
             {
