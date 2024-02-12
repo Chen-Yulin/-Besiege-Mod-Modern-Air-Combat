@@ -1,6 +1,7 @@
 using System;
 using Modding;
 using UnityEngine;
+using Navalmod;
 using skpCustomModule;
 
 namespace ModernAirCombat
@@ -44,6 +45,7 @@ namespace ModernAirCombat
 			Mod.AddComponent<CC2NavDisplayerData>();
 			Mod.AddComponent<CustomBlockController>();
             Mod.AddComponent<AdCustomModuleMod>();
+			Mod.AddComponent<H3NetworkManager>();
 
 
             AssetManager.Instance.transform.SetParent(Mod.transform);

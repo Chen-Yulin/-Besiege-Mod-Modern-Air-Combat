@@ -492,6 +492,9 @@ namespace skpCustomModule
 		}
 
 		// Token: 0x0600009E RID: 158 RVA: 0x00002191 File Offset: 0x00000391
+		public override void SimulateFixedUpdateClient()
+		{
+		}
 
 		// Token: 0x0600009F RID: 159 RVA: 0x0000FBBC File Offset: 0x0000DDBC
 		public GameObject GetSubObjectPrefab()
