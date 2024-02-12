@@ -5,6 +5,7 @@ using System.Text;
 using Modding;
 
 using Modding.Common;
+using Navalmod;
 using UnityEngine;
 
 
@@ -117,6 +118,11 @@ namespace ModernAirCombat
                 SingleInstance<SpiderFucker>.Instance.ExpandFloorSwitch = false;
             }
             SingleInstance<SpiderFucker>.Instance.ExExpandScale = Convert.ToSingle(GUILayout.TextArea(SingleInstance<SpiderFucker>.Instance.ExExpandScale.ToString(), new GUILayoutOption[0]));
+
+            if (GUILayout.Button("FixClient", new GUILayoutOption[0]))
+            {
+                SingleInstance<H3NetworkManager>.Instance.FixedCluster();
+            }
 
             GUILayout.Label("Press Ctrl+M to hide");
             

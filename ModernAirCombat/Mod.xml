@@ -9,11 +9,11 @@
 	<Name>ModernAirCombat</Name>
 	<Author>Chen, Yulin</Author> <!-- FIX: Insert your name here. -->
 	<!-- Major.Minor.Build -->
-	<Version>1.2.4</Version>
+	<Version>1.2.5</Version>
 
 	<Description>
-	Version 1.2.4
-	Fix network
+	Version 1.2.5
+	Optimize network of block transformation
 	</Description>
 	<Icon name="icon"/>
 	<Debug>false</Debug>

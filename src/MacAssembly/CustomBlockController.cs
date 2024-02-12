@@ -10,6 +10,7 @@ using Modding.Blocks;
 using UnityEngine;
 using UnityEngine.Networking;
 using InternalModding.Blocks;
+using Navalmod;
 
 namespace ModernAirCombat
 {
@@ -41,7 +42,10 @@ namespace ModernAirCombat
         }
         private void AddSliders(BlockBehaviour block)
         {
-            //if (StatMaster.isMP == StatMaster.IsLevelEditorOnly)
+            if (block.GetComponent<H3NetworkBlock>() == null)
+            {
+                block.gameObject.AddComponent<H3NetworkBlock>().blockBehaviour = block;
+            }
             switch (block.BlockID)
             {
                 case (int)BlockType.Propeller:
