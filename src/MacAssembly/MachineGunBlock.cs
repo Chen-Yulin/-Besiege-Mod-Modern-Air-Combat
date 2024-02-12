@@ -109,7 +109,6 @@ namespace ModernAirCombat
                 HitSound = new GameObject("Hit sound");
                 HitSound.transform.SetParent(transform);
                 HitAS = HitSound.GetComponent<AudioSource>() ?? HitSound.AddComponent<AudioSource>();
-                HitSound.AddComponent<MakeAudioSourceFixedPitch>();
                 HitAS.clip = HitClip;
                 HitAS.spatialBlend = 1.0f;
                 HitAS.volume = 0.02f * Caliber.Value;
@@ -130,7 +129,6 @@ namespace ModernAirCombat
                 ShotSound = new GameObject("shot sound");
                 ShotSound.transform.SetParent(transform);
                 ShotAS = ShotSound.GetComponent<AudioSource>() ?? ShotSound.AddComponent<AudioSource>();
-                ShotSound.AddComponent<MakeAudioSourceFixedPitch>();
                 ShotAS.clip = ShotClip;
                 ShotAS.spatialBlend = 1.0f;
                 ShotAS.volume = 0.02f * Caliber.Value;
@@ -151,7 +149,6 @@ namespace ModernAirCombat
                 FlyingSound = new GameObject("Flying sound");
                 FlyingSound.transform.SetParent(transform);
                 FlyingAS = FlyingSound.GetComponent<AudioSource>() ?? FlyingSound.AddComponent<AudioSource>();
-                FlyingSound.AddComponent<MakeAudioSourceFixedPitch>();
                 FlyingAS.clip = FlyingClip;
                 FlyingAS.loop = true;
                 FlyingAS.spatialBlend = 1.0f;

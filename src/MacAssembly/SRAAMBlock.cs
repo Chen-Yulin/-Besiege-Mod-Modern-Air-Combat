@@ -377,7 +377,6 @@ namespace ModernAirCombat
                 LaunchSound = new GameObject("Launch sound");
                 LaunchSound.transform.SetParent(transform);
                 LaunchAS = LaunchSound.GetComponent<AudioSource>() ?? LaunchSound.AddComponent<AudioSource>();
-                LaunchSound.AddComponent<MakeAudioSourceFixedPitch>();
                 LaunchAS.clip = LaunchClip;
                 LaunchAS.spatialBlend = 1.0f;
                 LaunchAS.volume = 60f;
@@ -393,7 +392,6 @@ namespace ModernAirCombat
                 ExploSound = new GameObject("Explo sound");
                 ExploSound.transform.SetParent(transform);
                 ExploAS = ExploSound.GetComponent<AudioSource>() ?? ExploSound.AddComponent<AudioSource>();
-                ExploSound.AddComponent<MakeAudioSourceFixedPitch>();
                 ExploAS.clip = ExploClip;
                 ExploAS.spatialBlend = 1.0f;
                 ExploAS.volume = 0.1f;

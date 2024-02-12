@@ -28,19 +28,6 @@ namespace ModernAirCombat
 
     }
 
-    public class MakeAudioSourceFixedPitch : MonoBehaviour
-    {
-        protected AudioSource FixedAS;
-        protected void Start()
-        {
-            FixedAS = base.GetComponent<AudioSource>();
-        }
-        protected void Update()
-        {
-            FixedAS.pitch = Time.timeScale;
-        }
-    }
-
     class RWRBlock : BlockScript
     {
         public MSlider Volume;
@@ -87,7 +74,6 @@ namespace ModernAirCombat
         {
             BeepClip = ModResource.GetAudioClip("RWRBeep Audio").AudioClip;
             BeepAS = GetComponent<AudioSource>() ?? gameObject.AddComponent<AudioSource>();
-            gameObject.AddComponent<MakeAudioSourceFixedPitch>();
             BeepAS.clip = BeepClip;
             BeepAS.spatialBlend = 1.0f;
             BeepAS.volume = Volume.Value;
