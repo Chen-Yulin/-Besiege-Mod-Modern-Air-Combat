@@ -72,6 +72,10 @@
     <Compile Include="ElectroOpticalBlock.cs" />
     <Compile Include="FlareBlock.cs" />
     <Compile Include="GuidedBombBlock.cs" />
+    <Compile Include="H3ClustersTest.cs" />
+    <Compile Include="H3NetCompression.cs" />
+    <Compile Include="H3NetworkBlock.cs" />
+    <Compile Include="H3NetworkManager.cs" />
     <Compile Include="HUD.cs" />
     <Compile Include="KeyMsgController.cs" />
     <Compile Include="LoadDisplayer.cs" />

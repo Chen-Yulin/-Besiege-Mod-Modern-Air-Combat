@@ -566,6 +566,16 @@ namespace ModernAirCombat
                 UpdateNumber();
             }
         }
+        public void FixedUpdate()
+        {
+            if (BlockBehaviour.isSimulating)
+            {
+                if (StatMaster.isClient)
+                {
+                    MySimulateFixedUpdateClient();
+                }
+            }
+        }
         public override void BuildingUpdate()
         {
             RawImage glass = Panel.transform.FindChild("Mask").GetComponent<RawImage>();
@@ -603,7 +613,7 @@ namespace ModernAirCombat
             UpdateGunPrediction();
         }
 
-        public override void SimulateFixedUpdateClient()
+        public void MySimulateFixedUpdateClient()
         {
             UpdateGunPrediction();
         }

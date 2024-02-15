@@ -12,7 +12,7 @@
 	<Mesh name="HUD Mesh"> 
 		<Position x="0.0" y="0.0" z="0.0" />
 		<Rotation x="90.0" y="0.0" z="0.0" />
-		<Scale x="-1.0" y="1.0" z="1.0" />
+		<Scale x="1.0" y="1.0" z="1.0" />
 	</Mesh>
 	
 	<Texture name="HUD Texture" /> <!-- Must be defined as a resource in the manifest. -->

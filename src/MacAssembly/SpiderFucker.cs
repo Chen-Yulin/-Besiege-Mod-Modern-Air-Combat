@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+
+
 public class SpiderFucker : SingleInstance<SpiderFucker>
 {
     public override string Name => "SpiderFuckerr";
@@ -34,3 +36,4 @@ public class SpiderFucker : SingleInstance<SpiderFucker>
         skpCustomModule.SkyBoxChanger.Instance.toggle_skyboxApply = true;
     }
 }
+

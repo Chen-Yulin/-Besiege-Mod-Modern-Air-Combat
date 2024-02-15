@@ -106,7 +106,6 @@ namespace ModernAirCombat
             myPlayerID = BlockBehaviour.ParentMachine.PlayerID;
         }
 
-
         protected new void Update()
         {
             if (currSkinStatus != OptionsMaster.skinsEnabled)
@@ -129,7 +128,7 @@ namespace ModernAirCombat
                 GModified = GValue.Value;
             }
         }
-        public override void SimulateFixedUpdateClient()
+        public override void MySimulateFixedUpdateClient()
         {
             try
             {

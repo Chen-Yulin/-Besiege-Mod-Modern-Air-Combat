@@ -123,7 +123,7 @@ namespace ModernAirCombat
                 GModified = GValue.Value;
             }
         }
-        public override void SimulateFixedUpdateClient()
+        public override void MySimulateFixedUpdateClient()
         {
             try
             {

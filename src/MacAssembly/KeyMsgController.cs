@@ -37,6 +37,7 @@ namespace ModernAirCombat
         {
             if (StatMaster.isClient)
             {
+                Debug.Log("Receive held " +(bool)message.GetData(2));
                 Instance.keyheld[(int)message.GetData(0)][(int)message.GetData(1)] = (bool)message.GetData(2);
             }
         }
