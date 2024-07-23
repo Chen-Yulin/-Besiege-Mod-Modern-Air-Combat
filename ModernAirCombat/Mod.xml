@@ -9,10 +9,10 @@
 	<Name>ModernAirCombat</Name>
 	<Author>Chen, Yulin</Author> <!-- FIX: Insert your name here. -->
 	<!-- Major.Minor.Build -->
-	<Version>1.2.7</Version>
+	<Version>1.2.8</Version>
 
 	<Description>
-	Version 1.2.7
+	Version 1.2.8
 	Make compatible with bsg
 	</Description>
 	<Icon name="icon"/>
