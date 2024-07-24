@@ -1175,7 +1175,7 @@ namespace skpCustomModule
 							IExplosionEffect explosionEffect = e;
 							if (explosionEffect != null)
 							{
-								explosionEffect.OnExplode(0f, 0f, 0f, Vector3.zero, 0f, mask);
+								//explosionEffect.OnExplode(0f, 0f, 0f, Vector3.zero, 0f, mask);
 							}
 						}
 						//e = null;

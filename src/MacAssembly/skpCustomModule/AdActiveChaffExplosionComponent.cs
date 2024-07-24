@@ -47,7 +47,12 @@ namespace skpCustomModule
 			return result;
 		}
 
-		// Token: 0x04000290 RID: 656
-		public AdProjectileScript projectileScript;
+        public bool OnExplode(float power, float upPower, float torquePower, Vector3 explosionPos, float radius, int mask, bool inWater)
+        {
+            throw new NotImplementedException();
+        }
+
+        // Token: 0x04000290 RID: 656
+        public AdProjectileScript projectileScript;
 	}
 }

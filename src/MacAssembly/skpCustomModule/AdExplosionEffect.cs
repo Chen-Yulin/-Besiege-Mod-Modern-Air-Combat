@@ -110,7 +110,7 @@ namespace skpCustomModule
 						{
 							if (explosionEffect != null)
 							{
-								explosionEffect.OnExplode(this.power, this.upPower, 0f, this.explosionPos, this.radius, num);
+								
 							}
 						}
 					}
@@ -149,8 +149,13 @@ namespace skpCustomModule
 			}
 		}
 
-		// Token: 0x040003F9 RID: 1017
-		public float radius = 5f;
+        public bool OnExplode(float power, float upPower, float torquePower, Vector3 explosionPos, float radius, int mask, bool inWater)
+        {
+            throw new NotImplementedException();
+        }
+
+        // Token: 0x040003F9 RID: 1017
+        public float radius = 5f;
 
 		// Token: 0x040003FA RID: 1018
 		public float power = 10f;
