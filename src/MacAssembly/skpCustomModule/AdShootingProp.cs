@@ -34,11 +34,6 @@ namespace skpCustomModule
 		[Reloadable]
 		public int DefaultAmmo;
 
-		// Token: 0x04000489 RID: 1161
-		[XmlElement("AmmoType")]
-		[DefaultValue(0)]
-		[Reloadable]
-		public AmmoType AmmoType;
 
 		// Token: 0x0400048A RID: 1162
 		[XmlElement("SupportsExplosionGodTool")]
