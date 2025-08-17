@@ -1280,42 +1280,7 @@ namespace skpCustomModule
 			}
 		}
 
-		// Token: 0x0600010F RID: 271 RVA: 0x00015404 File Offset: 0x00013604
-		public override void OnReloadAmmo(ref int units, AmmoType type, bool setAmmo, bool eachBlock)
-		{
-			bool flag = type != null && type != base.Module.AmmoType;
-			if (!flag)
-			{
-				if (setAmmo)
-				{
-					bool flag2 = eachBlock || units < base.Module.DefaultAmmo;
-					if (flag2)
-					{
-						this.AmmoLeft = units;
-						units = 0;
-					}
-					else
-					{
-						units -= base.Module.DefaultAmmo;
-						this.AmmoLeft = base.Module.DefaultAmmo;
-					}
-				}
-				else
-				{
-					bool flag3 = eachBlock || units <= base.Module.DefaultAmmo - this.AmmoLeft;
-					if (flag3)
-					{
-						this.AmmoLeft += units;
-						units = 0;
-					}
-					else
-					{
-						units -= base.Module.DefaultAmmo - this.AmmoLeft;
-						this.AmmoLeft = base.Module.DefaultAmmo;
-					}
-				}
-			}
-		}
+		
 
 		// Token: 0x06000110 RID: 272 RVA: 0x00002741 File Offset: 0x00000941
 		private IEnumerator Fire()

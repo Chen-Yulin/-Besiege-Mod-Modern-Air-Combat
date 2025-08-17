@@ -9,11 +9,11 @@
 	<Name>ModernAirCombat</Name>
 	<Author>Chen, Yulin</Author> <!-- FIX: Insert your name here. -->
 	<!-- Major.Minor.Build -->
-	<Version>1.2.8</Version>
+	<Version>1.2.10</Version>
 
 	<Description>
-	Version 1.2.8
-	Make compatible with bsg
+	Version 1.2.10
+	Add skybox
 	</Description>
 	<Icon name="icon"/>
 	<Debug>false</Debug>
@@ -198,6 +198,15 @@
 		<Texture name="GSH301 Texture" path="MachineGun\MG3.png"/>
 		<Mesh name="ADEN 30mm Mesh" path="MachineGun\MG4.obj"/>
 		<Texture name="ADEN 30mm Texture" path="MachineGun\MG4.png"/>
+
+		<!-- sky -->
+		<Mesh name="SkyBall" path="SkyBall.obj"/>
+		<Texture name="BlueSky" path="Sky\BlueSky.png"/>
+		<Texture name="Night" path="Sky\Night.png"/>
+		<Texture name="Sunrise1" path="Sky\Sunrise1.png"/>
+		<Texture name="Sunrise2" path="Sky\Sunrise2.png"/>
+		<Texture name="Sunset1" path="Sky\Sunset1.png"/>
+		<Texture name="Sunset2" path="Sky\Sunset2.png"/>
 
 		<AssetBundle name="ScreenGlass AB" path="screenglass.ab"/>
 
